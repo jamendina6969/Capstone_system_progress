@@ -8,6 +8,8 @@ class AuditLog extends Model
 {
     protected $fillable = [
         'user_id',
+        'actor_name',   // <--- ADDED
+        'actor_role',   // <--- ADDED
         'event',
         'auditable_type',
         'auditable_id',

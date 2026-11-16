@@ -11,7 +11,8 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    @stack('styles')
+    
     <script>
         // Check and apply product view mode immediately to prevent layout shifts
         try {
@@ -103,10 +104,9 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50 dark:bg-[#161B26]">
 
             <!-- Enterprise Topbar -->
-            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-6 flex items-center justify-between z-10 shadow-2xs">
+            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-6 flex items-center justify-between relative z-50 shadow-2xs">
                 
                 <div class="flex items-center gap-4">
-                    <!-- Top-bar hamburger toggle button removed completely -->
                 </div>
 
                 <!-- Right Utility Actions -->
@@ -118,21 +118,89 @@
 
                     <!-- Notification Bell & Dropdown -->
                     <div class="relative">
+                        @php
+                            // PERFORMANCE FIX: Cache the full payload for 5 minutes
+                            // Using the exact same cache key as the sidenav
+                            $notifData = \Illuminate\Support\Facades\Cache::remember('topbar_notifications_' . auth()->id(), 300, function () {
+                                if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
+                                    return ['prCount' => 0, 'approvalCount' => 0, 'recentPRs' => collect(), 'recentApprovals' => collect()];
+                                }
+                                
+                                return [
+                                    'prCount' => \App\Models\PurchaseRequest::where('status', 'pending')->count(),
+                                    'approvalCount' => \App\Models\StockMovement::where('status', 'pending')->count(),
+                                    'recentPRs' => \App\Models\PurchaseRequest::with('user')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
+                                    'recentApprovals' => \App\Models\StockMovement::with('product', 'requester')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
+                                ];
+                            });
+
+                            $pendingPRCount = $notifData['prCount'] ?? 0;
+                            $pendingApprovalCount = $notifData['approvalCount'] ?? 0;
+                            $totalNotifications = $pendingPRCount + $pendingApprovalCount;
+                        @endphp
+
                         <button id="notificationBtn" class="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+                            @if($totalNotifications > 0)
+                                <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+                                    {{ $totalNotifications }}
+                                </span>
+                            @else
+                                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+                            @endif
                         </button>
 
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-[#10141D] border border-slate-200 dark:border-[#1e2536] rounded-xl shadow-xl py-2 z-50">
                             <div class="px-4 py-2 border-b border-slate-100 dark:border-[#1e2536] flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Notifications</span>
-                                <span class="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">New</span>
+                                @if($totalNotifications > 0)
+                                    <span class="text-[10px] bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-2 py-0.5 rounded-full font-semibold">{{ $totalNotifications }} New</span>
+                                @else
+                                    <span class="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">0 New</span>
+                                @endif
                             </div>
+                            
                             <div class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-[#1e2536]">
-                                <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
-                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">System Initialized</p>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hydrotech Inventory dashboard loaded successfully.</p>
-                                </div>
+                                {{-- Pending Purchase Requests --}}
+                                @if($pendingPRCount > 0 && in_array(auth()->user()->role, ['admin', 'manager']))
+                                    @foreach($notifData['recentPRs'] ?? collect() as $pr)
+                                        <a href="{{ route('purchase-requests.index', ['id' => $pr->id]) }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
+                                                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">New Purchase Request</p>
+                                            </div>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4">
+                                                {{ $pr->user ? ($pr->user->full_name ?? $pr->user->firstname . ' ' . $pr->user->lastname) : 'Deleted User' }} 
+                                                submitted {{ $pr->pr_number }}
+                                            </p>
+                                            <p class="text-[10px] text-slate-400 mt-1 pl-4">{{ $pr->created_at->diffForHumans() }}</p>
+                                        </a>
+                                    @endforeach
+                                @endif
+
+                                {{-- Pending Inventory Approvals --}}
+                                @if($pendingApprovalCount > 0 && in_array(auth()->user()->role, ['admin', 'manager']))
+                                    @foreach($notifData['recentApprovals'] ?? collect() as $movement)
+                                        <a href="{{ route('inventory.approvals', ['id' => $movement->id]) }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Pending Approval</p>
+                                            </div>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4">
+                                                {{ $movement->requester_name ?? ($movement->requester ? $movement->requester->firstname . ' ' . $movement->requester->lastname : 'Deleted User') }} 
+                                                requested restock of {{ $movement->product->product_name ?? 'Item' }}
+                                            </p>
+                                            <p class="text-[10px] text-slate-400 mt-1 pl-4">{{ $movement->created_at->diffForHumans() }}</p>
+                                        </a>
+                                    @endforeach
+                                @endif
+
+                                {{-- Empty State --}}
+                                @if($totalNotifications == 0)
+                                    <div class="px-4 py-6 text-center text-xs text-slate-400">
+                                        No pending notifications
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -176,6 +244,14 @@
 
             <!-- Page content background area -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-8">
+                
+                @if (session('error'))
+                    <div class="mb-6 rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-3 text-sm flex items-center shadow-2xs">
+                        <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 @if (session('success'))
                     <div class="mb-6 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 text-sm flex items-center shadow-2xs">
                         <svg class="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -193,7 +269,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             const root = document.documentElement;
 
-            // Clean unified click handler for sidebar toggle buttons to avoid double-trigger conflicts
             document.querySelectorAll('[data-sidebar-toggle]').forEach(function (btn) {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -249,7 +324,6 @@
                 });
             }
 
-            // Grid / List View Toggle and Persistence Logic
             document.querySelectorAll('[data-set-view]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     const mode = btn.dataset.setView;

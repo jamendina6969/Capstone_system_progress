@@ -1,8 +1,8 @@
 @php $role = auth()->user()->role; @endphp
 
-<form action="{{ route('inventory.restock', $product) }}" method="POST" class="flex flex-wrap items-end gap-3">
+<form action="{{ route('inventory.storeRequest') }}" method="POST" class="flex flex-wrap items-end gap-3">
     @csrf
-    <input type="hidden" name="type" value="{{ $role === 'warehouse_staff' ? 'restock_warehouse' : 'restock_store' }}">
+    <input type="hidden" name="product_id" value="{{ $product->id }}">
 
     @if (!in_array($role, ['warehouse_staff', 'staff']))
         <div>
@@ -35,6 +35,6 @@
     </button>
 </form>
 
-@if ($role === 'staff')
+@if (in_array($role, ['staff', 'warehouse_staff']))
     <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">This request will need admin/manager approval before stock updates.</p>
 @endif

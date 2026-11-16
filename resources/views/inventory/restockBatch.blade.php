@@ -4,12 +4,6 @@
 
 @section('content')
 
-    @if (session('error'))
-        <div class="mb-6 rounded-2xl bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-rose-300 border-2 border-red-200 dark:border-rose-900 px-6 py-4 text-sm font-medium">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Restock Mode</h1>
@@ -18,7 +12,8 @@
                 <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] text-gray-800 dark:text-slate-200 rounded-lg text-xs">↓</kbd> to move to the next item.
             </p>
         </div>
-        <a href="{{ route('inventory.index') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer inline-flex items-center">
+        <!-- Changed to route('dashboard') to prevent 403 on exit -->
+        <a href="{{ url('/dashboard') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer inline-flex items-center">
             Exit Restock Mode
         </a>
     </div>
@@ -173,9 +168,20 @@
                     </button>
                 </div>
 
-                <p class="text-sm text-gray-600 dark:text-slate-300 mb-8 font-medium">
+                <p class="text-sm text-gray-600 dark:text-slate-300 mb-4 font-medium">
                     Are you sure you want to submit this restocking batch? Please review your entered quantities and destinations before proceeding.
                 </p>
+
+                {{-- Show Action Password ONLY to Staff and Warehouse Staff --}}
+                @if (!in_array(auth()->user()->role, ['admin', 'manager']))
+                    <!-- Action Password Field -->
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Action Password (Admin/Manager Override)</label>
+                        <input type="password" name="action_password" placeholder="Enter override password if required"
+                               class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-400">
+                        <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-1.5">Required if Warehouse Staff is restocking to Store, or Staff is restocking to Warehouse.</p>
+                    </div>
+                @endif
 
                 <div class="flex items-center justify-end space-x-3 pt-6 border-t-2 border-gray-200 dark:border-[#1e2536]">
                     <button type="button" onclick="toggleRestockConfirmModal(false)" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors cursor-pointer">

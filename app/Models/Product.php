@@ -11,8 +11,7 @@ class Product extends Model
     use HasFactory, AuditsChanges;
 
     protected $fillable = [
-        'code',             // Base Product SKU[cite: 8]
-        'item_sku',         // Specific Product Item SKU[cite: 8]
+        'product_sku',      
         'product_name',
         'product_description',
         'purchase_cost',
@@ -23,6 +22,7 @@ class Product extends Model
         'product_image',
         'category_id',
         'approx_volume',
+        'storage_volume_cbm', // <--- ADDED to support EoqService
     ];
 
     public function category()
@@ -42,11 +42,9 @@ class Product extends Model
 
     public function isLowStock(): bool
     {
-        if (is_null($this->reorder_point)) {
-            return false;
-        }
-
-        return $this->total_quantity <= $this->reorder_point;
+        // <--- FIXED: Matches the SQL queries in your controllers
+        $threshold = $this->reorder_point ?? 10;
+        return $this->total_quantity <= $threshold;
     }
 
     public function getTotalQuantityAttribute(): int

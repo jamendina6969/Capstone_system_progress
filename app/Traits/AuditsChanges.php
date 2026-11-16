@@ -26,8 +26,12 @@ trait AuditsChanges
     protected static function logAudit($event, $model, $oldValues, $newValues)
     {
         try {
+            $user = Auth::user();
+
             AuditLog::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user ? $user->id : null,
+                'actor_name' => $user ? $user->firstname . ' ' . $user->lastname : 'System / Guest', // <--- SNAPSHOT
+                'actor_role' => $user ? $user->role : null, // <--- SNAPSHOT
                 'event' => $event,
                 'auditable_type' => get_class($model),
                 'auditable_id' => $model->getKey(),

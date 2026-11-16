@@ -11,6 +11,21 @@
         'staff' => 'System Operator'
     ];
     $userSubtitle = $friendlySubtitles[$resolvedRole] ?? 'Authorized User';
+
+    // PERFORMANCE & BUG FIX: Cache the FULL payload to match the Topbar exactly.
+    $sidebarNotifData = \Illuminate\Support\Facades\Cache::remember('topbar_notifications_' . auth()->id(), 300, function () {
+        if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
+            return ['prCount' => 0, 'approvalCount' => 0, 'recentPRs' => collect(), 'recentApprovals' => collect()];
+        }
+        return [
+            'prCount' => \App\Models\PurchaseRequest::where('status', 'pending')->count(),
+            'approvalCount' => \App\Models\StockMovement::where('status', 'pending')->count(),
+            'recentPRs' => \App\Models\PurchaseRequest::with('user')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
+            'recentApprovals' => \App\Models\StockMovement::with('product', 'requester')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
+        ];
+    });
+    $prCount = $sidebarNotifData['prCount'] ?? 0;
+    $pendingCount = $sidebarNotifData['approvalCount'] ?? 0;
 @endphp
 
 <aside id="sidebar" class="relative bg-white text-gray-700 border-r border-gray-200 dark:bg-[#10141D] dark:text-slate-100 dark:border-[#1e2536] flex flex-col flex-shrink-0 z-25">
@@ -25,7 +40,6 @@
             </div>
         </div>
 
-        <!-- Toggle Button in Header (Visible when expanded) -->
         <button type="button" data-sidebar-toggle title="Collapse Sidebar"
                 class="sidebar-toggle-in-header h-8 w-8 rounded-xl bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-300 items-center justify-center hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors cursor-pointer flex-shrink-0">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -34,10 +48,8 @@
         </button>
     </div>
 
-    <!-- Navigation Menu -->
     <nav class="flex-1 px-3 py-5 space-y-1.5 whitespace-nowrap overflow-y-auto overflow-x-hidden">
 
-        <!-- Toggle Button in Nav (Visible when collapsed, placed below logo) -->
         <button type="button" data-sidebar-toggle title="Expand Sidebar"
                 class="sidebar-toggle-in-nav w-full hidden items-center justify-center p-2.5 mb-3 rounded-xl bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#1e2536]/80 transition-colors cursor-pointer">
             <svg class="h-4 w-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,7 +57,7 @@
             </svg>
         </button>
 
-        <!-- Dashboard (Hidden for staff and warehouse_staff roles) -->
+        {{-- 1. DASHBOARD --}}
         @if (!in_array(auth()->user()->role, ['staff', 'warehouse_staff']))
             <a href="{{ route('home') }}" title="Dashboard"
                class="{{ $linkBase }} {{ request()->routeIs('home') ? $linkActive : $linkIdle }}">
@@ -54,45 +66,46 @@
             </a>
         @endif
 
+        {{-- 2. POINT OF SALE --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager', 'staff']))
-            <!-- Point of Sale -->
             <a href="{{ route('pos') }}" title="Point of Sale"
                class="{{ $linkBase }} {{ request()->routeIs('pos') || request()->routeIs('checkout*') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 <span class="sidebar-text">Point of Sale</span>
             </a>
-
-            <!-- Sales & Transactions Dropdown -->
-            @php
-                $isSalesActive = request()->routeIs('sales.*', 'transaction.history');
-            @endphp
-            <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('salesDropdown', 'salesArrow')"
-                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="sidebar-text">Sales & Transactions</span>
-                    </div>
-                    <svg id="salesArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isSalesActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-
-                <div id="salesDropdown" class="{{ $isSalesActive ? '' : 'hidden' }} pl-6 space-y-1">
-                    @if (in_array(auth()->user()->role, ['admin', 'manager']))
-                        <a href="{{ route('sales.records') }}" title="Sales Records"
-                           class="{{ $linkBase }} {{ request()->routeIs('sales.*') ? $linkActive : $linkIdle }}">
-                            <span class="sidebar-text">Sales Records</span>
-                        </a>
-                    @endif
-                    <a href="{{ route('transaction.history') }}" title="Transaction History"
-                       class="{{ $linkBase }} {{ request()->routeIs('transaction.history') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Transaction History</span>
-                    </a>
-                </div>
-            </div>
         @endif
 
+        {{-- 3. TRANSACTION HISTORY --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager']))
-            <!-- Catalog Management Dropdown (Products & Categories) -->
+            <a href="{{ route('transaction.history') }}" title="Transaction History"
+               class="{{ $linkBase }} {{ request()->routeIs('transaction.history') ? $linkActive : $linkIdle }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="sidebar-text">Transaction History</span>
+            </a>
+        @endif
+
+        {{-- 4. SALES RECORDS (Admin, Manager & Staff) --}}
+        @if (in_array(auth()->user()->role, ['admin', 'manager', 'staff']))
+            <a href="{{ route('sales.records') }}" title="Sales Records"
+               class="{{ $linkBase }} {{ request()->routeIs('sales.*') ? $linkActive : $linkIdle }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="sidebar-text">Sales Records</span>
+            </a>
+        @endif
+
+        {{-- 5. STAFF PURCHASE REQUESTS LINK --}}
+        @if (in_array(auth()->user()->role, ['staff', 'warehouse_staff']))
+            <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests"
+               class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="sidebar-text">Purchase Requests</span>
+            </a>
+        @endif
+
+        {{-- ADMIN / MANAGER SPECIFIC LINKS --}}
+        @if (in_array(auth()->user()->role, ['admin', 'manager']))
+            
+            {{-- 6. CATALOG MANAGEMENT --}}
             @php
                 $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*');
             @endphp
@@ -118,7 +131,7 @@
                 </div>
             </div>
 
-            <!-- Forecasting & EOQ Dropdown -->
+            {{-- 7. FORECASTING & EOQ --}}
             @php
                 $isForecastActive = request()->routeIs('eoq.*', 'forecast.settings*');
             @endphp
@@ -137,6 +150,7 @@
                        class="{{ $linkBase }} {{ request()->routeIs('eoq.calibration') ? $linkActive : $linkIdle }}">
                         <span class="sidebar-text">EOQ Calibration</span>
                     </a>
+
                     <a href="{{ route('forecast.settings') }}" title="Forecast Settings"
                        class="{{ $linkBase }} {{ request()->routeIs('forecast.settings*') ? $linkActive : $linkIdle }}">
                         <span class="sidebar-text">Forecast Settings</span>
@@ -144,12 +158,55 @@
                 </div>
             </div>
 
+            {{-- 8. SUPPLIERS & POs --}}
             @php
-                $pendingCount = \App\Models\StockMovement::where('status', 'pending')->count();
+                $isSupplierActive = request()->routeIs('suppliers.*', 'purchase-orders.*', 'purchase-requests.*', 'supplier-returns.*');
+            @endphp
+            <div class="space-y-1">
+                <button type="button" onclick="toggleDropdown('supplierDropdown', 'supplierArrow')"
+                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <span class="sidebar-text">Suppliers & POs</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if ($prCount > 0)
+                            <span class="badge-count bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $prCount }}</span>
+                        @endif
+                        <svg id="supplierArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isSupplierActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </button>
+
+                <div id="supplierDropdown" class="{{ $isSupplierActive ? '' : 'hidden' }} pl-6 space-y-1">
+                    <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests" class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Purchase Requests</span>
+                        @if ($prCount > 0)
+                            <span class="ml-auto bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $prCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('purchase-orders.index') }}" title="Purchase Orders" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.index', 'purchase-orders.create') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Purchase Orders</span>
+                    </a>
+                    <a href="{{ route('suppliers.index') }}" title="Suppliers Directory" class="{{ $linkBase }} {{ request()->routeIs('suppliers.index', 'suppliers.ledger') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Suppliers Directory</span>
+                    </a>
+                    <a href="{{ route('supplier-returns.index') }}" title="Supplier Returns" class="{{ $linkBase }} {{ request()->routeIs('supplier-returns.*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Returns & Refunds</span>
+                    </a>
+                    <a href="{{ route('purchase-orders.lowStock') }}" title="Low Stock Suggestions" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.lowStock') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Low Stock Suggestions</span>
+                    </a>
+                    <a href="{{ route('suppliers.discrepancy') }}" title="Discrepancy Report" class="{{ $linkBase }} {{ request()->routeIs('suppliers.discrepancy') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Discrepancy Report</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- 9. INVENTORY --}}
+            @php
                 $isInventoryActive = request()->routeIs('inventory.*');
             @endphp
 
-            <!-- Inventory Operations Dropdown -->
             <div class="space-y-1">
                 <button type="button" onclick="toggleDropdown('inventoryDropdown', 'inventoryArrow')"
                         class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
@@ -170,9 +227,13 @@
                        class="{{ $linkBase }} {{ request()->routeIs('inventory.index') ? $linkActive : $linkIdle }}">
                         <span class="sidebar-text">Management</span>
                     </a>
-                    <a href="{{ route('inventory.approvals') }}" title="Pending Approvals"
+                    <a href="{{ route('inventory.myRequests') }}" title="Restock Requests"
+                       class="{{ $linkBase }} {{ request()->routeIs('inventory.myRequests') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Restock Requests</span>
+                    </a>
+                    <a href="{{ route('inventory.approvals') }}" title="Restock Approvals"
                        class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 {{ request()->routeIs('inventory.approvals') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Approvals</span>
+                        <span class="sidebar-text">Restock Approvals</span>
                         @if ($pendingCount > 0)
                             <span class="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $pendingCount }}</span>
                         @endif
@@ -184,7 +245,7 @@
                 </div>
             </div>
 
-            <!-- Audit Logs -->
+            {{-- 10. AUDIT LOGS --}}
             <a href="{{ route('audit-logs.index') }}" title="Audit Logs"
                class="{{ $linkBase }} {{ request()->routeIs('audit-logs.*') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -192,6 +253,7 @@
             </a>
         @endif
 
+        {{-- STAFF SPECIFIC LINKS (Inventory & My Requests) --}}
         @if (auth()->user()->role === 'warehouse_staff')
             <a href="{{ route('inventory.view') }}" title="Inventory Management"
                class="{{ $linkBase }} {{ request()->routeIs('inventory.view') ? $linkActive : $linkIdle }}">
@@ -201,23 +263,30 @@
         @endif
 
         @if (in_array(auth()->user()->role, ['warehouse_staff', 'staff']))
-            <a href="{{ route('inventory.myRequests') }}" title="My Restock Requests"
+            <a href="{{ route('inventory.myRequests') }}" title="Restock Requests"
                class="{{ $linkBase }} {{ request()->routeIs('inventory.myRequests') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="sidebar-text">My Restock Requests</span>
+                <span class="sidebar-text">Restock Requests</span>
             </a>
         @endif
 
+        {{-- 11. USER MANAGEMENT --}}
         @if (auth()->user()->role === 'admin')
-            <!-- User Management -->
             <a href="{{ route('admin.users.index') }}" title="User Management"
                class="{{ $linkBase }} {{ request()->routeIs('admin.users.*') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 <span class="sidebar-text">User Management</span>
             </a>
+
+            {{-- 12. SYSTEM BACKUP --}}
+            <a href="{{ route('admin.backups.index') }}" title="System Backup"
+               class="{{ $linkBase }} {{ request()->routeIs('admin.backups.*') ? $linkActive : $linkIdle }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                <span class="sidebar-text">System Backup</span>
+            </a>
         @endif
 
-        <!-- User Guide -->
+        {{-- 13. USER GUIDE --}}
         <a href="{{ route('user-guide') }}" title="User Guide"
            class="{{ $linkBase }} {{ request()->routeIs('user-guide') ? $linkActive : $linkIdle }}">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
@@ -226,7 +295,6 @@
 
     </nav>
 
-    <!-- Sidebar Footer -->
     <div class="px-3 py-5 border-t border-gray-200 dark:border-[#1e2536] whitespace-nowrap space-y-2.5">
         <div class="px-2 sidebar-text">
             <p class="text-xs font-semibold text-gray-800 dark:text-slate-200 truncate">
@@ -275,7 +343,6 @@
 </script>
 
 <style>
-    /* Default expanded sidebar width */
     #sidebar {
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 17rem;
@@ -283,28 +350,16 @@
     }
 
     @media (min-width: 1024px) {
-        /* Collapsed state width */
         html:not(.sidebar-open) #sidebar {
             width: 4.5rem !important;
             min-width: 4.5rem !important;
         }
 
-        /* Responsive toggle button display rules */
-        html.sidebar-open .sidebar-toggle-in-header {
-            display: flex !important;
-        }
-        html.sidebar-open .sidebar-toggle-in-nav {
-            display: none !important;
-        }
+        html.sidebar-open .sidebar-toggle-in-header { display: flex !important; }
+        html.sidebar-open .sidebar-toggle-in-nav { display: none !important; }
+        html:not(.sidebar-open) .sidebar-toggle-in-header { display: none !important; }
+        html:not(.sidebar-open) .sidebar-toggle-in-nav { display: flex !important; }
 
-        html:not(.sidebar-open) .sidebar-toggle-in-header {
-            display: none !important;
-        }
-        html:not(.sidebar-open) .sidebar-toggle-in-nav {
-            display: flex !important;
-        }
-
-        /* Hide company text labels, badge counts, and dropdown arrows when collapsed (Logo stays visible) */
         html:not(.sidebar-open) #sidebar .sidebar-header-text,
         html:not(.sidebar-open) #sidebar .sidebar-text,
         html:not(.sidebar-open) #sidebar .badge-count,
@@ -312,7 +367,6 @@
             display: none !important;
         }
 
-        /* Center icons perfectly when collapsed */
         html:not(.sidebar-open) #sidebar nav a,
         html:not(.sidebar-open) #sidebar nav button {
             justify-content: center !important;
@@ -324,10 +378,7 @@
             display: none !important;
         }
 
-        /* Hover tooltips for collapsed icons */
-        html:not(.sidebar-open) #sidebar nav a {
-            position: relative;
-        }
+        html:not(.sidebar-open) #sidebar nav a { position: relative; }
         html:not(.sidebar-open) #sidebar nav a:hover::after {
             content: attr(title);
             position: absolute;

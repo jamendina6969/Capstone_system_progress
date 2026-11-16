@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\EoqSetting;
 use App\Models\ProductOrderingCost;
 use App\Services\DemandForecastService;
 use App\Services\EoqService;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 class EoqCalibrationController extends Controller
 {
+    private const PER_PAGE = 16;
+
     public function index(Request $request, DemandForecastService $forecastService, EoqService $eoqService)
     {
         $query = Product::with('category');
@@ -32,32 +35,75 @@ class EoqCalibrationController extends Controller
         }
 
         if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+            $selectedCategoryId = $request->category_id;
+            
+            // Check if the selected category is a parent (Main Category)
+            $hasChildren = Category::where('parent_id', $selectedCategoryId)->exists();
+
+            if ($hasChildren) {
+                // If it's a main category, include products from the main category AND its subcategories
+                $childIds = Category::where('parent_id', $selectedCategoryId)->pluck('id')->toArray();
+                $query->whereIn('category_id', array_merge([$selectedCategoryId], $childIds));
+            } else {
+                // If it's a subcategory (Brand), just filter by that specific ID
+                $query->where('category_id', $selectedCategoryId);
+            }
         }
 
-        // Standardized to 16 items per page
+        // Get the selected timeframe (defaults to annual)
+        $timeframe = $request->get('timeframe', 'annual');
+
         $products = $query->whereHas('category', fn($q) => $q->where('type', 'product'))
             ->orderBy('product_name')
-            ->paginate(16)
+            ->paginate(self::PER_PAGE)
             ->withQueryString();
 
-        $products->getCollection()->transform(function ($product) use ($forecastService, $eoqService) {
+        $products->getCollection()->transform(function ($product) use ($forecastService, $eoqService, $timeframe) {
+            // Calculate baseline annual demand
             $annualDemand = $forecastService->projectedAnnualDemand($product);
+            
+            // Adjust based on selected timeframe
+            $periodDemand = match($timeframe) {
+                'daily' => $annualDemand / 365,
+                'weekly' => $annualDemand / 52,
+                'monthly' => $annualDemand / 12,
+                'quarterly' => $annualDemand / 4,
+                default => $annualDemand,
+            };
+
+            $product->display_demand = $periodDemand;
+            // Calculate EOQ for this specific timeframe
+            $product->display_eoq = $eoqService->calculate($product, $periodDemand);
+            
+            // Keep original metrics for reference if needed
             $product->computed_annual_demand = $annualDemand;
             $product->computed_ordering_cost = $eoqService->orderingCost($product);
             $product->computed_holding_cost = $eoqService->holdingCost($product);
-            $product->computed_eoq = $eoqService->calculate($product, $annualDemand);
+
             return $product;
         });
 
-        // If the request is sent via AJAX, return only the table results partial
-        if ($request->ajax()) {
-            return view('forecast.partials.eoqTable', compact('products'))->render();
+        $categories = Category::where('type', 'product')->orderBy('name')->get();
+        $settings = EoqSetting::first();
+
+        // =====================================================
+        // AJAX / INFINITE SCROLL RESPONSE
+        // =====================================================
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('forecast.partials.eoqTable', compact('products', 'timeframe'))->render(),
+                'next_page_url' => $products->nextPageUrl(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'total_records' => $products->total(),
+                'per_page' => $products->perPage(),
+                'first_item' => $products->firstItem(),
+                'last_item' => $products->lastItem(),
+                'has_more' => $products->hasMorePages(),
+            ]);
         }
 
-        $categories = Category::where('type', 'product')->orderBy('name')->get();
-
-        return view('forecast.eoqCalibration', compact('products', 'categories'));
+        return view('forecast.eoqCalibration', compact('products', 'categories', 'settings', 'timeframe'));
     }
 
     public function applyBatch(Request $request)

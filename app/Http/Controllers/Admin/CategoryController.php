@@ -10,8 +10,11 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    private const PER_PAGE = 9;
+
     public function index(Request $request)
     {
+        // Load parent categories with their direct children and products
         $query = Category::whereNull('parent_id')->with(['children.products', 'products']);
 
         if ($request->filled('search')) {
@@ -34,15 +37,49 @@ class CategoryController extends Controller
             $query->where('type', $request->type);
         }
 
-        $categories = $query->orderBy('name')->paginate(9)->withQueryString();
+        $categories = $query->orderBy('name')->paginate(self::PER_PAGE)->withQueryString();
+        
+        // Only fetch true top-level categories for the dropdown
         $mainCategories = Category::whereNull('parent_id')->orderBy('name')->get();
 
-        return view('admin.categories.categoryManagement', [
+        // =====================================================
+        // AJAX / INFINITE SCROLL RESPONSE
+        // =====================================================
+        if ($request->ajax() || $request->expectsJson()) {
+            $viewData = [
+                'categories' => $categories,
+                'mainCategories' => $mainCategories
+            ];
+
+            $rowsHtml = view('admin.categories.partials.rows', $viewData)->render();
+            $cardsHtml = view('admin.categories.partials.cards', $viewData)->render();
+            $modalsHtml = view('admin.categories.partials.modals', $viewData)->render();
+
+            return response()->json([
+                'rows_html' => $rowsHtml,
+                'cards_html' => $cardsHtml,
+                'modals_html' => $modalsHtml,
+
+                'current_page' => $categories->currentPage(),
+                'last_page' => $categories->lastPage(),
+                'per_page' => $categories->perPage(),
+                'total_records' => $categories->total(),
+                'first_item' => $categories->firstItem(),
+                'last_item' => $categories->lastItem(),
+
+                'next_page_url' => $categories->nextPageUrl(),
+                'has_more' => $categories->hasMorePages(),
+            ]);
+        }
+
+        return view('admin.categories.index', [
             'categories' => $categories,
             'mainCategories' => $mainCategories
         ]);
     }
 
+    // ... (The rest of your controller methods remain exactly the same: show, showSubcategoryDetail, etc.)
+    
     public function show(Category $category)
     {
         $category->load(['children.products', 'products']);
@@ -58,7 +95,7 @@ class CategoryController extends Controller
             $search = $request->search;
             $productQuery->where(function($q) use ($search) {
                 $q->where('product_name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('product_sku', 'like', "%{$search}%")
                   ->orWhere('approx_volume', 'like', "%{$search}%");
             });
         }
@@ -166,21 +203,39 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
     }
 
+    public function updateSubcategory(Request $request, Category $subcategory)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $exists = Category::where('parent_id', $subcategory->parent_id)
+            ->where('id', '!=', $subcategory->id)
+            ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($data['name']))])
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'A brand with this name already exists under this group.'])->withInput();
+        }
+
+        $subcategory->update($data);
+
+        return redirect()->route('admin.categories.index')->with('success', 'Brand subcategory updated successfully.');
+    }
+
     public function destroy(Category $category)
     {
-        // Check if main category has products directly assigned
         if ($category->products()->exists()) {
             return back()->with('error', 'Cannot delete this main category because it still has products assigned to it.');
         }
 
-        // Check if any subcategory/brand under this main category has products assigned
         foreach ($category->children as $child) {
             if ($child->products()->exists()) {
                 return back()->with('error', 'Cannot delete this category because its sub-category/brand ("' . $child->name . '") still has products inside.');
             }
         }
 
-        // Check if main category still has subcategories
         if ($category->children()->exists()) {
             return back()->with('error', 'Cannot delete a category that still has subcategories assigned.');
         }
@@ -192,5 +247,16 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
+    }
+
+    public function destroySubcategory(Category $subcategory)
+    {
+        if ($subcategory->products()->exists()) {
+            return back()->with('error', 'Cannot delete this brand subcategory because it still has products assigned to it.');
+        }
+
+        $subcategory->delete();
+
+        return redirect()->route('admin.categories.index')->with('success', 'Brand subcategory deleted successfully.');
     }
 }

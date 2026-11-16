@@ -40,10 +40,8 @@
                                 <tr class="py-4">
                                     <td class="py-4 font-semibold text-gray-900 dark:text-white">
                                         <div>{{ $item['product_name'] }}</div>
-                                        <div class="text-[11px] text-gray-400 font-normal space-x-1.5 mt-0.5">
+                                        <div class="text-[11px] text-gray-400 font-normal mt-0.5">
                                             <span>SKU: <strong class="text-slate-600 dark:text-slate-300">{{ $item['product_sku'] ?? '—' }}</strong></span>
-                                            <span>•</span>
-                                            <span>Item SKU: <strong class="text-slate-600 dark:text-slate-300">{{ $item['item_sku'] ?? '—' }}</strong></span>
                                         </div>
                                         @if(($item['item_discount_type'] ?? 'none') !== 'none' && ($item['item_discount_amount'] ?? 0) > 0)
                                             <div class="text-xs font-normal text-rose-600 dark:text-rose-400 mt-0.5">
@@ -125,9 +123,16 @@
                     </div>
                 @endif
 
-                <div class="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-white pt-3 border-t-2 border-gray-100 dark:border-[#1e2536]">
+                <!-- TAX ROW -->
+                <div class="flex justify-between text-sm text-gray-600 dark:text-slate-400 font-medium pt-1">
+                    <span>Tax (12% VAT)</span>
+                    <span>₱{{ number_format($vatAmount, 2) }}</span>
+                </div>
+
+                <!-- FINAL TOTAL -->
+                <div class="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-white pt-3 border-t-2 border-gray-100 dark:border-[#1e2536] mt-1">
                     <span>Total</span>
-                    <span class="text-xl">₱{{ number_format($total, 2) }}</span>
+                    <span class="text-xl">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -140,9 +145,9 @@
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6 pb-4 border-b-2 border-gray-100 dark:border-[#1e2536]">Payment</h2>
                     
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Amount Paid <span class="text-rose-500">*</span></label>
-                    <input type="number" step="0.01" min="{{ $total }}" name="amount_paid" value="{{ old('amount_paid', $total) }}" placeholder="Must be at least ₱{{ number_format($total, 2) }}" required
+                    <input type="number" step="0.01" min="{{ $grandTotal }}" name="amount_paid" value="{{ old('amount_paid', $grandTotal) }}" placeholder="Must be at least ₱{{ number_format($grandTotal, 2) }}" required
                            class="w-full rounded-xl bg-gray-50 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
-                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-1.5 font-medium">Must be at least ₱{{ number_format($total, 2) }}</p>
+                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-1.5 font-medium">Must be at least ₱{{ number_format($grandTotal, 2) }}</p>
                 </div>
 
                 <div class="space-y-3 pt-6 border-t-2 border-gray-200 dark:border-[#1e2536]">

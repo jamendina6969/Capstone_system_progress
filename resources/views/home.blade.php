@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($todaySales, 2) }}</p>
+                <p id="kpi-today-sales" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($todaySales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
                     <span>Daily revenue total</span>
                 </div>
@@ -35,24 +35,24 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($overallSales, 2) }}</p>
+                <p id="kpi-overall-sales" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($overallSales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <span>All-time accumulated revenue</span>
                 </div>
             </div>
         </a>
 
-        <!-- Today's Transactions Card -->
+        <!-- POS Orders Card -->
         <a href="{{ route('transaction.history', ['date_from' => today()->toDateString(), 'date_to' => today()->toDateString()]) }}"
            class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Transactions</span>
+                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">POS Orders</span>
                 <div class="p-3 rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $todayTransactions }}</p>
+                <p id="kpi-pos-orders" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $todayTransactions }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400">
                     <span>Completed today</span>
                 </div>
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $totalProducts }}</p>
+                <p id="kpi-total-products" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $totalProducts }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400">
                     <span>Active catalog items</span>
                 </div>
@@ -77,7 +77,7 @@
         </a>
 
         <!-- Restock Needed Card -->
-        <a href="{{ route('admin.products.index', ['status' => 'restock_needed']) }}"
+        <a href="{{ route('inventory.index', ['status' => 'restock']) }}"
            class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Restock Needed</span>
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2" style="font-size: 2rem;">{{ $restockNeededCount }}</p>
+                <p id="kpi-restock-needed" class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2" style="font-size: 2rem;">{{ $restockNeededCount }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-rose-400">
                     <span>Items require attention</span>
                 </div>
@@ -94,422 +94,1008 @@
         </a>
     </div>
 
-    {{-- Admin + Manager only: Sales Performance Card --}}
+    {{-- Demand Forecast Line Chart Component --}}
     @if (in_array(auth()->user()->role, ['admin', 'manager']))
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 mb-8">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Total Sales</h2>
-                    <div class="flex items-center gap-3">
-                        <span class="text-2xl font-extrabold text-gray-900 dark:text-white">₱{{ number_format(array_sum($salesChart['totals']), 2) }}</span>
-                        <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full {{ $salesGrowth >= 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-rose-400' }}">
-                            {{ $salesGrowth >= 0 ? '↑ +' . $salesGrowth . '%' : '↓ ' . $salesGrowth . '%' }} from last period
-                        </span>
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-6 mb-8">
+            <form method="GET" action="{{ route('home') }}" id="forecastFilterForm">
+                {{-- Preserve Fast/Slow parameters --}}
+                @if(request('product_category'))
+                    <input type="hidden" name="product_category" value="{{ request('product_category') }}">
+                @endif
+                @if(request('fast_slow_range'))
+                    <input type="hidden" name="fast_slow_range" value="{{ request('fast_slow_range') }}">
+                @endif
+                @if(request('fast_slow_date_from'))
+                    <input type="hidden" name="fast_slow_date_from" value="{{ request('fast_slow_date_from') }}">
+                @endif
+                @if(request('fast_slow_date_to'))
+                    <input type="hidden" name="fast_slow_date_to" value="{{ request('fast_slow_date_to') }}">
+                @endif
+
+                {{-- Header & Filters --}}
+                <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-4">
+                    <div class="shrink-0">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Sales Predictions</h2>
+                        <p class="text-sm text-gray-500 dark:text-slate-400" id="forecastShowingText">
+                            Showing {{ $forecastProductName }}
+                            @if($forecastCategoryName)
+                                &middot; {{ $forecastCategoryName }}
+                            @endif
+                        </p>
+                    </div>
+
+                    {{-- Filter Row: Compact & Right Aligned --}}
+                    <div class="flex flex-wrap xl:flex-nowrap items-center justify-end gap-2 w-full xl:w-auto xl:ml-auto">
+                        
+                        {{-- Category Dropdown --}}
+                        <div class="custom-dropdown relative w-[135px]" id="filter-category-dropdown">
+                            <input type="hidden" name="forecast_category" id="forecastCategoryInput" value="{{ request('forecast_category') }}">
+                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
+                                <span class="dropdown-label truncate">
+                                    @if($selectedForecastCategory)
+                                        @php
+                                            $selectedCatName = $allCategories->firstWhere('id', $selectedForecastCategory)?->name ?? 'All Categories';
+                                        @endphp
+                                        {{ $selectedCatName }}
+                                    @else
+                                        All Categories
+                                    @endif
+                                </span>
+                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
+                                <button type="button" data-value="" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Categories</button>
+                                @foreach($mainCategories as $mainCat)
+                                    <div class="mt-1">
+                                        <div class="px-3 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">{{ strtoupper($mainCat->name) }}</div>
+                                        <button type="button" data-value="{{ $mainCat->id }}" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $mainCat->name }} (Main)</button>
+                                        @foreach($allCategories->where('parent_id', $mainCat->id) as $subCat)
+                                            <button type="button" data-value="{{ $subCat->id }}" class="dropdown-option w-full text-left pl-6 pr-3 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $subCat->name }}</button>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Product Dropdown --}}
+                        <div class="custom-dropdown relative w-[170px]" id="filter-product-dropdown">
+                            <input type="hidden" name="forecast_product" id="forecastProductInput" value="{{ request('forecast_product') }}">
+                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
+                                <span class="dropdown-label truncate">
+                                    @if($selectedForecastProduct)
+                                        {{ $forecastProducts->firstWhere('id', $selectedForecastProduct)?->product_name ?? 'All Products' }}
+                                    @else
+                                        All Products (Combined)
+                                    @endif
+                                </span>
+                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
+                                <button type="button" data-value="" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Products (Combined)</button>
+                                @foreach($forecastProducts as $prod)
+                                    <button type="button" data-value="{{ $prod->id }}" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">
+                                        {{ $prod->product_name }}{{ $prod->product_sku ? ' (' . $prod->product_sku . ')' : '' }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Range Dropdown --}}
+                        <div class="custom-dropdown relative w-[115px]" id="filter-range-dropdown">
+                            <input type="hidden" name="forecast_range" id="forecastRangeInput" value="{{ request('forecast_range', '3months') }}">
+                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
+                                <span class="dropdown-label truncate">
+                                    @php
+                                        $rangeLabels = [
+                                            '7days' => '7 Days',
+                                            '14days' => '14 Days',
+                                            '1month' => '1 Month',
+                                            '3months' => '3 Months',
+                                            '6months' => '6 Months',
+                                            '1yr' => '1 Year',
+                                            'custom' => 'Custom'
+                                        ];
+                                    @endphp
+                                    {{ $rangeLabels[request('forecast_range', '3months')] ?? '3 Months' }}
+                                </span>
+                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
+                                <button type="button" data-value="7days" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 7 Days</button>
+                                <button type="button" data-value="14days" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 14 Days</button>
+                                <button type="button" data-value="1month" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Month</button>
+                                <button type="button" data-value="3months" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 3 Months</button>
+                                <button type="button" data-value="6months" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 6 Months</button>
+                                <button type="button" data-value="1yr" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Year</button>
+                                <button type="button" data-value="custom" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Custom Range</button>
+                            </div>
+                        </div>
+
+                        {{-- Settings Button --}}
+                        <a href="{{ route('forecast.settings') }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] text-xs font-medium px-3 py-2 rounded-lg transition-colors shadow-sm shrink-0">
+                            Settings
+                        </a>
                     </div>
                 </div>
 
-                {{-- Right Header Controls --}}
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="hidden xl:flex items-center gap-3 bg-gray-50 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-4 py-2 rounded-xl text-xs">
-                        <div>
-                            <span class="text-gray-400">Projected Demand:</span> <span class="font-bold text-gray-800 dark:text-white">{{ number_format($totalProjectedDemand) }}/yr</span>
-                        </div>
-                        <div class="h-3 w-px bg-gray-300 dark:bg-gray-700"></div>
-                        <div>
-                            <span class="text-gray-400">EOQ:</span> <span class="font-bold text-gray-800 dark:text-white">{{ number_format($totalEoq) }} units</span>
-                        </div>
+                {{-- Custom Date Inputs (Shown only if Custom Range is selected) --}}
+                <div id="forecastCustomDateContainer" class="{{ $forecastRange == 'custom' ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap mb-4">
+                    <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 rounded-lg">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
+                        <input type="date" name="forecast_date_from" value="{{ $forecastDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
                     </div>
+                    <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 rounded-lg">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
+                        <input type="date" name="forecast_date_to" value="{{ $forecastDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm">Apply</button>
+                </div>
+            </form>
 
-                    <div class="inline-flex rounded-xl border border-gray-200 dark:border-[#1e2536] p-1 bg-gray-50 dark:bg-[#161B26]">
-                        <a href="{{ route('home', ['range' => 7]) }}" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors {{ $selectedRange == 7 ? 'bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs' : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white' }}">7D</a>
-                        <a href="{{ route('home', ['range' => 14]) }}" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors {{ $selectedRange == 14 ? 'bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs' : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white' }}">14D</a>
-                        <a href="{{ route('home', ['range' => 30]) }}" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors {{ $selectedRange == 30 ? 'bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs' : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white' }}">30D</a>
-                    </div>
+            {{-- Legend Bar (Refined pill design) --}}
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] px-5 py-2.5 rounded-full border border-gray-200 dark:border-[#1e2536] mb-6 shadow-sm w-full xl:w-auto self-start inline-flex">
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-1 bg-blue-600 rounded-full shrink-0"></span>
+                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Past Sales:</strong> What you actually sold.</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-0.5 border-t-2 border-dashed border-[#8b5cf6] shrink-0"></span>
+                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Prediction:</strong> What we expect you to sell.</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 bg-purple-100 dark:bg-purple-900/40 rounded-sm border border-purple-200 dark:border-purple-800 shrink-0"></span>
+                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Shaded Area:</strong> The expected range (best & worst case).</span>
                 </div>
             </div>
-            <canvas id="salesChart" height="85"></canvas>
+
+            <div style="position: relative; height: 380px; width: 100%;" id="chartContainer">
+                <canvas id="demandForecastChart"></canvas>
+            </div>
+            
+            {{-- Friendly Footer Tip --}}
+            <div class="mt-6 flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
+                <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p><strong>Why does the prediction line drop after a spike?</strong> The system calculates an average based on your recent history. A single large sale is spread out over time, so the system expects your normal baseline to continue.</p>
+            </div>
         </div>
-
-        @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-        <script>
-            function chartColors() {
-                const isDark = document.documentElement.classList.contains('dark');
-                return {
-                    line: isDark ? '#3b82f6' : '#2563eb',
-                    fill: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)',
-                    grid: isDark ? 'rgba(148, 163, 184, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-                    text: isDark ? '#94a3b8' : '#6b7280',
-                };
-            }
-
-            const colors = chartColors();
-            const ctx = document.getElementById('salesChart').getContext('2d');
-
-            const salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @json($salesChart['labels']),
-                    datasets: [{
-                        label: 'Sales (₱)',
-                        data: @json($salesChart['totals']),
-                        borderColor: colors.line,
-                        backgroundColor: colors.fill,
-                        borderWidth: 2.5,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: colors.line,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: colors.grid, drawBorder: false }, 
-                            ticks: { color: colors.text, font: { size: 11 } } 
-                        },
-                        x: { 
-                            grid: { color: colors.grid, drawBorder: false }, 
-                            ticks: { color: colors.text, font: { size: 11 } } 
-                        }
-                    }
-                }
-            });
-
-            window.addEventListener('themechange', function () {
-                const c = chartColors();
-                salesChart.data.datasets[0].borderColor = c.line;
-                salesChart.data.datasets[0].backgroundColor = c.fill;
-                salesChart.data.datasets[0].pointBackgroundColor = c.line;
-                salesChart.options.scales.y.grid.color = c.grid;
-                salesChart.options.scales.x.grid.color = c.grid;
-                salesChart.options.scales.y.ticks.color = c.text;
-                salesChart.options.scales.x.ticks.color = c.text;
-                salesChart.update();
-            });
-        </script>
-        @endpush
     @endif
 
-    {{-- Demand Forecast --}}
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden">
-        <div class="flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
+    {{-- Fast and Slow Moving Products Widget --}}
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 mb-8">
+        <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-6">
             <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Demand Forecast</h2>
-                <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Top products by average daily demand (SMA) — showing 4 per page</p>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Fast and Slow Moving Products
+                </h2>
+                <p class="text-sm text-gray-500 dark:text-slate-400">Fast items sorted by sales velocity • Slow items sorted by stock quantity</p>
             </div>
+            
+            <form method="GET" action="{{ route('home') }}" id="fastSlowFilterForm" class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                {{-- Preserve Forecast parameters --}}
+                @if(request('forecast_category'))
+                    <input type="hidden" name="forecast_category" value="{{ request('forecast_category') }}">
+                @endif
+                @if(request('forecast_product'))
+                    <input type="hidden" name="forecast_product" value="{{ request('forecast_product') }}">
+                @endif
+                @if(request('forecast_range'))
+                    <input type="hidden" name="forecast_range" value="{{ request('forecast_range') }}">
+                @endif
+                @if(request('forecast_date_from'))
+                    <input type="hidden" name="forecast_date_from" value="{{ request('forecast_date_from') }}">
+                @endif
+                @if(request('forecast_date_to'))
+                    <input type="hidden" name="forecast_date_to" value="{{ request('forecast_date_to') }}">
+                @endif
 
-            @if (in_array(auth()->user()->role, ['admin', 'manager']))
-                <a href="{{ route('forecast.settings') }}"
-                   class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs">
-                    Calibrate Forecast Settings
-                </a>
-            @endif
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left table-fixed">
-                <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs border-b-2 border-gray-200 dark:border-[#1e2536]">
-                    <tr>
-                        <th class="px-8 py-4 text-left w-1/4">Product Name</th>
-                        <th class="px-8 py-4 text-left w-1/4">Avg. Daily Demand</th>
-                        <th class="px-8 py-4 text-left w-1/4">Projected Annual Demand</th>
-                        <th class="px-8 py-4 text-right w-1/4">Current Stock</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
-                    @forelse ($forecast as $row)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
-                            <td class="px-8 py-4 font-medium text-gray-900 dark:text-white text-left truncate w-1/4">{{ $row['product']->product_name }}</td>
-                            <td class="px-8 py-4 text-gray-600 dark:text-slate-400 text-left w-1/4">{{ $row['avg_daily_demand'] }} / day</td>
-                            <td class="px-8 py-4 text-gray-600 dark:text-slate-400 text-left w-1/4">{{ number_format($row['projected_annual_demand']) }} / year</td>
-                            <td class="px-8 py-4 text-gray-600 dark:text-slate-400 text-right w-1/4">{{ $row['product']->store_quantity }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-8 py-12 text-center text-gray-400 dark:text-slate-500">
-                                No sales data yet. Forecast will populate once sales are recorded.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Demand Forecast Pagination --}}
-        @if ($forecast->hasPages())
-            <div class="px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400">
-                <div>
-                    Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $forecast->firstItem() ?? 0 }}</span> to <span class="font-semibold text-gray-900 dark:text-white">{{ $forecast->lastItem() ?? 0 }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ $forecast->total() }}</span> results
+                {{-- Grouped Main & Sub Category Dropdown (Custom UI) --}}
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Category (Optional)</span>
+                    <div class="custom-dropdown relative w-full sm:w-56 shrink-0" id="filter-fs-category-dropdown">
+                        <input type="hidden" name="product_category" id="fsCategoryInput" value="{{ request('product_category') }}">
+                        <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left">
+                            <span class="dropdown-label truncate">
+                                @if($selectedCategory)
+                                    {{ $allCategories->firstWhere('id', $selectedCategory)?->name ?? 'Uncategorized (default)' }}
+                                @else
+                                    Uncategorized (default)
+                                @endif
+                            </span>
+                            <svg class="dropdown-chevron w-4 h-4 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-lg py-1">
+                            <button type="button" data-value="" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Uncategorized (default)</button>
+                            @foreach($mainCategories as $mainCat)
+                                <div class="mt-1">
+                                    <div class="px-3.5 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">{{ strtoupper($mainCat->name) }}</div>
+                                    <button type="button" data-value="{{ $mainCat->id }}" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $mainCat->name }} (Main)</button>
+                                    @foreach($allCategories->where('parent_id', $mainCat->id) as $subCat)
+                                        <button type="button" data-value="{{ $subCat->id }}" class="dropdown-option w-full text-left pl-7 pr-3.5 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $subCat->name }}</button>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
-                <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center gap-1.5">
-                    @if ($forecast->onFirstPage())
-                        <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                            Previous
-                        </span>
-                    @else
-                        <a href="{{ $forecast->previousPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                            Previous
-                        </a>
-                    @endif
+                {{-- Date Range Select & Custom Date Pickers (Custom UI) --}}
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Date Range</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="custom-dropdown relative w-full sm:w-40 shrink-0" id="filter-fs-range-dropdown">
+                            <input type="hidden" name="fast_slow_range" id="fsRangeInput" value="{{ request('fast_slow_range', '3months') }}">
+                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left">
+                                <span class="dropdown-label truncate">
+                                    @php
+                                        $fsRangeLabels = [
+                                            '7days' => '7 Days',
+                                            '14days' => '14 Days',
+                                            '1month' => '1 Month',
+                                            '3months' => '3 Months',
+                                            '6months' => '6 Months',
+                                            '1yr' => '1 Year',
+                                            'custom' => 'Custom Range'
+                                        ];
+                                    @endphp
+                                    {{ $fsRangeLabels[request('fast_slow_range', '3months')] ?? '3 Months' }}
+                                </span>
+                                <svg class="dropdown-chevron w-4 h-4 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-lg py-1">
+                                <button type="button" data-value="7days" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">7 Days</button>
+                                <button type="button" data-value="14days" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">14 Days</button>
+                                <button type="button" data-value="1month" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">1 Month</button>
+                                <button type="button" data-value="3months" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">3 Months</button>
+                                <button type="button" data-value="6months" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">6 Months</button>
+                                <button type="button" data-value="1yr" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">1 Year</button>
+                                <button type="button" data-value="custom" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Custom Range</button>
+                            </div>
+                        </div>
 
-                    @foreach ($forecast->getUrlRange(max(1, $forecast->currentPage() - 2), min($forecast->lastPage(), $forecast->currentPage() + 2)) as $page => $url)
-                        @if ($page == $forecast->currentPage())
-                            <span class="px-4 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs border border-transparent">
-                                {{ $page }}
-                            </span>
-                        @else
-                            <a href="{{ $url }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                                {{ $page }}
-                            </a>
-                        @endif
-                    @endforeach
-
-                    @if ($forecast->hasMorePages())
-                        <a href="{{ $forecast->nextPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                            Next
-                        </a>
-                    @else
-                        <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                            Next
-                        </span>
-                    @endif
-                </nav>
-            </div>
-        @endif
-    </div>
-
-    {{-- Economic Order Quantity (EOQ) --}}
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden">
-        <div class="flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Economic Order Quantity (EOQ)</h2>
-                <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Recommended order quantity per product — showing 4 per page</p>
-            </div>
-
-            @if (in_array(auth()->user()->role, ['admin', 'manager']))
-                <a href="{{ route('eoq.calibration') }}"
-                class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs">
-                    Calibrate EOQ Parameters
-                </a>
-            @endif
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left table-fixed">
-                <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs border-b-2 border-gray-200 dark:border-[#1e2536]">
-                    <tr>
-                        <th class="px-8 py-4 text-left w-1/4">Product Name</th>
-                        <th class="px-8 py-4 text-left w-1/4">Avg. Daily Demand</th>
-                        <th class="px-8 py-4 text-left w-1/4">Annual Demand</th>
-                        <th class="px-8 py-4 text-right w-1/4">Recommended Order Qty (EOQ)</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
-                    @forelse ($eoqSummary as $row)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
-                            <td class="px-8 py-4 font-medium text-gray-900 dark:text-white text-left truncate w-1/4">{{ $row['product']->product_name }}</td>
-                            <td class="px-8 py-4 text-gray-600 dark:text-slate-400 text-left w-1/4">{{ $row['avg_daily_demand'] }} / day</td>
-                            <td class="px-8 py-4 text-gray-600 dark:text-slate-400 text-left w-1/4">{{ number_format($row['annual_demand']) }} / year</td>
-                            <td class="px-8 py-4 text-gray-900 dark:text-slate-100 font-semibold text-right w-1/4">{{ number_format($row['eoq'], 0) }} units</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-8 py-12 text-center text-gray-400 dark:text-slate-500">
-                                Not enough data to calculate EOQ yet.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- EOQ Pagination --}}
-        @if ($eoqSummary->hasPages())
-            <div class="px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400">
-                <div>
-                    Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $eoqSummary->firstItem() ?? 0 }}</span> to <span class="font-semibold text-gray-900 dark:text-white">{{ $eoqSummary->lastItem() ?? 0 }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ $eoqSummary->total() }}</span> results
+                        <div id="fastSlowCustomDateContainer" class="{{ (isset($fastSlowRange) && $fastSlowRange == 'custom') ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap">
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
+                                <input type="date" name="fast_slow_date_from" value="{{ $fastSlowDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
+                                <input type="date" name="fast_slow_date_to" value="{{ $fastSlowDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                            </div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs">Apply</button>
+                        </div>
+                    </div>
                 </div>
 
-                <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center gap-1.5">
-                    @if ($eoqSummary->onFirstPage())
-                        <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                            Previous
-                        </span>
-                    @else
-                        <a href="{{ $eoqSummary->previousPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                            Previous
-                        </a>
-                    @endif
+                <div class="h-8 w-px bg-gray-200 dark:bg-[#1e2536] hidden xl:block self-end mb-1"></div>
 
-                    @foreach ($eoqSummary->getUrlRange(max(1, $eoqSummary->currentPage() - 2), min($eoqSummary->lastPage(), $eoqSummary->currentPage() + 2)) as $page => $url)
-                        @if ($page == $eoqSummary->currentPage())
-                            <span class="px-4 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs border border-transparent">
-                                {{ $page }}
-                            </span>
-                        @else
-                            <a href="{{ $url }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                                {{ $page }}
-                            </a>
-                        @endif
-                    @endforeach
+                {{-- Toggle View Buttons --}}
+                <div class="inline-flex rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] p-1 bg-gray-50 dark:bg-[#161B26] gap-1 self-end mb-1">
+                    <button type="button" onclick="toggleProductView('both')" id="btn-both" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs">Show Both</button>
+                    <button type="button" onclick="toggleProductView('fast')" id="btn-fast" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-emerald-600 dark:text-emerald-400 hover:text-gray-900 dark:hover:text-white">🔥 Fast</button>
+                    <button type="button" onclick="toggleProductView('slow')" id="btn-slow" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-amber-600 dark:text-amber-400 hover:text-gray-900 dark:hover:text-white">📦 Slow</button>
+                </div>
+            </form>
+        </div>
 
-                    @if ($eoqSummary->hasMorePages())
-                        <a href="{{ $eoqSummary->nextPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                            Next
-                        </a>
-                    @else
-                        <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                            Next
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Fast Moving Panel --}}
+            <div id="fastMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="inline-flex items-center text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 uppercase tracking-wider border border-emerald-200 dark:border-emerald-900">
+                            🔥 Fast Moving Products
                         </span>
-                    @endif
-                </nav>
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-lg">High Sales</span>
+                    </div>
+
+                    <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                        @php $maxSold = optional($fastMoving->first())['sold'] ?: 1; @endphp
+                        @forelse($fastMoving as $item)
+                        @php 
+                            $percentage = min(100, max(15, ($item['sold'] / $maxSold) * 100)); 
+                        @endphp
+                        <a href="{{ route('inventory.index', ['search' => $item['sku']]) }}"
+                           class="relative z-10 block p-3 rounded-xl bg-white dark:bg-[#10141D] border border-gray-100 dark:border-[#1e2536] hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-sm transition-all cursor-pointer group">
+                            <div class="flex items-center justify-between text-sm mb-1">
+                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    #{{ $item['rank'] }} {{ $item['name'] }} 
+                                    <span class="text-xs font-normal text-gray-500 dark:text-slate-400 ml-1">({{ $item['sku'] }})</span>
+                                </span>
+                                <div class="text-xs">
+                                    <span class="font-bold text-gray-900 dark:text-white">{{ $item['sold'] }} sold</span>
+                                    <span class="text-gray-400">· {{ number_format($item['stock'], 2) }} in stock</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-[#1e2536] rounded-full h-2 overflow-hidden">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                            </div>
+                            <div class="flex items-center justify-between mt-0.5">
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Fast Velocity</span>
+                                <span class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">View in inventory →</span>
+                            </div>
+                        </a>
+                        @empty
+                        <p class="text-center text-xs text-gray-400 py-4">No fast moving products found.</p>
+                        @endforelse
+                    </div>
+                </div>
             </div>
-        @endif
+
+            {{-- Slow Moving Panel --}}
+            <div id="slowMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="inline-flex items-center text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 uppercase tracking-wider border border-amber-200 dark:border-amber-900">
+                            📦 Slow Moving Products
+                        </span>
+                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 rounded-lg">High Stock</span>
+                    </div>
+
+                    <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                        @forelse($slowMoving as $item)
+                        <a href="{{ route('inventory.index', ['search' => $item['sku']]) }}"
+                           class="relative z-10 block p-3 rounded-xl bg-white dark:bg-[#10141D] border border-gray-100 dark:border-[#1e2536] hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-sm transition-all cursor-pointer group">
+                            <div class="flex items-center justify-between text-sm mb-1">
+                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                    #{{ $item['rank'] }} {{ $item['name'] }} 
+                                    <span class="text-xs font-normal text-gray-500 dark:text-slate-400 ml-1">({{ $item['sku'] }})</span>
+                                </span>
+                                <div class="text-xs">
+                                    <span class="font-bold text-gray-900 dark:text-white">{{ number_format($item['stock'], 2) }} in stock</span>
+                                    <span class="text-gray-400">· {{ $item['sold'] }} sold</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-[#1e2536] rounded-full h-2 overflow-hidden">
+                                <div class="bg-amber-500 h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                            <div class="flex items-center justify-between mt-0.5">
+                                <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400">⚠ {{ $item['supply_days'] }}</span>
+                                <span class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">View in inventory →</span>
+                            </div>
+                        </a>
+                        @empty
+                        <p class="text-center text-xs text-gray-400 py-4">No slow moving products found.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] p-4 rounded-xl border border-gray-200 dark:border-[#1e2536]">
+            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span><strong>Tip:</strong> Reorder <strong>Fast-Moving</strong> items to prevent stockouts, and pause <strong>Slow-Moving</strong> orders to prevent excess stock.</span>
+        </div>
     </div>
 
-    {{-- Admin + Manager: Inventory Alerts (Store Status / Warehouse Status / Total Status with Stock levels & ROP) --}}
+    {{-- Admin + Manager: Inventory Alerts Table --}}
     @if (in_array(auth()->user()->role, ['admin', 'manager']))
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden">
-            <div class="flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden flex flex-col h-[400px]">
+            <div class="flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] shrink-0">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Inventory Alerts</h2>
-                    <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Combined store, warehouse, and total stock tracking — showing 4 per page</p>
+                    <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Combined store, warehouse, and total stock tracking</p>
                 </div>
                 <span class="bg-slate-100 text-slate-700 dark:bg-[#161B26] dark:text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">
                     {{ $lowStockProducts->total() }} Products
                 </span>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- Scrollable Table Container --}}
+            <div id="alertScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs border-b-2 border-gray-200 dark:border-[#1e2536]">
+                    <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                         <tr>
-                            <th class="px-6 py-4">Product Name</th>
-                            <th class="px-6 py-4">Category</th>
-                            <th class="px-6 py-4">Store Status</th>
-                            <th class="px-6 py-4">Warehouse Status</th>
-                            <th class="px-6 py-4">Total Status</th>
-                            <th class="px-6 py-4 text-right">Current Stock / ROP</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Product Name</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Category</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Store Status</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Warehouse Status</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Total Status</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Current Stock / ROP</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
-                        @forelse ($lowStockProducts as $product)
-                            @php
-                                $storeQty = $product->store_quantity ?? 0;
-                                $whQty = $product->warehouse_quantity ?? 0;
-                                $totalQty = $storeQty + $whQty;
-                                $reorder = $product->reorder_point ?? 10;
-
-                                $storeStatus = $storeQty == 0 ? 'Out of Stock' : ($storeQty <= $reorder ? 'Low Stock' : 'In Stock');
-                                $whStatus = $whQty == 0 ? 'Out of Stock' : ($whQty <= $reorder ? 'Low Stock' : 'In Stock');
-                                $totalStatus = $totalQty == 0 ? 'Out of Stock' : ($totalQty <= $reorder ? 'Low Stock' : 'In Stock');
-                            @endphp
-                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
-                                <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">
-                                    {{ $product->product_name }}
-                                </td>
-                                <td class="px-6 py-4 text-gray-600 dark:text-slate-400">
-                                    {{ $product->category->name ?? '—' }}
-                                </td>
-
-                                <!-- Store Status Badge -->
-                                <td class="px-6 py-4">
-                                    @if ($storeStatus === 'Out of Stock')
-                                        <span class="inline-block bg-red-100 text-red-700 dark:bg-red-950 dark:text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-red-200 dark:border-rose-900">Out of Stock</span>
-                                    @elseif ($storeStatus === 'Low Stock')
-                                        <span class="inline-block bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200 dark:border-amber-900">Low Stock</span>
-                                    @else
-                                        <span class="inline-block bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-200 dark:border-emerald-900">In Stock</span>
-                                    @endif
-                                </td>
-
-                                <!-- Warehouse Status Badge -->
-                                <td class="px-6 py-4">
-                                    @if ($whStatus === 'Out of Stock')
-                                        <span class="inline-block bg-red-100 text-red-700 dark:bg-red-950 dark:text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-red-200 dark:border-rose-900">Out of Stock</span>
-                                    @elseif ($whStatus === 'Low Stock')
-                                        <span class="inline-block bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200 dark:border-amber-900">Low Stock</span>
-                                    @else
-                                        <span class="inline-block bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-200 dark:border-emerald-900">In Stock</span>
-                                    @endif
-                                </td>
-
-                                <!-- Total Status Badge -->
-                                <td class="px-6 py-4">
-                                    @if ($totalStatus === 'Out of Stock')
-                                        <span class="inline-block bg-red-100 text-red-700 dark:bg-red-950 dark:text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-red-200 dark:border-rose-900">Out of Stock</span>
-                                    @elseif ($totalStatus === 'Low Stock')
-                                        <span class="inline-block bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200 dark:border-amber-900">Low Stock</span>
-                                    @else
-                                        <span class="inline-block bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-200 dark:border-emerald-900">In Stock</span>
-                                    @endif
-                                </td>
-
-                                <!-- Current Level & ROP -->
-                                <td class="px-6 py-4 text-right text-gray-600 dark:text-slate-300 font-medium">
-                                    Store {{ $storeQty }} · WH {{ $whQty }} <span class="text-gray-400 text-xs block">(ROP: {{ $reorder }})</span>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-8 py-12 text-center text-gray-400 dark:text-slate-500">
-                                    No inventory alerts at this time. All products are well-stocked!
-                                </td>
-                            </tr>
-                        @endforelse
+                    <tbody id="alertTableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
+                        @include('dashboard.partials.alert-rows', ['lowStockProducts' => $lowStockProducts])
                     </tbody>
                 </table>
+
+                {{-- Loading Indicator --}}
+                <div id="alertLoadingIndicator" class="hidden py-6 text-center text-gray-500 dark:text-slate-400 font-semibold text-sm">
+                    <svg class="animate-spin h-5 w-5 mx-auto text-slate-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                    Loading more products...
+                </div>
+
+                {{-- Error Retry --}}
+                <div id="alertLoadError" class="hidden py-4 text-center text-rose-500 text-sm">
+                    Unable to load more products. <button type="button" id="alertRetryButton" class="underline font-semibold ml-1">Try again</button>
+                </div>
             </div>
 
-            {{-- Inventory Alerts Pagination --}}
-            @if ($lowStockProducts->hasPages())
-                <div class="px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400">
-                    <div>
-                        Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $lowStockProducts->firstItem() ?? 0 }}</span> to <span class="font-semibold text-gray-900 dark:text-white">{{ $lowStockProducts->lastItem() ?? 0 }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ $lowStockProducts->total() }}</span> results
-                    </div>
+            {{-- Pagination Footer --}}
+            <div class="shrink-0 px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+                <div class="whitespace-nowrap" id="alertResultsText">
+                    @if($lowStockProducts->total() > 0)
+                        Showing
+                        <span class="font-semibold text-gray-900 dark:text-white" id="alertFirstRecord">{{ $lowStockProducts->firstItem() }}</span>
+                        to
+                        <span class="font-semibold text-gray-900 dark:text-white" id="alertLastRecord">{{ $lowStockProducts->lastItem() }}</span>
+                        of
+                        <span class="font-semibold text-gray-900 dark:text-white" id="alertTotalRecord">{{ $lowStockProducts->total() }}</span>
+                        results
+                    @else
+                        No alerts found
+                    @endif
+                </div>
 
-                    <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center gap-1.5">
-                        @if ($lowStockProducts->onFirstPage())
-                            <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                                Previous
-                            </span>
-                        @else
-                            <a href="{{ $lowStockProducts->previousPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                                Previous
-                            </a>
-                        @endif
-
+                <nav class="flex items-center gap-1.5 max-w-full" aria-label="Pagination">
+                    <div id="alertPaginationContainer" class="overflow-x-auto no-scrollbar flex items-center gap-1.5 px-1 py-1">
                         @foreach ($lowStockProducts->getUrlRange(max(1, $lowStockProducts->currentPage() - 2), min($lowStockProducts->lastPage(), $lowStockProducts->currentPage() + 2)) as $page => $url)
                             @if ($page == $lowStockProducts->currentPage())
-                                <span class="px-4 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs border border-transparent">
-                                    {{ $page }}
-                                </span>
+                                <span data-page="{{ $page }}" class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                                    {{ $page }}
-                                </a>
+                                <button type="button" data-page="{{ $page }}" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">{{ $page }}</button>
                             @endif
                         @endforeach
-
-                        @if ($lowStockProducts->hasMorePages())
-                            <a href="{{ $lowStockProducts->nextPageUrl() }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
-                                Next
-                            </a>
-                        @else
-                            <span class="px-4 py-2 text-xs font-semibold text-gray-300 dark:text-slate-600 bg-gray-50 dark:bg-[#161B26]/50 rounded-full cursor-not-allowed border border-gray-200 dark:border-[#1e2536]">
-                                Next
-                            </span>
-                        @endif
-                    </nav>
-                </div>
-            @endif
+                    </div>
+                </nav>
+            </div>
         </div>
     @endif
 
 @endsection
+
+@push('scripts')
+    {{-- 1. Load the downloaded local file --}}
+    <script src="{{ asset('js/chart.umd.js') }}"></script>
+    
+    <script>
+        // =====================================================
+        // LIVE KPI POLLING (Updates top cards without refresh)
+        // =====================================================
+        function startLiveDashboardPolling() {
+            setInterval(async () => {
+                if (document.hidden) return; // Pause when tab is in background
+
+                try {
+                    const url = new URL("{{ route('home') }}", window.location.origin);
+                    url.searchParams.set('live_poll', '1');
+                    url.searchParams.set('t', Date.now());
+
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) return;
+                    const data = await response.json();
+
+                    const todaySalesEl = document.getElementById('kpi-today-sales');
+                    const overallSalesEl = document.getElementById('kpi-overall-sales');
+                    const posOrdersEl = document.getElementById('kpi-pos-orders');
+                    const totalProductsEl = document.getElementById('kpi-total-products');
+                    const restockNeededEl = document.getElementById('kpi-restock-needed');
+
+                    if (todaySalesEl) todaySalesEl.textContent = data.todaySales;
+                    if (overallSalesEl) overallSalesEl.textContent = data.overallSales;
+                    if (posOrdersEl) posOrdersEl.textContent = data.todayTransactions;
+                    if (totalProductsEl) totalProductsEl.textContent = data.totalProducts;
+                    if (restockNeededEl) restockNeededEl.textContent = data.restockNeededCount;
+                } catch (err) {
+                    console.error('Live dashboard poll error:', err);
+                }
+            }, 10000); // Polls every 10 seconds
+        }
+
+        // =====================================================
+        // CUSTOM DROPDOWNS LOGIC (With AJAX Submit)
+        // =====================================================
+        function initCustomDropdowns() {
+            document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+                if (dropdown.dataset.initialized) return;
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const menu = dropdown.querySelector('.dropdown-menu');
+                const chevron = dropdown.querySelector('.dropdown-chevron');
+                const label = dropdown.querySelector('.dropdown-label');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+                if (!trigger || !menu) return;
+
+                function closeMenu() { menu.classList.add('hidden'); chevron?.classList.remove('rotate-180'); }
+                function openMenu() {
+                    document.querySelectorAll('.custom-dropdown .dropdown-menu').forEach(m => { if (m !== menu) m.classList.add('hidden'); });
+                    document.querySelectorAll('.custom-dropdown .dropdown-chevron').forEach(c => { if (c !== chevron) c.classList.remove('rotate-180'); });
+                    menu.classList.remove('hidden'); chevron?.classList.add('rotate-180');
+                }
+
+                trigger.addEventListener('click', e => { e.stopPropagation(); menu.classList.contains('hidden') ? openMenu() : closeMenu(); });
+                
+                menu.querySelectorAll('.dropdown-option').forEach(opt => {
+                    opt.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const val = this.dataset.value || '';
+                        if (hiddenInput) hiddenInput.value = val;
+                        if (label) label.textContent = this.textContent.trim();
+                        closeMenu();
+
+                        // Custom Submits based on dropdown ID
+                        if (dropdown.id === 'filter-category-dropdown') {
+                            document.getElementById('forecastProductInput').value = ''; // Clear product
+                            fetchForecastData(document.getElementById('forecastFilterForm'));
+                        } else if (dropdown.id === 'filter-product-dropdown') {
+                            fetchForecastData(document.getElementById('forecastFilterForm'));
+                        } else if (dropdown.id === 'filter-fs-category-dropdown') {
+                            dropdown.closest('form').submit(); // Standard submit for Fast/Slow
+                        } else if (dropdown.id === 'filter-range-dropdown' || dropdown.id === 'filter-fs-range-dropdown') {
+                            const isForecast = dropdown.id === 'filter-range-dropdown';
+                            const customContainer = document.getElementById(isForecast ? 'forecastCustomDateContainer' : 'fastSlowCustomDateContainer');
+                            
+                            if (val === 'custom') {
+                                if (customContainer) {
+                                    customContainer.classList.remove('hidden');
+                                    customContainer.classList.add('flex');
+                                }
+                            } else {
+                                if (customContainer) {
+                                    customContainer.classList.remove('flex');
+                                    customContainer.classList.add('hidden');
+                                }
+                                if (isForecast) {
+                                    fetchForecastData(document.getElementById('forecastFilterForm'));
+                                } else {
+                                    dropdown.closest('form').submit();
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                document.addEventListener('click', e => { if (!dropdown.contains(e.target)) closeMenu(); });
+                document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+                dropdown.dataset.initialized = 'true';
+            });
+        }
+
+        // =====================================================
+        // AJAX FORECAST FETCH (No Refresh)
+        // =====================================================
+        async function fetchForecastData(form) {
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const url = `${form.action}?${queryString}`;
+
+            const canvas = document.getElementById('demandForecastChart');
+            const ctx = canvas.getContext('2d');
+            if (demandChartInstance) {
+                demandChartInstance.destroy();
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "14px Inter, sans-serif";
+            ctx.fillStyle = "#64748b";
+            ctx.textAlign = "center";
+            ctx.fillText("Loading new data...", canvas.width / 2, canvas.height / 2);
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await response.text();
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const scripts = Array.from(doc.querySelectorAll('script'));
+                const chartScript = scripts.find(s => s.textContent.includes('const chartData ='));
+                
+                if (chartScript) {
+                    const match = chartScript.textContent.match(/const chartData = (\{.*?\});/s);
+                    if (match && match[1]) {
+                        const newChartData = JSON.parse(match[1]);
+                        renderBackendForecastChart(newChartData);
+                    }
+                }
+
+                const newShowingText = doc.getElementById('forecastShowingText');
+                if (newShowingText) {
+                    document.getElementById('forecastShowingText').innerHTML = newShowingText.innerHTML;
+                }
+
+                window.history.pushState({}, '', url);
+
+            } catch (error) {
+                console.error('Error fetching forecast data:', error);
+                canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm font-semibold text-rose-500">Error loading data. Please try again.</div>';
+            }
+        }
+
+        const forecastForm = document.getElementById('forecastFilterForm');
+        if (forecastForm) {
+            forecastForm.addEventListener('submit', function(e) {
+                if (document.getElementById('forecastRangeInput').value === 'custom') {
+                    e.preventDefault();
+                    fetchForecastData(this);
+                }
+            });
+        }
+
+        window.toggleProductView = function(type) {
+            const fastCol = document.getElementById('fastMovingCol');
+            const slowCol = document.getElementById('slowMovingCol');
+            const btnBoth = document.getElementById('btn-both');
+            const btnFast = document.getElementById('btn-fast');
+            const btnSlow = document.getElementById('btn-slow');
+
+            [btnBoth, btnFast, btnSlow].forEach(btn => {
+                btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white';
+            });
+
+            if (type === 'fast') {
+                fastCol.style.display = 'block';
+                fastCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                slowCol.style.display = 'none';
+                btnFast.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-emerald-600 dark:text-emerald-400 shadow-xs';
+            } else if (type === 'slow') {
+                slowCol.style.display = 'block';
+                slowCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                fastCol.style.display = 'none';
+                btnSlow.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-amber-600 dark:text-amber-400 shadow-xs';
+            } else {
+                fastCol.style.display = 'block';
+                fastCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                slowCol.style.display = 'block';
+                slowCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                btnBoth.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs';
+            }
+        };
+
+        // =====================================================
+        // INITIALIZATION & CHART RENDERING
+        // =====================================================
+        let demandChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initCustomDropdowns();
+            startLiveDashboardPolling();
+
+            // 1. Initialize Chart
+            const canvas = document.getElementById('demandForecastChart');
+            if (canvas) {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js failed to load locally. Check the path public/js/chart.umd.js');
+                    canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm font-semibold text-rose-500">Local file missing. Make sure chart.umd.js is in the public/js folder.</div>';
+                } else {
+                    try {
+                        renderBackendForecastChart();
+                    } catch (error) {
+                        console.error('Error rendering chart:', error);
+                        canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm font-semibold text-rose-500">An error occurred while rendering the chart.</div>';
+                    }
+                }
+            }
+
+            // 2. Initialize Infinite Scroll
+            initInventoryAlerts();
+        });
+
+        function renderBackendForecastChart(providedData = null) {
+            const canvas = document.getElementById('demandForecastChart');
+            if (!canvas) return;
+            
+            if (canvas.parentElement.innerHTML.includes('Loading new data...') || canvas.parentElement.innerHTML.includes('Error loading data')) {
+                canvas.parentElement.innerHTML = '<canvas id="demandForecastChart"></canvas>';
+            }
+            
+            const ctx = document.getElementById('demandForecastChart').getContext('2d');
+
+            if (demandChartInstance) {
+                demandChartInstance.destroy();
+            }
+
+            const chartData = providedData || @json($forecastChart) || {};
+
+            if (!chartData.labels || chartData.labels.length === 0) {
+                canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm text-gray-500">No data available for the selected period.</div>';
+                return;
+            }
+
+            const todayLinePlugin = {
+                id: 'todayLine',
+                afterDraw(chart) {
+                    const idx = chartData.today_index;
+                    if (idx === null || idx === undefined) return;
+
+                    const xScale = chart.scales.x;
+                    if (!xScale) return;
+
+                    const x = xScale.getPixelForValue(idx);
+                    if (x === null || x === undefined || isNaN(x)) return;
+
+                    const { top, bottom } = chart.chartArea;
+                    const c = chart.ctx;
+
+                    c.save();
+                    c.beginPath();
+                    c.moveTo(x, top);
+                    c.lineTo(x, bottom);
+                    c.lineWidth = 1.5;
+                    c.strokeStyle = 'rgba(100, 116, 139, 0.5)';
+                    c.setLineDash([5, 5]);
+                    c.stroke();
+
+                    c.fillStyle = 'rgba(100, 116, 139, 0.9)';
+                    c.font = '600 10px Inter, sans-serif';
+                    c.textAlign = 'center';
+                    c.fillText('TODAY', x, top - 8);
+                    c.restore();
+                }
+            };
+
+            demandChartInstance = new Chart(ctx, {
+                type: 'line',
+                plugins: [todayLinePlugin],
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Past Sales',
+                            data: chartData.historical,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 1,
+                            fill: 'origin',
+                            tension: 0.2,
+                            spanGaps: false,
+                        },
+                        {
+                            label: 'Prediction',
+                            data: chartData.forecast,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: '#8b5cf6',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 1,
+                            fill: false,
+                            tension: 0.2,
+                            spanGaps: false,
+                        },
+                        {
+                            label: 'Lower Bound',
+                            data: chartData.lower_bound,
+                            borderColor: 'rgba(139, 92, 246, 0.2)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                            borderWidth: 1,
+                            borderDash: [3, 3],
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            fill: '+1',
+                            tension: 0.2,
+                            spanGaps: false,
+                        },
+                        {
+                            label: 'Upper Bound',
+                            data: chartData.upper_bound,
+                            borderColor: 'rgba(139, 92, 246, 0.2)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                            borderWidth: 1,
+                            borderDash: [3, 3],
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            spanGaps: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label === 'Lower Bound' || label === 'Upper Bound') {
+                                        return null; 
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        return label + ': ' + context.parsed.y + ' items';
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            ticks: { 
+                                precision: 0,
+                                stepSize: 500
+                            },
+                            grid: { 
+                                color: 'rgba(0,0,0,0.04)',
+                                drawBorder: false
+                            },
+                            title: { display: true, text: 'Number of Items Sold', font: { size: 11, weight: '500' }, color: '#64748b' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, maxTicksLimit: 12, color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =====================================================
+        // INVENTORY ALERTS INFINITE SCROLL
+        // =====================================================
+        function initInventoryAlerts() {
+            const container = document.getElementById('alertScrollContainer');
+            const tableBody = document.getElementById('alertTableBody');
+            const loadingIndicator = document.getElementById('alertLoadingIndicator');
+            const loadError = document.getElementById('alertLoadError');
+            const retryBtn = document.getElementById('alertRetryButton');
+            const paginationContainer = document.getElementById('alertPaginationContainer');
+            const resultsText = document.getElementById('alertResultsText');
+
+            if (!container || !tableBody) return;
+
+            let nextPageUrl = @json($lowStockProducts->nextPageUrl());
+            let currentPage = {{ $lowStockProducts->currentPage() }};
+            let lastPage = {{ $lowStockProducts->lastPage() }};
+            let totalRecords = {{ $lowStockProducts->total() }};
+            let perPage = {{ $lowStockProducts->perPage() }};
+            let initialPage = {{ $lowStockProducts->currentPage() }};
+            let initialStart = {{ $lowStockProducts->firstItem() ?? 0 }} || 0;
+
+            let isLoading = false;
+            let visualPage = initialPage;
+
+            function updateResultsCounter() {
+                const rowsLoaded = tableBody.querySelectorAll('tr').length;
+                if (totalRecords === 0 || rowsLoaded === 0) {
+                    resultsText.textContent = 'No alerts found.';
+                    return;
+                }
+                const firstRecord = initialStart;
+                const lastRecord = Math.min(firstRecord + rowsLoaded - 1, totalRecords);
+                resultsText.innerHTML = `Showing <span class="font-semibold text-gray-900 dark:text-white">${firstRecord}</span> to <span class="font-semibold text-gray-900 dark:text-white">${lastRecord}</span> of <span class="font-semibold text-gray-900 dark:text-white">${totalRecords}</span> results`;
+            }
+
+            function getVisiblePage() {
+                const rows = tableBody.querySelectorAll('tr');
+                if (!rows.length) return initialPage;
+
+                const isAtBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) <= 5;
+                if (isAtBottom && lastPage > 0) return lastPage;
+
+                const containerRect = container.getBoundingClientRect();
+                let firstVisibleIndex = -1;
+                
+                rows.forEach((row, index) => {
+                    const rect = row.getBoundingClientRect();
+                    if (firstVisibleIndex === -1 && rect.bottom > containerRect.top && rect.top < containerRect.bottom) {
+                        firstVisibleIndex = index;
+                    }
+                });
+
+                if (firstVisibleIndex === -1) firstVisibleIndex = rows.length - 1;
+                const pageOffset = Math.floor(firstVisibleIndex / perPage);
+                return Math.min(lastPage, Math.max(1, initialPage + pageOffset));
+            }
+
+            function updatePaginationNumbers(pageToShow) {
+                const page = Math.min(lastPage, Math.max(1, pageToShow));
+                if (visualPage === page && paginationContainer.children.length > 0) return;
+
+                visualPage = page;
+                let html = '';
+                const startPage = Math.max(1, page - 2);
+                const endPage = Math.min(lastPage, page + 2);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i === page) {
+                        html += `<span class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">${i}</span>`;
+                    } else {
+                        html += `<button type="button" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</button>`;
+                    }
+                }
+                paginationContainer.innerHTML = html;
+            }
+
+            async function loadMoreAlerts() {
+                if (!nextPageUrl || isLoading) return;
+
+                isLoading = true;
+                loadError.classList.add('hidden');
+                loadingIndicator.classList.remove('hidden');
+
+                try {
+                    const fetchUrl = new URL(nextPageUrl, window.location.origin);
+                    fetchUrl.searchParams.set('alert_ajax', '1');
+                    fetchUrl.searchParams.set('t', Date.now());
+
+                    const response = await fetch(fetchUrl.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Request failed.');
+                    const data = await response.json();
+
+                    const newPage = Number(data.current_page);
+                    if (data.html) {
+                        const temp = document.createElement('tbody');
+                        temp.innerHTML = data.html;
+                        tableBody.querySelector('[data-empty-row="true"]')?.remove();
+                        Array.from(temp.children).forEach(row => {
+                            tableBody.appendChild(row);
+                        });
+                    }
+
+                    nextPageUrl = data.next_page_url;
+                    currentPage = newPage;
+                    lastPage = data.last_page;
+                    totalRecords = data.total_records;
+                    perPage = data.per_page;
+
+                    updateResultsCounter();
+                    updatePaginationNumbers(getVisiblePage());
+
+                } catch (error) {
+                    console.error('Error loading alerts:', error);
+                    loadError.classList.remove('hidden');
+                } finally {
+                    isLoading = false;
+                    loadingIndicator.classList.add('hidden');
+
+                    // Recursively load if the container still does not have a scrollbar
+                    if (nextPageUrl && container.scrollHeight <= container.clientHeight + 20) {
+                        setTimeout(loadMoreAlerts, 100);
+                    }
+                }
+            }
+
+            // --- AUTO LOAD IF CONTENT DOESN'T FILL CONTAINER ---
+            setTimeout(() => {
+                if (nextPageUrl && container.scrollHeight <= container.clientHeight + 20) {
+                    loadMoreAlerts();
+                }
+            }, 100);
+
+            container.addEventListener('scroll', function () {
+                updatePaginationNumbers(getVisiblePage());
+                const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+                if (distanceFromBottom < 150 && nextPageUrl && !isLoading) {
+                    loadMoreAlerts();
+                }
+            }, { passive: true });
+
+            retryBtn?.addEventListener('click', loadMoreAlerts);
+        }
+    </script>
+@endpush

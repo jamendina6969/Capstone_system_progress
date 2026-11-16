@@ -16,6 +16,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'action_password', // Added for Manager Override
         'firstname',
         'lastname',
         'suffix',
@@ -26,6 +27,7 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
+        'action_password', // Hide this from JSON responses
         'remember_token',
     ];
 
@@ -34,6 +36,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 

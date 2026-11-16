@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\StockMovement;
+use App\Models\Category;
 use App\Models\Transaction;
-use App\Services\EoqService;
 use App\Models\User;
 use App\Services\DemandForecastService;
+use App\Services\EoqService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
@@ -18,9 +20,42 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Redirect staff users away from the dashboard entirely to POS
         if ($user->role === 'staff') {
             return redirect()->route('pos');
+        }
+
+        // =====================================================
+        // EARLY RETURN 1: Live KPI Polling (AJAX - No Refresh)
+        // =====================================================
+        if ($request->ajax() && $request->has('live_poll')) {
+            $metrics = $this->sharedMetrics();
+
+            return response()->json([
+                'todaySales'         => '₱' . number_format($metrics['todaySales'], 2),
+                'overallSales'       => '₱' . number_format($metrics['overallSales'], 2),
+                'todayTransactions'  => $metrics['todayTransactions'],
+                'totalProducts'      => $metrics['totalProducts'],
+                'restockNeededCount' => $metrics['restockNeededCount'],
+            ]);
+        }
+
+        // =====================================================
+        // EARLY RETURN 2: Inventory Alerts Infinite Scroll (AJAX)
+        // Must run BEFORE any heavy dashboard computation.
+        // =====================================================
+        if ($request->ajax() && $request->has('alert_ajax')) {
+            $alerts = $this->getLowStockAlerts($request);
+
+            return response()->json([
+                'html'          => view('dashboard.partials.alert-rows', ['lowStockProducts' => $alerts])->render(),
+                'next_page_url' => $alerts->nextPageUrl(),
+                'current_page'  => $alerts->currentPage(),
+                'last_page'     => $alerts->lastPage(),
+                'total_records' => $alerts->total(),
+                'first_item'    => $alerts->firstItem(),
+                'last_item'     => $alerts->lastItem(),
+                'per_page'      => $alerts->perPage(),
+            ]);
         }
 
         $data = $this->sharedMetrics();
@@ -29,25 +64,89 @@ class DashboardController extends Controller
             $data = array_merge($data, $this->managementMetrics($request, $forecastService, $eoqService));
         }
 
-        $range = (int) $request->get('range', 14);
-        if (!in_array($range, [7, 14, 30])) {
-            $range = 14;
+        // Fast/Slow filter parameters
+        $categoryId = $request->get('product_category');
+        $range      = $request->get('fast_slow_range', '3months');
+        $dateFrom   = $request->get('fast_slow_date_from');
+        $dateTo     = $request->get('fast_slow_date_to');
+
+        if ($range && $range !== 'custom') {
+            $dateTo   = now()->toDateString();
+            $dateFrom = match ($range) {
+                '7days'   => now()->subDays(7)->toDateString(),
+                '14days'  => now()->subDays(14)->toDateString(),
+                '1month'  => now()->subMonth()->toDateString(),
+                '6months' => now()->subMonths(6)->toDateString(),
+                '1yr'     => now()->subYear()->toDateString(),
+                default   => now()->subMonths(3)->toDateString(),
+            };
         }
 
-        $data['forecast'] = $this->forecastSummary($request, $forecastService);
-        $data['salesChart'] = $this->salesChartData($range);
-        $data['totalSales30d'] = Transaction::where('created_at', '>=', today()->subDays(30))->sum('total_amount');
-        
-        $currentPeriodSales = Transaction::where('created_at', '>=', today()->subDays($range))->sum('total_amount');
-        $previousPeriodSales = Transaction::where('created_at', '>=', today()->subDays($range * 2))->where('created_at', '<', today()->subDays($range))->sum('total_amount');
-        
-        $salesGrowth = $previousPeriodSales > 0 
-            ? round((($currentPeriodSales - $previousPeriodSales) / $previousPeriodSales) * 100, 1) 
-            : ($currentPeriodSales > 0 ? 100 : 0);
+        // Forecast filter parameters
+        $forecastRange    = $request->get('forecast_range', '3months');
+        $forecastDateFrom = $request->get('forecast_date_from');
+        $forecastDateTo   = $request->get('forecast_date_to');
+        $forecastCategory = $request->get('forecast_category');
+        $forecastProduct  = $request->get('forecast_product');
 
-        $data['salesGrowth'] = $salesGrowth;
-        $data['eoqSummary'] = $this->eoqSummary($request, $forecastService, $eoqService);
-        $data['selectedRange'] = $range;
+        if ($forecastRange && $forecastRange !== 'custom') {
+            $forecastDateTo   = now()->toDateString();
+            $forecastDateFrom = match ($forecastRange) {
+                '7days'   => now()->subDays(7)->toDateString(),
+                '14days'  => now()->subDays(14)->toDateString(),
+                '1month'  => now()->subMonth()->toDateString(),
+                '6months' => now()->subMonths(6)->toDateString(),
+                '1yr'     => now()->subYear()->toDateString(),
+                default   => now()->subMonths(3)->toDateString(),
+            };
+        }
+
+        // Chart data (per-product or whole-catalog aggregate)
+        $data['forecastChart'] = $forecastService->chartData(
+            $forecastProduct ? (int) $forecastProduct : null,
+            $forecastRange
+        );
+
+        // Chart subtitle: which product / category is being shown
+        $data['forecastProductName'] = 'All Products (Aggregate)';
+        if ($forecastProduct) {
+            $p = Product::find($forecastProduct);
+            if ($p) {
+                $data['forecastProductName'] = $p->product_name
+                    . ($p->product_sku ? ' (' . $p->product_sku . ')' : '');
+            }
+        }
+
+        $data['forecastCategoryName'] = $forecastCategory
+            ? optional(Category::find($forecastCategory))->name
+            : null;
+
+        // Cascading dropdown data
+        $allCategories = Category::orderBy('name')->get();
+        $data['mainCategories'] = $allCategories->whereNull('parent_id');
+        $data['allCategories']  = $allCategories;
+
+        $forecastProductsQuery = Product::orderBy('product_name');
+        if ($forecastCategory) {
+            $categoryIds = $this->descendantCategoryIds((int) $forecastCategory);
+            $forecastProductsQuery->whereIn('category_id', $categoryIds);
+        }
+        $data['forecastProducts'] = $forecastProductsQuery->get();
+
+        $data['selectedForecastCategory'] = $forecastCategory;
+        $data['selectedForecastProduct']  = $forecastProduct;
+        $data['forecastRange']            = $forecastRange;
+        $data['forecastDateFrom']         = ($forecastRange === 'custom') ? $forecastDateFrom : '';
+        $data['forecastDateTo']           = ($forecastRange === 'custom') ? $forecastDateTo   : '';
+
+        // Fast/Slow products
+        $data['fastMoving'] = $this->getFastMovingProducts($categoryId, $dateFrom, $dateTo);
+        $data['slowMoving'] = $this->getSlowMovingProducts($categoryId, $dateFrom, $dateTo);
+
+        $data['selectedCategory'] = $categoryId;
+        $data['fastSlowRange']    = $range;
+        $data['fastSlowDateFrom'] = ($range === 'custom') ? $dateFrom : '';
+        $data['fastSlowDateTo']   = ($range === 'custom') ? $dateTo   : '';
 
         if ($user->role === 'admin') {
             $data['totalUsers'] = User::count();
@@ -56,9 +155,56 @@ class DashboardController extends Controller
         return view('home', $data);
     }
 
+    private function getLowStockAlerts(Request $request): LengthAwarePaginator
+    {
+        $lowStockQuery = Product::with('category')->where(function ($q) {
+            $q->whereRaw('COALESCE(store_quantity, 0) = 0')
+              ->orWhereRaw('COALESCE(store_quantity, 0) <= COALESCE(reorder_point, 10)')
+              ->orWhereRaw('COALESCE(warehouse_quantity, 0) = 0')
+              ->orWhereRaw('COALESCE(warehouse_quantity, 0) <= COALESCE(reorder_point, 10)')
+              ->orWhereRaw('(COALESCE(store_quantity, 0) + COALESCE(warehouse_quantity, 0)) <= COALESCE(reorder_point, 10)');
+        })->get();
+
+        $alertPage    = (int) $request->get('alert_page', 1);
+        $alertPerPage = 8; // Increased from 4 so rows overflow the 400px container and trigger scrollbar
+
+        $paginator = new LengthAwarePaginator(
+            $lowStockQuery->forPage($alertPage, $alertPerPage)->values(),
+            $lowStockQuery->count(),
+            $alertPerPage,
+            $alertPage,
+            ['path' => $request->url(), 'pageName' => 'alert_page']
+        );
+        $paginator->appends($request->query());
+
+        return $paginator;
+    }
+
+    private function descendantCategoryIds(int $categoryId): array
+    {
+        $ids    = [$categoryId];
+        $parent = [$categoryId];
+        $seen   = [$categoryId => true];
+
+        while (!empty($parent)) {
+            $children = Category::whereIn('parent_id', $parent)->pluck('id')->all();
+            $children = array_values(array_filter($children, fn ($id) => !isset($seen[$id])));
+            if (empty($children)) {
+                break;
+            }
+            foreach ($children as $childId) {
+                $seen[$childId] = true;
+            }
+            $ids    = array_merge($ids, $children);
+            $parent = $children;
+        }
+
+        return $ids;
+    }
+
     private function sharedMetrics(): array
     {
-        $restockNeededCount = Product::where(function($q) {
+        $restockNeededCount = Product::where(function ($q) {
             $q->whereRaw('COALESCE(store_quantity, 0) = 0')
               ->orWhereRaw('COALESCE(store_quantity, 0) <= COALESCE(reorder_point, 10)')
               ->orWhereRaw('COALESCE(warehouse_quantity, 0) = 0')
@@ -67,116 +213,108 @@ class DashboardController extends Controller
         })->count();
 
         return [
-            'todaySales' => Transaction::whereDate('created_at', today())->sum('total_amount'),
-            'overallSales' => Transaction::sum('total_amount'),
-            'todayTransactions' => Transaction::whereDate('created_at', today())->count(),
-            'totalProducts' => Product::count(),
+            'todaySales'         => Transaction::whereDate('created_at', today())->sum('total_amount'),
+            'overallSales'       => Transaction::sum('total_amount'),
+            'todayTransactions'  => Transaction::whereDate('created_at', today())->where('transaction_type', 0)->count(),
+            'totalProducts'      => Product::count(),
             'restockNeededCount' => $restockNeededCount,
         ];
     }
 
-   private function managementMetrics(Request $request, DemandForecastService $forecastService, EoqService $eoqService): array
+    private function managementMetrics(Request $request, DemandForecastService $forecastService, EoqService $eoqService): array
     {
-        $products = Product::whereHas('category', fn($q) => $q->where('type', 'product'))->get();
-        
-        $totalProjectedDemand = $products->sum(fn($p) => $forecastService->projectedAnnualDemand($p));
-        $totalEoq = $products->sum(fn($p) => $eoqService->calculate($p, $forecastService->projectedAnnualDemand($p)));
+        // Reduced cache to 60s so backend edits reflect quickly while protecting performance
+        $metrics = Cache::remember('dashboard_management_metrics', 60, function () use ($forecastService, $eoqService) {
+            $products = Product::with('category')
+                ->whereHas('category', fn ($q) => $q->where('type', 'product'))
+                ->get();
 
-        $lowStockQuery = Product::with('category')->where(function($q) {
-            $q->whereRaw('COALESCE(store_quantity, 0) = 0')
-              ->orWhereRaw('COALESCE(store_quantity, 0) <= COALESCE(reorder_point, 10)')
-              ->orWhereRaw('COALESCE(warehouse_quantity, 0) = 0')
-              ->orWhereRaw('COALESCE(warehouse_quantity, 0) <= COALESCE(reorder_point, 10)')
-              ->orWhereRaw('(COALESCE(store_quantity, 0) + COALESCE(warehouse_quantity, 0)) <= COALESCE(reorder_point, 10)');
-        })->get();
+            $totalProjectedDemand = 0;
+            $totalEoq             = 0;
 
-        $alertPage = $request->get('alert_page', 1);
-        $alertPerPage = 4;
-        $paginatedAlerts = new LengthAwarePaginator(
-            $lowStockQuery->forPage($alertPage, $alertPerPage)->values(),
-            $lowStockQuery->count(),
-            $alertPerPage,
-            $alertPage,
-            ['path' => $request->url(), 'pageName' => 'alert_page']
-        );
+            foreach ($products as $p) {
+                $demand               = $forecastService->projectedAnnualDemand($p);
+                $totalProjectedDemand += $demand;
+                $totalEoq             += $eoqService->calculate($p, $demand);
+            }
+
+            return [
+                'totalProjectedDemand' => $totalProjectedDemand,
+                'totalEoq'             => $totalEoq,
+            ];
+        });
 
         return [
-            'lowStockProducts' => $paginatedAlerts,
-            'totalProjectedDemand' => $totalProjectedDemand,
-            'totalEoq' => $totalEoq,
+            'lowStockProducts'     => $this->getLowStockAlerts($request),
+            'totalProjectedDemand' => $metrics['totalProjectedDemand'],
+            'totalEoq'             => $metrics['totalEoq'],
         ];
     }
 
-    private function forecastSummary(Request $request, DemandForecastService $forecastService)
+    private function getFastMovingProducts($categoryId = null, $dateFrom = null, $dateTo = null)
     {
-        $products = Product::whereHas('category', fn($q) => $q->where('type', 'product'))
-            ->orderBy('product_name')
-            ->get();
+        $query = Product::with('category');
 
-        $mapped = $products->map(function ($product) use ($forecastService) {
-            return [
-                'product' => $product,
-                'avg_daily_demand' => $forecastService->averageDailyDemand($product),
-                'projected_annual_demand' => $forecastService->projectedAnnualDemand($product),
-            ];
-        })->sortByDesc('avg_daily_demand')->values();
+        if ($categoryId) {
+            $categoryIds = $this->descendantCategoryIds((int) $categoryId);
+            $query->whereIn('category_id', $categoryIds);
+        }
 
-        $page = $request->get('forecast_page', 1);
-        $perPage = 4;
+        $products = $query->get()->map(function ($product) use ($dateFrom, $dateTo) {
+            $soldQuery = DB::table('transaction_items')->where('product_id', $product->id);
+            if ($dateFrom) $soldQuery->whereDate('created_at', '>=', $dateFrom);
+            if ($dateTo)   $soldQuery->whereDate('created_at', '<=', $dateTo);
 
-        return new LengthAwarePaginator(
-            $mapped->forPage($page, $perPage)->values(),
-            $mapped->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'pageName' => 'forecast_page']
-        );
-    }
-
-    private function salesChartData(int $daysCount): array
-    {
-        $days = collect(range($daysCount - 1, 0))->map(fn($i) => today()->subDays($i));
-
-        $salesByDay = Transaction::whereDate('created_at', '>=', today()->subDays($daysCount - 1))
-            ->get()
-            ->groupBy(fn($t) => $t->created_at->format('Y-m-d'));
-
-        $labels = $days->map(fn($d) => $d->format('M d'));
-        $totals = $days->map(function ($d) use ($salesByDay) {
-            $key = $d->format('Y-m-d');
-            return isset($salesByDay[$key]) ? round($salesByDay[$key]->sum('total_amount'), 2) : 0;
-        })->values()->all();
-
-        return ['labels' => $labels->all(), 'totals' => $totals];
-    }
-
-    private function eoqSummary(Request $request, DemandForecastService $forecastService, EoqService $eoqService)
-    {
-        $products = Product::whereHas('category', fn($q) => $q->where('type', 'product'))
-            ->orderBy('product_name')
-            ->get();
-
-        $mapped = $products->map(function ($product) use ($forecastService, $eoqService) {
-            $annualDemand = $forecastService->projectedAnnualDemand($product);
-            $avgDailyDemand = $forecastService->averageDailyDemand($product);
+            $soldCount  = (int) $soldQuery->sum('quantity');
+            $totalStock = ($product->store_quantity ?? 0) + ($product->warehouse_quantity ?? 0);
+            $productSku = $product->product_sku ?? $product->code ?? $product->sku ?? 'N/A';
 
             return [
-                'product' => $product,
-                'avg_daily_demand' => $avgDailyDemand,
-                'annual_demand' => $annualDemand,
-                'eoq' => $eoqService->calculate($product, $annualDemand),
+                'id'    => $product->id,
+                'name'  => $product->product_name ?? 'Sample Product',
+                'sku'   => $productSku,
+                'sold'  => $soldCount,
+                'stock' => $totalStock,
             ];
-        })->filter(fn($row) => $row['eoq'] > 0)->sortByDesc('eoq')->values();
+        })->sortByDesc('sold')->values();
 
-        $page = $request->get('eoq_page', 1);
-        $perPage = 4;
+        return $products->take(15)->values()->map(function ($item, $index) {
+            $item['rank'] = $index + 1;
+            return $item;
+        });
+    }
 
-        return new LengthAwarePaginator(
-            $mapped->forPage($page, $perPage)->values(),
-            $mapped->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'pageName' => 'eoq_page']
-        );
+    private function getSlowMovingProducts($categoryId = null, $dateFrom = null, $dateTo = null)
+    {
+        $query = Product::with('category');
+
+        if ($categoryId) {
+            $categoryIds = $this->descendantCategoryIds((int) $categoryId);
+            $query->whereIn('category_id', $categoryIds);
+        }
+
+        $products = $query->get()->map(function ($product) use ($dateFrom, $dateTo) {
+            $soldQuery = DB::table('transaction_items')->where('product_id', $product->id);
+            if ($dateFrom) $soldQuery->whereDate('created_at', '>=', $dateFrom);
+            if ($dateTo)   $soldQuery->whereDate('created_at', '<=', $dateTo);
+
+            $soldCount  = (int) $soldQuery->sum('quantity');
+            $totalStock = ($product->store_quantity ?? 0) + ($product->warehouse_quantity ?? 0);
+            $productSku = $product->product_sku ?? $product->code ?? $product->sku ?? 'N/A';
+
+            return [
+                'id'          => $product->id,
+                'name'        => $product->product_name ?? 'Slow Product',
+                'sku'         => $productSku,
+                'sold'        => $soldCount,
+                'stock'       => $totalStock,
+                'supply_days' => $soldCount > 0 ? 'Active movement' : '180+ days supply',
+            ];
+        })->sortBy('sold')->values();
+
+        return $products->take(15)->values()->map(function ($item, $index) {
+            $item['rank'] = $index + 1;
+            return $item;
+        });
     }
 }

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockMovement;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class RestockBatchController extends Controller
@@ -43,55 +45,127 @@ class RestockBatchController extends Controller
         $user = Auth::user();
 
         $data = $request->validate([
-            'location' => ['required', 'in:store,warehouse'],
-            'quantities' => ['required', 'array'],
-            'quantities.*' => ['nullable', 'integer', 'min:0'],
-            'note' => ['nullable', 'string', 'max:500'],
+            'quantities'      => ['required', 'array'],
+            'quantities.*'    => ['nullable', 'integer', 'min:0'],
+            'locations'       => ['required', 'array'],
+            'locations.*'     => ['required', 'in:store,warehouse'],
+            'note'            => ['nullable', 'string', 'max:500'],
+            'action_password' => ['nullable', 'string'],
         ]);
 
-        if ($user->role === 'warehouse_staff' && $data['location'] !== 'warehouse') {
-            abort(403, 'Warehouse staff can only manage warehouse stock.');
-        }
+        // Build a clean map of only the rows with qty > 0
+        $entries = [];
+        foreach ($data['quantities'] as $productId => $qty) {
+            if ($qty === null || (int) $qty <= 0) {
+                continue;
+            }
 
-        if ($user->role === 'staff' && $data['location'] !== 'store') {
-            abort(403, 'Staff can only request store restocks.');
-        }
+            $loc = $data['locations'][$productId] ?? null;
+            if (!$loc) {
+                continue;
+            }
 
-        $entries = array_filter($data['quantities'], fn($qty) => $qty !== null && $qty > 0);
+            $entries[$productId] = [
+                'qty'      => (int) $qty,
+                'location' => $loc,
+            ];
+        }
 
         if (empty($entries)) {
             return back()->with('error', 'Enter at least one quantity to restock.');
         }
 
-        $requiresApproval = $user->role === 'staff';
-        $batchId = Str::uuid();
-        $type = $data['location'] === 'store' ? 'restock_store' : 'restock_warehouse';
-        $column = $data['location'] === 'store' ? 'store_quantity' : 'warehouse_quantity';
+        // Strict Role Enforcement & Password Validation
+        $role = strtolower(trim($user->role));
+        
+        // Admins and Managers bypass all restrictions and do not need an action password
+        if (in_array($role, ['admin', 'manager'])) {
+            $requiresApproval = false;
+        } else {
+            $needsOverride = false;
+            $restrictedAction = '';
 
-        DB::transaction(function () use ($entries, $batchId, $type, $column, $user, $requiresApproval, $data) {
-            foreach ($entries as $productId => $qty) {
+            if ($role === 'warehouse_staff') {
+                foreach ($entries as $entry) {
+                    if ($entry['location'] === 'store') {
+                        $needsOverride = true;
+                        $restrictedAction = 'Warehouse staff cannot restock directly to Store.';
+                        break;
+                    }
+                }
+            } elseif ($role === 'staff') {
+                foreach ($entries as $entry) {
+                    if ($entry['location'] === 'warehouse') {
+                        $needsOverride = true;
+                        $restrictedAction = 'Staff cannot restock directly to Warehouse.';
+                        break;
+                    }
+                }
+            }
+
+            $submittedPassword = trim($request->input('action_password', ''));
+            $isPasswordValid = false;
+
+            // 1. If ANY password is typed in, verify it against Admins/Managers ONLY
+            if (!empty($submittedPassword)) {
+                $authorizedUsers = User::whereIn('role', ['admin', 'manager'])
+                    ->whereNotNull('action_password')
+                    ->get();
+                    
+                foreach ($authorizedUsers as $authUser) {
+                    if (Hash::check($submittedPassword, $authUser->action_password)) {
+                        $isPasswordValid = true;
+                        break;
+                    }
+                }
+
+                // If no Admin/Manager matched, deny immediately
+                if (!$isPasswordValid) {
+                    return back()->with('error', 'The Admin/Manager Action Password you provided is incorrect.');
+                }
+            }
+
+            // 2. If they need an override but didn't provide a valid password, block them.
+            if ($needsOverride && !$isPasswordValid) {
+                return back()->with('error', $restrictedAction . ' A valid Admin/Manager Action Password is required to override this.');
+            }
+
+            // 3. If a valid password is provided, it overrides the need for approval.
+            $requiresApproval = $role === 'staff' && !$isPasswordValid;
+        }
+        
+        $batchId          = Str::uuid();
+        $approverName     = $requiresApproval ? null : $user->firstname . ' ' . $user->lastname;
+        $requesterName    = $user->firstname . ' ' . $user->lastname;
+
+        DB::transaction(function () use ($entries, $batchId, $user, $requiresApproval, $data, $approverName, $requesterName) {
+            foreach ($entries as $productId => $entry) {
                 $product = Product::find($productId);
                 if (!$product) {
                     continue;
                 }
 
-                $before = $product->$column;
-                $after = $requiresApproval ? $before : $before + $qty;
+                $column = $entry['location'] === 'store' ? 'store_quantity' : 'warehouse_quantity';
+                $type   = $entry['location'] === 'store' ? 'restock_store'  : 'restock_warehouse';
+                $qty    = $entry['qty'];
+
+                $before = (int) ($product->$column ?? 0);
+                $after  = $requiresApproval ? $before : $before + $qty;
 
                 StockMovement::create([
-                    'batch_id' => $batchId,
-                    'product_id' => $product->id,
-                    'requested_by' => $user->id,
-                    'approved_by' => $requiresApproval ? null : $user->id,
-                    'type' => $type,
-                    'status' => $requiresApproval ? 'pending' : 'approved',
+                    'batch_id'        => $batchId,
+                    'product_id'      => $product->id,
+                    'requested_by'    => $user->id,
+                    'requester_name'  => $requesterName,
+                    'approved_by'     => $requiresApproval ? null : $user->id,
+                    'approver_name'   => $approverName,
+                    'type'            => $type,
+                    'status'          => $requiresApproval ? 'pending' : 'approved',
                     'quantity_before' => $before,
-                    'quantity_after' => $after,
-                    'quantity' => $qty,
-                    'note' => $data['note'] ?? null,
-                    'approved_at' => $requiresApproval ? null : now(),
-                    'created_at' => now(), // Explicitly captures current date and time
-                    'updated_at' => now(), // Explicitly captures current date and time
+                    'quantity_after'  => $after,
+                    'quantity'        => $qty,
+                    'note'            => $data['note'] ?? null,
+                    'approved_at'     => $requiresApproval ? null : now(),
                 ]);
 
                 if (!$requiresApproval) {
@@ -105,6 +179,6 @@ class RestockBatchController extends Controller
             ? "Restock batch submitted for approval ({$count} item(s))."
             : "Restock batch applied successfully ({$count} item(s)).";
 
-        return redirect()->route('inventory.index')->with('success', $message);
+        return back()->with('success', $message);
     }
 }

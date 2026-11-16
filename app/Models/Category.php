@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\AuditsChanges;
 
 class Category extends Model
 {
-    use AuditsChanges;
+    use HasFactory, AuditsChanges;
 
     protected $fillable = [
         'name', 
@@ -15,7 +16,8 @@ class Category extends Model
         'code', 
         'status', 
         'parent_id', 
-        'attachment_path'
+        'attachment_path',
+        'description', // <--- FIXED: Added this
     ];
 
     public function parent()
@@ -31,5 +33,10 @@ class Category extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function isParentCategory(): bool
+    {
+        return is_null($this->parent_id);
     }
 }

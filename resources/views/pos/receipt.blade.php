@@ -4,8 +4,8 @@
 
 @section('content')
 
-    <div class="flex justify-center items-center min-h-[70vh] py-8">
-        <div class="w-full flex flex-col items-center">
+    <div class="flex justify-center items-center min-h-[70vh] py-8 print:block print:min-h-0 print:py-0 print:bg-white">
+        <div class="w-full flex flex-col items-center print:block print:w-auto">
             
             <!-- Success Checkmark Banner & Title (Hidden on Print) -->
             <div class="text-center mb-8 print:hidden">
@@ -23,102 +23,176 @@
             </div>
 
             <!-- ON-SCREEN THERMAL RECEIPT PREVIEW CONTAINER -->
-            <div id="printableReceipt" class="w-full max-w-[360px] bg-white dark:bg-[#10141D] text-gray-900 dark:text-gray-100 border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-6 text-left shadow-lg font-mono text-[11px] leading-tight">
+            <div id="printableReceipt" class="w-full max-w-[360px] bg-white dark:bg-[#10141D] text-gray-900 dark:text-gray-100 border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-6 text-left shadow-lg font-mono text-[11px] leading-tight print:border-none print:shadow-none print:p-0 print:m-0 print:bg-white print:text-black">
                 
-                <!-- Business Name Header -->
-                <div class="text-center pb-4 border-b-2 border-dashed border-gray-200 dark:border-[#1e2536]">
-                    <h2 class="text-xs font-bold tracking-wider uppercase text-gray-900 dark:text-white">
+                @php
+                    $receiptItems = $transaction->transactionItems ?? $transaction->items ?? [];
+                    $hasProject = collect($receiptItems)->contains('item_type', 'project');
+                    $hasProduct = collect($receiptItems)->contains('item_type', 'product');
+                    
+                    $typeLabel = 'RETAIL SALE';
+                    if ($hasProject && !$hasProduct) $typeLabel = 'PROJECT / SERVICE';
+                    if ($hasProject && $hasProduct) $typeLabel = 'MIXED ORDER';
+
+                    // Aggregators for the breakdown
+                    $projectLabor = 0;
+                    $projectInstall = 0;
+                    $projectAdd = 0;
+                    $projectFreight = 0;
+                    $projectMarkup = 0;
+                    $projectMaterialsTotal = 0;
+                    $retailSubtotal = 0;
+                    $totalItemDiscounts = 0;
+                @endphp
+
+                <!-- Business Name Header with Logo -->
+                <div class="text-center pb-5">
+                    <!-- Logo (Forced Grayscale using Tailwind classes and inline style) -->
+                    <div class="flex justify-center mb-3">
+                        <img src="{{ asset('images/logo.svg') }}" alt="System Logo" class="w-16 h-16 object-contain grayscale contrast-125" style="filter: grayscale(100%) contrast(200%) !important;">
+                    </div>
+
+                    <h2 class="text-[13px] font-bold tracking-wider uppercase text-gray-900 dark:text-white print:text-black">
                         STEVEN HYDROTECH EXPONENT
                     </h2>
-                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">
-                        Water Treatment & Supply Services
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1 print:text-gray-700">
+                        Water Filtration & Treatment Specialist
                     </p>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1 print:text-gray-700">
+                        Branch: Legazpi Branch (MAIN)
+                    </p>
+
+                    <div class="mt-4 mb-1 text-[10px] font-bold tracking-widest text-gray-800 dark:text-gray-200 uppercase print:text-black">
+                        OFFICIAL SALES RECEIPT
+                    </div>
                 </div>
 
+                <div class="border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] my-2 print:border-black"></div>
+
                 <!-- Transaction Metadata -->
-                <div class="py-3.5 border-b-2 border-dashed border-gray-200 dark:border-[#1e2536] space-y-1.5 text-[10px] text-gray-600 dark:text-slate-400">
+                <div class="py-1 space-y-1.5 text-[10px] text-gray-600 dark:text-slate-400 print:text-black">
                     <div class="flex justify-between">
-                        <span>Date:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y - h:i A') }}</span>
+                        <span>Receipt #:</span>
+                        <span class="font-bold text-gray-900 dark:text-white print:text-black">{{ $transaction->transaction_id ?? 'SALE-' . strtoupper(uniqid()) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Order #:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">{{ $transaction->transaction_id ?? 'POS-' . $transaction->id }}</span>
+                        <span>Date/Time:</span>
+                        <span class="font-bold text-gray-900 dark:text-white print:text-black">{{ \Carbon\Carbon::parse($transaction->created_at)->format('M j, Y, g:i A') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Cashier:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">{{ $transaction->user->name ?? ($transaction->user->firstname ?? 'System') . ' ' . ($transaction->user->lastname ?? '') }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white print:text-black">{{ $transaction->user->name ?? ($transaction->user->firstname ?? 'System') . ' ' . ($transaction->user->lastname ?? '') }}</span>
                     </div>
+                    
+                    <!-- Order Type -->
+                    <div class="flex justify-between">
+                        <span>Order Type:</span>
+                        <span class="font-bold text-gray-900 dark:text-white uppercase tracking-wider print:text-black">{{ $typeLabel }}</span>
+                    </div>
+
                     @if(!empty($transaction->customer_name))
                         <div class="flex justify-between">
                             <span>Customer:</span>
-                            <span class="font-semibold text-gray-900 dark:text-white">{{ $transaction->customer_name }}</span>
+                            <span class="font-bold text-gray-900 dark:text-white print:text-black">{{ $transaction->customer_name }}</span>
                         </div>
                     @endif
                 </div>
 
-                <!-- ITEMS LIST WITH VERTICAL STACKED SKUS -->
-                <div class="py-3.5 border-b-2 border-dashed border-gray-200 dark:border-[#1e2536] space-y-3">
-                    @php
-                        $receiptItems = $transaction->items ?? $transaction->transactionItems ?? [];
-                        $totalItemCount = 0;
-                        $rawSubtotal = 0;
-                        $totalItemDiscounts = 0;
-                    @endphp
+                <div class="border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] my-2 print:border-black"></div>
 
+                <!-- ITEMS TABLE HEADER -->
+                <div class="flex justify-between text-[9px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2 print:text-black">
+                    <span>ITEM / QTY</span>
+                    <span>AMOUNT</span>
+                </div>
+
+                <!-- ITEMS LIST -->
+                <div class="space-y-3 pb-2 border-b-2 border-dashed border-gray-200 dark:border-[#1e2536] print:border-black">
                     @forelse ($receiptItems as $item)
-                        @php
-                            $totalItemCount += $item->quantity;
-                            $unitPrice = $item->selling_price ?? $item->price ?? 0;
-                            $baseItemTotal = $unitPrice * $item->quantity;
-                            $rawSubtotal += $baseItemTotal;
-                            
-                            $itemSubtotal = $item->subtotal ?? $baseItemTotal;
-                            $itemDiscount = max(0, $baseItemTotal - $itemSubtotal);
-                            $totalItemDiscounts += $itemDiscount;
-
-                            $discType = $item->item_discount_type ?? 'none';
-                            $discScope = $item->item_discount_scope ?? 'whole';
-                            $scopeLabel = (in_array(strtolower($discScope), ['per_item', 'unit', 'piece'])) ? 'Unit' : 'Whole Row';
-                        @endphp
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-start font-bold text-gray-900 dark:text-white">
-                                <span>{{ $item->quantity }}x {{ $item->product->product_name ?? $item->product_name ?? 'Item' }}</span>
-                                <span>₱{{ number_format($baseItemTotal, 2) }}</span>
-                            </div>
-                            <!-- Vertical Stack for Product SKU and Item SKU -->
-                            <div class="text-[9px] text-gray-400 font-normal space-y-0.5 pl-0">
-                                <div>Product SKU: <strong class="text-slate-600 dark:text-slate-300">{{ $item->product_sku ?? '—' }}</strong></div>
-                                <div>Item SKU: <strong class="text-slate-600 dark:text-slate-300">{{ $item->item_sku ?? '—' }}</strong></div>
-                            </div>
-                            <div class="flex justify-between text-[10px] text-gray-500 pl-0">
-                                <span>@ ₱{{ number_format($unitPrice, 2) }}/unit</span>
-                            </div>
-                            @if(strtolower($discType) !== 'none' && $discType != '' && $itemDiscount > 0)
-                                <div class="flex justify-between text-[10px] text-rose-600 dark:text-rose-400 pl-0 font-medium">
-                                    <span>Item Disc ({{ $scopeLabel }}):</span>
-                                    <span>-₱{{ number_format($itemDiscount, 2) }}</span>
+                        @if($item->item_type === 'project')
+                            <!-- PROJECT ITEM RENDERING -->
+                            @php
+                                $breakdown = $item->project_breakdown;
+                                
+                                $projectLabor += $breakdown['labor_cost'] ?? 0;
+                                $projectInstall += $breakdown['installation_cost'] ?? 0;
+                                $projectAdd += $breakdown['additional_cost'] ?? 0;
+                                $projectFreight += $breakdown['freight'] ?? 0;
+                                $projectMarkup += $breakdown['markup_amount'] ?? 0;
+                                $projectMaterialsTotal += $breakdown['materials_subtotal'] ?? 0;
+                            @endphp
+                            <div class="space-y-1.5 pb-1">
+                                <div class="flex justify-between items-start font-bold text-gray-900 dark:text-white text-[11px] print:text-black">
+                                    <span>{{ str_replace('PROJECT: ', '', $item->product_name) }} (x1)</span>
+                                    <span>₱{{ number_format($item->subtotal, 2) }}</span>
                                 </div>
-                            @endif
-                        </div>
+                                
+                                <div class="pl-2 border-l border-gray-300 dark:border-gray-600 space-y-1 mt-1 print:border-black">
+                                    @foreach($breakdown['materials'] as $mat)
+                                        <div class="flex justify-between text-[9px] text-gray-600 dark:text-slate-400 print:text-gray-800">
+                                            <span>{{ $mat['qty'] }}x {{ $mat['name'] }} <span class="text-[8px] text-gray-400 uppercase print:text-gray-600">({{ $mat['source'] }})</span></span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            <!-- STANDARD RETAIL PRODUCT RENDERING -->
+                            @php
+                                $retailSubtotal += $item->subtotal;
+                                $baseItemTotal = $item->selling_price * $item->quantity;
+                                $itemDiscount = max(0, $baseItemTotal - $item->subtotal);
+                                $totalItemDiscounts += $itemDiscount;
+                                $sku = $item->product_sku ?? ($item->product ? $item->product->product_sku : '—');
+                            @endphp
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-start font-bold text-gray-900 dark:text-white text-[11px] print:text-black">
+                                    <span>{{ $item->product_name }} (x{{ $item->quantity }})</span>
+                                </div>
+                                <div class="flex justify-between text-[10px] print:text-black">
+                                    <span class="text-gray-600 dark:text-slate-400 print:text-gray-800">@ ₱{{ number_format($item->selling_price, 2) }}/unit</span>
+                                    <span class="font-bold text-gray-900 dark:text-white print:text-black">₱{{ number_format($item->subtotal, 2) }}</span>
+                                </div>
+                                <div class="text-[9px] text-gray-500 font-normal print:text-gray-700">SKU: {{ $sku }}</div>
+                                
+                                @if($itemDiscount > 0)
+                                    <div class="flex justify-between text-[9px] text-gray-900 dark:text-gray-100 font-medium print:text-black">
+                                        <span>Item Disc:</span>
+                                        <span>-₱{{ number_format($itemDiscount, 2) }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                     @empty
-                        <p class="text-xs text-gray-400 text-center py-2">No items found for this transaction.</p>
+                        <p class="text-xs text-gray-400 text-center py-2 print:text-black">No items found for this transaction.</p>
                     @endforelse
                 </div>
 
-                <!-- SUMMARY TOTALS -->
-                <div class="pt-3.5 space-y-1.5 text-[10px] text-gray-700 dark:text-slate-300">
+                <!-- SUMMARY TOTALS & BREAKDOWN -->
+                <div class="pt-2 space-y-1.5 text-[10px] text-gray-600 dark:text-slate-400 print:text-black">
+                    
                     <div class="flex justify-between">
-                        <span>Items:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">{{ $totalItemCount }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">₱{{ number_format($rawSubtotal, 2) }}</span>
+                        <span>Items & Materials Subtotal:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($retailSubtotal + $projectMaterialsTotal, 2) }}</span>
                     </div>
 
+                    @if($hasProject)
+                        @if(($projectLabor + $projectInstall + $projectAdd) > 0)
+                            <div class="flex justify-between">
+                                <span>Labor & Services:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($projectLabor + $projectInstall + $projectAdd, 2) }}</span>
+                            </div>
+                        @endif
+                        
+                        @if($projectMarkup > 0)
+                            <div class="flex justify-between">
+                                <span>Project Mark Up:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($projectMarkup, 2) }}</span>
+                            </div>
+                        @endif
+                    @endif
+
                     @if($totalItemDiscounts > 0)
-                        <div class="flex justify-between text-rose-600 dark:text-rose-400">
+                        <div class="flex justify-between text-gray-900 dark:text-gray-100 print:text-black">
                             <span>Item Discounts:</span>
                             <span class="font-semibold">-₱{{ number_format($totalItemDiscounts, 2) }}</span>
                         </div>
@@ -126,68 +200,74 @@
 
                     @php
                         $cartDiscountAmount = (float)($transaction->cart_discount_value ?? 0);
-                        if ($cartDiscountAmount <= 0) {
-                            $subAfterItemDisc = $rawSubtotal - $totalItemDiscounts;
-                            $cartDiscountAmount = max(0, $subAfterItemDisc - $transaction->total_amount);
-                        }
-                        
                         $dbCartDiscType = strtolower(trim($transaction->cart_discount_type ?? 'none'));
                         $cartDiscLabel = 'Cart Discount';
-
                         if ($dbCartDiscType !== 'none' && $dbCartDiscType !== '') {
-                            if ($dbCartDiscType === 'senior') {
-                                $cartDiscLabel = 'Cart Discount (Senior Citizen)';
-                            } elseif ($dbCartDiscType === 'pwd') {
-                                $cartDiscLabel = 'Cart Discount (PWD)';
-                            } elseif ($dbCartDiscType === 'employee') {
-                                $cartDiscLabel = 'Cart Discount (Employee)';
-                            } elseif ($dbCartDiscType === 'voucher') {
-                                $cartDiscLabel = 'Cart Discount (Voucher)';
-                            } else {
-                                $cartDiscLabel = 'Cart Discount (' . ucwords($dbCartDiscType) . ')';
-                            }
+                            $cartDiscLabel = 'Cart Discount (' . ucwords($dbCartDiscType) . ')';
                         }
                     @endphp
 
                     @if($cartDiscountAmount > 0)
-                        <div class="flex justify-between text-rose-600 dark:text-rose-400">
+                        <div class="flex justify-between text-gray-900 dark:text-gray-100 print:text-black">
                             <span>{{ $cartDiscLabel }}:</span>
                             <span class="font-semibold">-₱{{ number_format($cartDiscountAmount, 2) }}</span>
                         </div>
                     @endif
 
-                    <div class="flex justify-between font-bold text-xs pt-2.5 border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] text-gray-900 dark:text-white">
-                        <span>Total Amount:</span>
-                        <span>₱{{ number_format($transaction->total_amount, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between pt-1">
-                        <span>Payment:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">₱{{ number_format($transaction->amount_paid, 2) }}</span>
-                    </div>
+                    @php
+                        $vatRate = 0.12;
+                        $vatAmount = $transaction->total_amount - ($transaction->total_amount / (1 + $vatRate));
+                    @endphp
                     <div class="flex justify-between">
-                        <span>Change:</span>
-                        <span class="font-semibold text-gray-900 dark:text-white">₱{{ number_format($transaction->amount_change ?? ($transaction->amount_paid - $transaction->total_amount), 2) }}</span>
+                        <span>Tax (12% VAT Incl.):</span>
+                        <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($vatAmount, 2) }}</span>
+                    </div>
+
+                    @if($projectFreight > 0)
+                        <div class="flex justify-between">
+                            <span>Shipping / Freight:</span>
+                            <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($projectFreight, 2) }}</span>
+                        </div>
+                    @endif
+
+                    <div class="border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] my-1.5 print:border-black"></div>
+
+                    <div class="flex justify-between font-extrabold text-[12px] text-gray-900 dark:text-white pt-1 print:text-black">
+                        <span>TOTAL DUE:</span>
+                        <span>₱{{ number_format($transaction->total_amount, 2) }}</span>
                     </div>
                 </div>
 
+                <!-- Payment & Change Section -->
+                <div class="border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] mt-2 pt-2 pb-2 space-y-1.5 text-[10px] print:border-black">
+                    <div class="flex justify-between text-gray-600 dark:text-slate-400 print:text-black">
+                        <span>Payment:</span>
+                        <span class="font-bold text-gray-900 dark:text-white print:text-black">₱{{ number_format($transaction->amount_paid, 2) }}</span>
+                    </div>
+                    @if($transaction->amount_change > 0)
+                        <div class="flex justify-between text-gray-600 dark:text-slate-400 print:text-black">
+                            <span>Change:</span>
+                            <span class="font-bold text-gray-900 dark:text-white print:text-black">₱{{ number_format($transaction->amount_change, 2) }}</span>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] my-1 print:border-black"></div>
+
                 <!-- Footer Note -->
-                <div class="text-center pt-4 pb-1 text-[9px] text-gray-400 border-t-2 border-dashed border-gray-200 dark:border-[#1e2536] mt-4">
-                    <p class="font-medium">Thank you for your purchase!</p>
+                <div class="text-center pt-3 text-[9px] text-gray-500 dark:text-gray-400 space-y-1 mt-1 print:text-black">
+                    <p class="font-bold tracking-wide text-gray-700 dark:text-gray-300 uppercase print:text-black">THANK YOU FOR YOUR BUSINESS!</p>
+                    <p class="leading-tight px-2 print:text-gray-800">Please keep this receipt for warranty and service records.</p>
                 </div>
 
             </div>
 
             <!-- ACTIONS (Hidden when printing) -->
             <div class="flex items-center justify-center gap-3 pt-6 w-full max-w-[360px] print:hidden">
-                <!-- New Sale -->
-                <a href="{{ route('pos') }}"
-                   class="w-1/2 text-center bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-semibold py-3 rounded-xl transition-all duration-300 ease-in-out shadow-xs text-xs">
+                <a href="{{ route('pos') }}" class="w-1/2 text-center bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-semibold py-3 rounded-full transition-all duration-300 ease-in-out shadow-xs text-xs">
                     New Sale
                 </a>
-
-                <!-- Print -->
-                <button type="button" onclick="window.print()"
-                        class="w-1/2 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold py-3 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                <button type="button" onclick="window.print()" class="w-1/2 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold py-3 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                     Print Receipt
                 </button>
             </div>
@@ -198,44 +278,57 @@
     <!-- Strict Thermal Printer & Preview Stylesheet -->
     <style>
         @media print {
+            /* Try to force 80mm size */
             @page {
                 size: 80mm auto;
                 margin: 0;
             }
+            
+            /* Force the body to align top-left, preventing the centering issue */
             html, body {
-                width: 100%;
-                height: 100%;
-                background: white !important;
-                color: black !important;
+                width: 80mm !important; 
                 margin: 0 !important;
                 padding: 0 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                align-items: center !important;
+                background: white !important;
+                color: black !important;
+                display: block !important; /* Fixes huge zoom issue */
             }
+
+            /* Hide everything */
             body * {
-                visibility: hidden !important;
+                visibility: hidden;
             }
+
+            /* Reveal ONLY the receipt */
             #printableReceipt, #printableReceipt * {
-                visibility: visible !important;
+                visibility: visible;
             }
+
+            /* Force it to the top-left corner */
             #printableReceipt {
-                position: relative !important;
-                display: block !important;
-                width: 78mm !important;
-                max-width: 78mm !important;
-                margin: auto !important;
-                padding: 6mm !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 80mm !important; /* Forces the width, preventing stretching */
+                max-width: 80mm !important;
+                padding: 5mm !important; /* Safe margin for thermal printers */
+                margin: 0 !important;
                 background: white !important;
                 color: black !important;
                 border: none !important;
                 box-shadow: none !important;
-                font-size: 13px !important;
-                line-height: 1.4 !important;
+                border-radius: 0 !important;
             }
-            #printableReceipt h2 {
-                font-size: 15px !important;
+
+            /* Override Tailwind Color classes to Black */
+            .print\:text-black, h2, span, p {
+                color: black !important;
+            }
+            .print\:border-black {
+                border-color: black !important;
+            }
+            .print\:hidden {
+                display: none !important;
             }
         }
     </style>

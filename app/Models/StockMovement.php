@@ -14,9 +14,12 @@ class StockMovement extends Model
         'batch_id',
         'product_id',
         'requested_by',
+        'requester_name',
         'approved_by',
+        'approver_name',
         'type',
         'status',
+        'delivery_status', // <--- FIXED: Added this
         'quantity_before',
         'quantity_after',
         'quantity',

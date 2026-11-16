@@ -36,7 +36,7 @@
                            placeholder="Leave blank to use percentage instead"
                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
                     <p class="text-xs text-gray-400 mt-1">
-                        If set, this is used for every uncalibrated product regardless of its price. Most businesses use this, since ordering cost (paperwork, delivery) usually doesn't scale with item price.
+                        If set, this is used for every uncalibrated product regardless of its price.
                     </p>
                 </div>
 
@@ -45,7 +45,6 @@
                     <input type="number" step="0.01" min="0" max="100" name="ordering_cost_percentage"
                            value="{{ old('ordering_cost_percentage', $settings->ordering_cost_percentage ?? 10) }}"
                            class="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Only used if the flat default above is left blank.</p>
                 </div>
             </div>
 
@@ -57,7 +56,6 @@
                     <input type="number" step="0.01" min="0" max="100" name="holding_cost_percentage"
                            value="{{ old('holding_cost_percentage', $settings->holding_cost_percentage ?? 20) }}"
                            class="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Used for products without a storage space (cbm) set. 20–30% is a common industry range.</p>
                 </div>
 
                 <div>
@@ -65,7 +63,6 @@
                     <input type="number" step="0.01" min="0" name="holding_cost_per_cbm"
                            value="{{ old('holding_cost_per_cbm', $settings->holding_cost_per_cbm ?? 0) }}"
                            class="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Takes priority over the percentage when a product has storage space set.</p>
                 </div>
             </div>
 

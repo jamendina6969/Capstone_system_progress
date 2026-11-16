@@ -14,8 +14,6 @@ class EoqSettingController extends Controller
         return view('forecast.eoqSettings', compact('settings'));
     }
 
-    
-
     public function update(Request $request)
     {
         $data = $request->validate([
@@ -25,9 +23,9 @@ class EoqSettingController extends Controller
             'holding_cost_per_cbm' => ['required', 'numeric', 'min:0'],
         ]);
 
-        EoqSetting::updateOrCreate(['id' => 1], array_merge($data, ['updated_by' => Auth::id()]));
+        // <--- FIXED: Passing an empty array ensures it just updates the single existing settings row.
+        EoqSetting::query()->updateOrCreate([], array_merge($data, ['updated_by' => Auth::id()]));
 
         return back()->with('success', 'EOQ settings updated.');
     }
-
 }

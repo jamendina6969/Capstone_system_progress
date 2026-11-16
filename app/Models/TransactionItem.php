@@ -4,17 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AuditsChanges;
 
 class TransactionItem extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditsChanges;
 
     protected $fillable = [
         'transaction_id',
+        'item_type',           
+        'project_image',       
+        'project_breakdown',   
         'product_id',
-        'product_sku',      // Permanent snapshot of Product SKU[cite: 9]
-        'item_sku',         // Permanent snapshot of Item SKU[cite: 9]
+        'product_sku',
+        'item_sku',
         'product_name',
+        'main_category_name',  
+        'brand_category_name', 
         'selling_price',
         'quantity',
         'subtotal',
@@ -27,6 +33,7 @@ class TransactionItem extends Model
         'selling_price' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'item_discount_value' => 'decimal:2',
+        'project_breakdown' => 'array',
     ];
 
     public function transaction()
@@ -37,5 +44,16 @@ class TransactionItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function customerReturnItems()
+    {
+        return $this->hasMany(CustomerReturnItem::class, 'transaction_item_id');
+    }
+
+    // <--- FIXED: Added materials relationship for Project Receipts
+    public function materials()
+    {
+        return $this->hasMany(TransactionItemMaterial::class);
     }
 }

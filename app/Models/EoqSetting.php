@@ -11,8 +11,9 @@ class EoqSetting extends Model
 
     protected $fillable = [
         'default_ordering_cost',
+        'ordering_cost_percentage',
         'holding_cost_percentage',
-        'holding_cost_per_liter',
+        'holding_cost_per_cbm',
         'updated_by',
     ];
 }
