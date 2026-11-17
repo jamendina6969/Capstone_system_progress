@@ -36,6 +36,13 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
+    // ==================== TEMPORARY CACHE CLEAR ====================
+    Route::get('/clear-view-cache', function() {
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Cache::clear();
+        return 'View and Application caches cleared successfully!';
+    });
+
     // ==================== ADMIN USERS & BACKUPS ====================
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
