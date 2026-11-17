@@ -12,6 +12,8 @@ class TransactionItemMaterial extends Model
     protected $fillable = [
         'transaction_item_id',
         'product_id',
+        'product_sku', // <--- ADDED
+        'item_sku',    // <--- ADDED
         'product_name',
         'quantity',
         'price',

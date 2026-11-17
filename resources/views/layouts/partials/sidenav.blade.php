@@ -12,7 +12,6 @@
     ];
     $userSubtitle = $friendlySubtitles[$resolvedRole] ?? 'Authorized User';
 
-    // PERFORMANCE & BUG FIX: Cache the FULL payload to match the Topbar exactly.
     $sidebarNotifData = \Illuminate\Support\Facades\Cache::remember('topbar_notifications_' . auth()->id(), 300, function () {
         if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
             return ['prCount' => 0, 'approvalCount' => 0, 'recentPRs' => collect(), 'recentApprovals' => collect()];
@@ -57,7 +56,9 @@
             </svg>
         </button>
 
-        {{-- 1. DASHBOARD --}}
+        {{-- ============================================================ --}}
+        {{-- 1. DASHBOARD (admin, manager) --}}
+        {{-- ============================================================ --}}
         @if (!in_array(auth()->user()->role, ['staff', 'warehouse_staff']))
             <a href="{{ route('home') }}" title="Dashboard"
                class="{{ $linkBase }} {{ request()->routeIs('home') ? $linkActive : $linkIdle }}">
@@ -66,7 +67,9 @@
             </a>
         @endif
 
-        {{-- 2. POINT OF SALE --}}
+        {{-- ============================================================ --}}
+        {{-- 2. POINT OF SALE (admin, manager, staff) --}}
+        {{-- ============================================================ --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager', 'staff']))
             <a href="{{ route('pos') }}" title="Point of Sale"
                class="{{ $linkBase }} {{ request()->routeIs('pos') || request()->routeIs('checkout*') ? $linkActive : $linkIdle }}">
@@ -75,7 +78,9 @@
             </a>
         @endif
 
-        {{-- 3. TRANSACTION HISTORY --}}
+        {{-- ============================================================ --}}
+        {{-- 3. TRANSACTION HISTORY (admin, manager) --}}
+        {{-- ============================================================ --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager']))
             <a href="{{ route('transaction.history') }}" title="Transaction History"
                class="{{ $linkBase }} {{ request()->routeIs('transaction.history') ? $linkActive : $linkIdle }}">
@@ -84,7 +89,9 @@
             </a>
         @endif
 
-        {{-- 4. SALES RECORDS (Admin, Manager & Staff) --}}
+        {{-- ============================================================ --}}
+        {{-- 4. SALES RECORDS (admin, manager, staff) --}}
+        {{-- ============================================================ --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager', 'staff']))
             <a href="{{ route('sales.records') }}" title="Sales Records"
                class="{{ $linkBase }} {{ request()->routeIs('sales.*') ? $linkActive : $linkIdle }}">
@@ -93,19 +100,12 @@
             </a>
         @endif
 
-        {{-- 5. STAFF PURCHASE REQUESTS LINK --}}
-        @if (in_array(auth()->user()->role, ['staff', 'warehouse_staff']))
-            <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests"
-               class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="sidebar-text">Purchase Requests</span>
-            </a>
-        @endif
-
-        {{-- ADMIN / MANAGER SPECIFIC LINKS --}}
+        {{-- ============================================================ --}}
+        {{-- ADMIN / MANAGER ONLY SECTION --}}
+        {{-- ============================================================ --}}
         @if (in_array(auth()->user()->role, ['admin', 'manager']))
-            
-            {{-- 6. CATALOG MANAGEMENT --}}
+
+            {{-- 5. CATALOG MANAGEMENT --}}
             @php
                 $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*');
             @endphp
@@ -131,78 +131,7 @@
                 </div>
             </div>
 
-            {{-- 7. FORECASTING & EOQ --}}
-            @php
-                $isForecastActive = request()->routeIs('eoq.*', 'forecast.settings*');
-            @endphp
-            <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('forecastDropdown', 'forecastArrow')"
-                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                        <span class="sidebar-text">Forecasting & EOQ</span>
-                    </div>
-                    <svg id="forecastArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isForecastActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-
-                <div id="forecastDropdown" class="{{ $isForecastActive ? '' : 'hidden' }} pl-6 space-y-1">
-                    <a href="{{ route('eoq.calibration') }}" title="EOQ Calibration"
-                       class="{{ $linkBase }} {{ request()->routeIs('eoq.calibration') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">EOQ Calibration</span>
-                    </a>
-
-                    <a href="{{ route('forecast.settings') }}" title="Forecast Settings"
-                       class="{{ $linkBase }} {{ request()->routeIs('forecast.settings*') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Forecast Settings</span>
-                    </a>
-                </div>
-            </div>
-
-            {{-- 8. SUPPLIERS & POs --}}
-            @php
-                $isSupplierActive = request()->routeIs('suppliers.*', 'purchase-orders.*', 'purchase-requests.*', 'supplier-returns.*');
-            @endphp
-            <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('supplierDropdown', 'supplierArrow')"
-                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                        <span class="sidebar-text">Suppliers & POs</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        @if ($prCount > 0)
-                            <span class="badge-count bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $prCount }}</span>
-                        @endif
-                        <svg id="supplierArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isSupplierActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </button>
-
-                <div id="supplierDropdown" class="{{ $isSupplierActive ? '' : 'hidden' }} pl-6 space-y-1">
-                    <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests" class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Purchase Requests</span>
-                        @if ($prCount > 0)
-                            <span class="ml-auto bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $prCount }}</span>
-                        @endif
-                    </a>
-                    <a href="{{ route('purchase-orders.index') }}" title="Purchase Orders" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.index', 'purchase-orders.create') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Purchase Orders</span>
-                    </a>
-                    <a href="{{ route('suppliers.index') }}" title="Suppliers Directory" class="{{ $linkBase }} {{ request()->routeIs('suppliers.index', 'suppliers.ledger') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Suppliers Directory</span>
-                    </a>
-                    <a href="{{ route('supplier-returns.index') }}" title="Supplier Returns" class="{{ $linkBase }} {{ request()->routeIs('supplier-returns.*') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Returns & Refunds</span>
-                    </a>
-                    <a href="{{ route('purchase-orders.lowStock') }}" title="Low Stock Suggestions" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.lowStock') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Low Stock Suggestions</span>
-                    </a>
-                    <a href="{{ route('suppliers.discrepancy') }}" title="Discrepancy Report" class="{{ $linkBase }} {{ request()->routeIs('suppliers.discrepancy') ? $linkActive : $linkIdle }}">
-                        <span class="sidebar-text">Discrepancy Report</span>
-                    </a>
-                </div>
-            </div>
-
-            {{-- 9. INVENTORY --}}
+            {{-- 6. INVENTORY --}}
             @php
                 $isInventoryActive = request()->routeIs('inventory.*');
             @endphp
@@ -245,7 +174,87 @@
                 </div>
             </div>
 
-            {{-- 10. AUDIT LOGS --}}
+            {{-- 7. FORECASTING & EOQ --}}
+            @php
+                $isForecastActive = request()->routeIs('eoq.*', 'forecast.settings*');
+            @endphp
+            <div class="space-y-1">
+                <button type="button" onclick="toggleDropdown('forecastDropdown', 'forecastArrow')"
+                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span class="sidebar-text">Forecasting & EOQ</span>
+                    </div>
+                    <svg id="forecastArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isForecastActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <div id="forecastDropdown" class="{{ $isForecastActive ? '' : 'hidden' }} pl-6 space-y-1">
+                    <a href="{{ route('eoq.calibration') }}" title="EOQ Calibration"
+                       class="{{ $linkBase }} {{ request()->routeIs('eoq.calibration') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">EOQ Calibration</span>
+                    </a>
+
+                    <a href="{{ route('forecast.settings') }}" title="Forecast Settings"
+                       class="{{ $linkBase }} {{ request()->routeIs('forecast.settings*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Forecast Settings</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- 8. SUPPLIERS & POs (now also contains Customer Returns) --}}
+            @php
+                $isSupplierActive = request()->routeIs(
+                    'suppliers.*',
+                    'purchase-orders.*',
+                    'purchase-requests.*',
+                    'supplier-returns.*',
+                    'customer.returns.*'
+                );
+            @endphp
+            <div class="space-y-1">
+                <button type="button" onclick="toggleDropdown('supplierDropdown', 'supplierArrow')"
+                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <span class="sidebar-text">Suppliers & POs</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if ($prCount > 0)
+                            <span class="badge-count bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $prCount }}</span>
+                        @endif
+                        <svg id="supplierArrow" class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isSupplierActive ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </button>
+
+                <div id="supplierDropdown" class="{{ $isSupplierActive ? '' : 'hidden' }} pl-6 space-y-1">
+                    <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests" class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Purchase Requests</span>
+                        @if ($prCount > 0)
+                            <span class="ml-auto bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $prCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('purchase-orders.index') }}" title="Purchase Orders" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.index', 'purchase-orders.create') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Purchase Orders</span>
+                    </a>
+                    <a href="{{ route('suppliers.index') }}" title="Suppliers Directory" class="{{ $linkBase }} {{ request()->routeIs('suppliers.index', 'suppliers.ledger') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Suppliers Directory</span>
+                    </a>
+                    <a href="{{ route('supplier-returns.index') }}" title="Supplier Returns" class="{{ $linkBase }} {{ request()->routeIs('supplier-returns.*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Supplier Returns</span>
+                    </a>
+                    <a href="{{ route('customer.returns.index') }}" title="Customer Returns" class="{{ $linkBase }} {{ request()->routeIs('customer.returns.*') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Customer Returns</span>
+                    </a>
+                    <a href="{{ route('purchase-orders.lowStock') }}" title="Low Stock Suggestions" class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.lowStock') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Low Stock Suggestions</span>
+                    </a>
+                    <a href="{{ route('suppliers.discrepancy') }}" title="Discrepancy Report" class="{{ $linkBase }} {{ request()->routeIs('suppliers.discrepancy') ? $linkActive : $linkIdle }}">
+                        <span class="sidebar-text">Discrepancy Report</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- 9. AUDIT LOGS --}}
             <a href="{{ route('audit-logs.index') }}" title="Audit Logs"
                class="{{ $linkBase }} {{ request()->routeIs('audit-logs.*') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -253,7 +262,20 @@
             </a>
         @endif
 
-        {{-- STAFF SPECIFIC LINKS (Inventory & My Requests) --}}
+        {{-- ============================================================ --}}
+        {{-- STAFF / WAREHOUSE-STAFF ONLY --}}
+        {{-- ============================================================ --}}
+
+        {{-- Purchase Requests (staff & warehouse_staff) --}}
+        @if (in_array(auth()->user()->role, ['staff', 'warehouse_staff']))
+            <a href="{{ route('purchase-requests.index') }}" title="Purchase Requests"
+               class="{{ $linkBase }} {{ request()->routeIs('purchase-requests.*') ? $linkActive : $linkIdle }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="sidebar-text">Purchase Requests</span>
+            </a>
+        @endif
+
+        {{-- Inventory View (warehouse_staff) --}}
         @if (auth()->user()->role === 'warehouse_staff')
             <a href="{{ route('inventory.view') }}" title="Inventory Management"
                class="{{ $linkBase }} {{ request()->routeIs('inventory.view') ? $linkActive : $linkIdle }}">
@@ -262,6 +284,7 @@
             </a>
         @endif
 
+        {{-- Restock Requests (staff & warehouse_staff) --}}
         @if (in_array(auth()->user()->role, ['warehouse_staff', 'staff']))
             <a href="{{ route('inventory.myRequests') }}" title="Restock Requests"
                class="{{ $linkBase }} {{ request()->routeIs('inventory.myRequests') ? $linkActive : $linkIdle }}">
@@ -270,7 +293,9 @@
             </a>
         @endif
 
-        {{-- 11. USER MANAGEMENT --}}
+        {{-- ============================================================ --}}
+        {{-- 10. USER MANAGEMENT (admin) --}}
+        {{-- ============================================================ --}}
         @if (auth()->user()->role === 'admin')
             <a href="{{ route('admin.users.index') }}" title="User Management"
                class="{{ $linkBase }} {{ request()->routeIs('admin.users.*') ? $linkActive : $linkIdle }}">
@@ -278,7 +303,7 @@
                 <span class="sidebar-text">User Management</span>
             </a>
 
-            {{-- 12. SYSTEM BACKUP --}}
+            {{-- 11. SYSTEM BACKUP (admin) --}}
             <a href="{{ route('admin.backups.index') }}" title="System Backup"
                class="{{ $linkBase }} {{ request()->routeIs('admin.backups.*') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
@@ -286,7 +311,9 @@
             </a>
         @endif
 
-        {{-- 13. USER GUIDE --}}
+        {{-- ============================================================ --}}
+        {{-- 12. USER GUIDE (all roles) --}}
+        {{-- ============================================================ --}}
         <a href="{{ route('user-guide') }}" title="User Guide"
            class="{{ $linkBase }} {{ request()->routeIs('user-guide') ? $linkActive : $linkIdle }}">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>

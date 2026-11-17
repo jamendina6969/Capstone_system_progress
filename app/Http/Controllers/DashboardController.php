@@ -11,7 +11,6 @@ use App\Services\EoqService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
@@ -22,40 +21,6 @@ class DashboardController extends Controller
 
         if ($user->role === 'staff') {
             return redirect()->route('pos');
-        }
-
-        // =====================================================
-        // EARLY RETURN 1: Live KPI Polling (AJAX - No Refresh)
-        // =====================================================
-        if ($request->ajax() && $request->has('live_poll')) {
-            $metrics = $this->sharedMetrics();
-
-            return response()->json([
-                'todaySales'         => '₱' . number_format($metrics['todaySales'], 2),
-                'overallSales'       => '₱' . number_format($metrics['overallSales'], 2),
-                'todayTransactions'  => $metrics['todayTransactions'],
-                'totalProducts'      => $metrics['totalProducts'],
-                'restockNeededCount' => $metrics['restockNeededCount'],
-            ]);
-        }
-
-        // =====================================================
-        // EARLY RETURN 2: Inventory Alerts Infinite Scroll (AJAX)
-        // Must run BEFORE any heavy dashboard computation.
-        // =====================================================
-        if ($request->ajax() && $request->has('alert_ajax')) {
-            $alerts = $this->getLowStockAlerts($request);
-
-            return response()->json([
-                'html'          => view('dashboard.partials.alert-rows', ['lowStockProducts' => $alerts])->render(),
-                'next_page_url' => $alerts->nextPageUrl(),
-                'current_page'  => $alerts->currentPage(),
-                'last_page'     => $alerts->lastPage(),
-                'total_records' => $alerts->total(),
-                'first_item'    => $alerts->firstItem(),
-                'last_item'     => $alerts->lastItem(),
-                'per_page'      => $alerts->perPage(),
-            ]);
         }
 
         $data = $this->sharedMetrics();
@@ -152,48 +117,35 @@ class DashboardController extends Controller
             $data['totalUsers'] = User::count();
         }
 
+        // =====================================================
+        // AJAX Response for Inventory Alerts Infinite Scroll
+        // =====================================================
+        if ($request->ajax() && $request->has('alert_ajax')) {
+            $alerts = $data['lowStockProducts'];
+            return response()->json([
+                'html' => view('dashboard.partials.alert-rows', ['lowStockProducts' => $alerts])->render(),
+                'next_page_url' => $alerts->nextPageUrl(),
+                'current_page' => $alerts->currentPage(),
+                'last_page' => $alerts->lastPage(),
+                'total_records' => $alerts->total(),
+                'first_item' => $alerts->firstItem(),
+                'last_item' => $alerts->lastItem(),
+            ]);
+        }
+
         return view('home', $data);
-    }
-
-    private function getLowStockAlerts(Request $request): LengthAwarePaginator
-    {
-        $lowStockQuery = Product::with('category')->where(function ($q) {
-            $q->whereRaw('COALESCE(store_quantity, 0) = 0')
-              ->orWhereRaw('COALESCE(store_quantity, 0) <= COALESCE(reorder_point, 10)')
-              ->orWhereRaw('COALESCE(warehouse_quantity, 0) = 0')
-              ->orWhereRaw('COALESCE(warehouse_quantity, 0) <= COALESCE(reorder_point, 10)')
-              ->orWhereRaw('(COALESCE(store_quantity, 0) + COALESCE(warehouse_quantity, 0)) <= COALESCE(reorder_point, 10)');
-        })->get();
-
-        $alertPage    = (int) $request->get('alert_page', 1);
-        $alertPerPage = 8; // Increased from 4 so rows overflow the 400px container and trigger scrollbar
-
-        $paginator = new LengthAwarePaginator(
-            $lowStockQuery->forPage($alertPage, $alertPerPage)->values(),
-            $lowStockQuery->count(),
-            $alertPerPage,
-            $alertPage,
-            ['path' => $request->url(), 'pageName' => 'alert_page']
-        );
-        $paginator->appends($request->query());
-
-        return $paginator;
     }
 
     private function descendantCategoryIds(int $categoryId): array
     {
         $ids    = [$categoryId];
         $parent = [$categoryId];
-        $seen   = [$categoryId => true];
 
         while (!empty($parent)) {
             $children = Category::whereIn('parent_id', $parent)->pluck('id')->all();
-            $children = array_values(array_filter($children, fn ($id) => !isset($seen[$id])));
+            $children = array_values(array_diff($children, $ids));
             if (empty($children)) {
                 break;
-            }
-            foreach ($children as $childId) {
-                $seen[$childId] = true;
             }
             $ids    = array_merge($ids, $children);
             $parent = $children;
@@ -215,6 +167,7 @@ class DashboardController extends Controller
         return [
             'todaySales'         => Transaction::whereDate('created_at', today())->sum('total_amount'),
             'overallSales'       => Transaction::sum('total_amount'),
+            // Only count actual POS checkouts (transaction_type = 0) to avoid counting imported CSV rows as daily orders
             'todayTransactions'  => Transaction::whereDate('created_at', today())->where('transaction_type', 0)->count(),
             'totalProducts'      => Product::count(),
             'restockNeededCount' => $restockNeededCount,
@@ -223,31 +176,42 @@ class DashboardController extends Controller
 
     private function managementMetrics(Request $request, DemandForecastService $forecastService, EoqService $eoqService): array
     {
-        // Reduced cache to 60s so backend edits reflect quickly while protecting performance
-        $metrics = Cache::remember('dashboard_management_metrics', 60, function () use ($forecastService, $eoqService) {
-            $products = Product::with('category')
-                ->whereHas('category', fn ($q) => $q->where('type', 'product'))
-                ->get();
+        $products = Product::with('category')
+            ->whereHas('category', fn ($q) => $q->where('type', 'product'))
+            ->get();
 
-            $totalProjectedDemand = 0;
-            $totalEoq             = 0;
+        $totalProjectedDemand = 0;
+        $totalEoq             = 0;
 
-            foreach ($products as $p) {
-                $demand               = $forecastService->projectedAnnualDemand($p);
-                $totalProjectedDemand += $demand;
-                $totalEoq             += $eoqService->calculate($p, $demand);
-            }
+        foreach ($products as $p) {
+            $demand               = $forecastService->projectedAnnualDemand($p);
+            $totalProjectedDemand += $demand;
+            $totalEoq             += $eoqService->calculate($p, $demand);
+        }
 
-            return [
-                'totalProjectedDemand' => $totalProjectedDemand,
-                'totalEoq'             => $totalEoq,
-            ];
-        });
+        $lowStockQuery = Product::with('category')->where(function ($q) {
+            $q->whereRaw('COALESCE(store_quantity, 0) = 0')
+              ->orWhereRaw('COALESCE(store_quantity, 0) <= COALESCE(reorder_point, 10)')
+              ->orWhereRaw('COALESCE(warehouse_quantity, 0) = 0')
+              ->orWhereRaw('COALESCE(warehouse_quantity, 0) <= COALESCE(reorder_point, 10)')
+              ->orWhereRaw('(COALESCE(store_quantity, 0) + COALESCE(warehouse_quantity, 0)) <= COALESCE(reorder_point, 10)');
+        })->get();
+
+        $alertPage    = $request->get('alert_page', 1);
+        $alertPerPage = 4;
+        $paginatedAlerts = new LengthAwarePaginator(
+            $lowStockQuery->forPage($alertPage, $alertPerPage)->values(),
+            $lowStockQuery->count(),
+            $alertPerPage,
+            $alertPage,
+            ['path' => $request->url(), 'pageName' => 'alert_page']
+        );
+        $paginatedAlerts->appends($request->query());
 
         return [
-            'lowStockProducts'     => $this->getLowStockAlerts($request),
-            'totalProjectedDemand' => $metrics['totalProjectedDemand'],
-            'totalEoq'             => $metrics['totalEoq'],
+            'lowStockProducts'     => $paginatedAlerts,
+            'totalProjectedDemand' => $totalProjectedDemand,
+            'totalEoq'             => $totalEoq,
         ];
     }
 
@@ -317,4 +281,4 @@ class DashboardController extends Controller
             return $item;
         });
     }
-}
+} 

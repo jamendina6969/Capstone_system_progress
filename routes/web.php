@@ -129,6 +129,9 @@ Route::middleware('auth')->group(function () {
 
     // ==================== CUSTOMER RETURNS ====================
     Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/customer-returns', [CustomerReturnController::class, 'index'])->name('customer.returns.index');
+        Route::get('/customer-returns/search-transactions', [CustomerReturnController::class, 'searchTransactions'])->name('customer.returns.searchTransactions');
+        Route::get('/customer-returns/verify-sku', [CustomerReturnController::class, 'verifySku'])->name('customer.returns.verifySku');
         Route::post('/transactions/{transaction}/return', [CustomerReturnController::class, 'store'])->name('transactions.return');
         Route::get('/transactions/{transaction}/return-items', [CustomerReturnController::class, 'items'])->name('transactions.return.items');
         Route::post('/returns/{customerReturn}/void', [CustomerReturnController::class, 'void'])->name('returns.void');

@@ -1,4 +1,3 @@
-
 @extends('layouts.default')
 
 @section('title', 'Audit Logs')
@@ -72,9 +71,10 @@
             </form>
         </div>
 
-        <!-- Scrollable Table -->
+        <!-- Scrollable Table (FIXED HEIGHT & FORCED SCROLLBAR) -->
         <div id="tableScrollContainer"
-            class="overflow-x-auto h-[600px] overflow-y-auto custom-scrollbar relative">
+            class="overflow-x-auto custom-scrollbar relative"
+            style="height: 600px; max-height: 600px; overflow-y: scroll;">
 
             <table class="w-full text-sm text-left relative">
                 <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
@@ -253,9 +253,19 @@
 
 @push('styles')
 <style>
+    /* Force the scrollbar to be visible and styled */
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .dark .custom-scrollbar {
+        scrollbar-color: #334155 transparent;
+    }
+
     .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
     }
 
     .custom-scrollbar::-webkit-scrollbar-track {
@@ -265,6 +275,8 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
         background-color: #cbd5e1;
         border-radius: 20px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
     }
 
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -288,270 +300,183 @@
 
 @push('scripts')
 <script>
-    // =====================================================
-    // AUDIT LOG PAGINATION AND INFINITE SCROLL
-    // =====================================================
+    document.addEventListener('DOMContentLoaded', function () {
+        // =====================================================
+        // AUDIT LOG PAGINATION AND INFINITE SCROLL
+        // =====================================================
 
-    const tableContainer = document.getElementById('tableScrollContainer');
-    const tableBody = document.getElementById('tableBody');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const paginationContainer = document.getElementById('paginationNumbersContainer');
+        const tableContainer = document.getElementById('tableScrollContainer');
+        const tableBody = document.getElementById('tableBody');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const paginationContainer = document.getElementById('paginationNumbersContainer');
 
-    let nextPageUrl = @json($logs->nextPageUrl());
-    let currentPage = {{ $logs->currentPage() }};
-    let lastPage = {{ $logs->lastPage() }};
-    let totalRecords = {{ $logs->total() }};
-    let perPage = {{ $logs->perPage() }};
-    let initialPage = {{ $logs->currentPage() }};
-    let isLoading = false;
-    let visualPage = initialPage;
+        if (!tableContainer || !tableBody) return;
 
-    // Get the page number based on the first visible record.
-    // This works when scrolling both down and up.
-    function getVisiblePage() {
-        const rows = Array.from(
-            tableBody.querySelectorAll('tr[data-record-row="true"]')
-        );
+        let nextPageUrl = @json($logs->nextPageUrl());
+        let currentPage = {{ $logs->currentPage() }};
+        let lastPage = {{ $logs->lastPage() }};
+        let totalRecords = {{ $logs->total() }};
+        let perPage = {{ $logs->perPage() }};
+        let initialPage = {{ $logs->currentPage() }};
+        let isLoading = false;
+        let visualPage = initialPage;
 
-        if (!rows.length) {
-            return initialPage;
-        }
+        function getVisiblePage() {
+            const rows = Array.from(tableBody.querySelectorAll('tr[data-record-row="true"]'));
+            if (!rows.length) return initialPage;
 
-        const containerRect = tableContainer.getBoundingClientRect();
-        const header = tableContainer.querySelector('thead');
-        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+            const containerRect = tableContainer.getBoundingClientRect();
+            const header = tableContainer.querySelector('thead');
+            const headerHeight = header ? header.getBoundingClientRect().height : 0;
 
-        const visibleTop = containerRect.top + headerHeight;
-        const visibleBottom = containerRect.bottom;
+            const visibleTop = containerRect.top + headerHeight;
+            const visibleBottom = containerRect.bottom;
 
-        let firstVisibleIndex = -1;
+            let firstVisibleIndex = -1;
 
-        rows.forEach((row, index) => {
-            const rect = row.getBoundingClientRect();
-
-            if (firstVisibleIndex === -1 &&
-                rect.bottom > visibleTop &&
-                rect.top < visibleBottom) {
-                firstVisibleIndex = index;
-            }
-        });
-
-        // If no row is visible, use the last loaded record.
-        if (firstVisibleIndex === -1) {
-            firstVisibleIndex = rows.length - 1;
-        }
-
-        const pageOffset = Math.floor(firstVisibleIndex / perPage);
-
-        return Math.min(
-            lastPage,
-            Math.max(1, initialPage + pageOffset)
-        );
-    }
-
-    // Keep pagination numbers updated.
-    function updatePaginationNumbers(pageToShow) {
-        const page = Math.min(lastPage, Math.max(1, pageToShow));
-
-        if (visualPage === page &&
-            paginationContainer.children.length > 0) {
-            return;
-        }
-
-        visualPage = page;
-
-        let html = '';
-
-        const startPage = Math.max(1, page - 3);
-        const endPage = Math.min(lastPage, page + 3);
-
-        const currentUrl = new URL(window.location.href);
-
-        for (let i = startPage; i <= endPage; i++) {
-            if (i === page) {
-                html += `
-                    <span class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">
-                        ${i}
-                    </span>
-                `;
-            } else {
-                const pageUrl = new URL(currentUrl.href);
-                pageUrl.searchParams.set('page', i);
-
-                html += `
-                    <a href="${pageUrl.pathname + pageUrl.search}"
-                        class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">
-                        ${i}
-                    </a>
-                `;
-            }
-        }
-
-        paginationContainer.innerHTML = html;
-    }
-
-    // Update the results counter.
-    function updateResultsCounter() {
-        const rowsLoaded = tableBody.querySelectorAll(
-            'tr[data-record-row="true"]'
-        ).length;
-
-        const firstRecord = rowsLoaded > 0
-            ? ((initialPage - 1) * perPage) + 1
-            : 0;
-
-        const lastRecord = Math.min(
-            firstRecord + rowsLoaded - 1,
-            totalRecords
-        );
-
-        const resultsText = document.getElementById('resultsText');
-
-        if (totalRecords === 0 || rowsLoaded === 0) {
-            resultsText.textContent = 'No records found';
-            return;
-        }
-
-        resultsText.innerHTML = `
-            Showing
-            <span class="font-semibold text-gray-900 dark:text-white">${firstRecord}</span>
-            to
-            <span class="font-semibold text-gray-900 dark:text-white">${lastRecord}</span>
-            of
-            <span class="font-semibold text-gray-900 dark:text-white">${totalRecords}</span>
-            records
-        `;
-    }
-
-    // Load the next page.
-    async function loadMoreLogs() {
-        if (!nextPageUrl || isLoading) {
-            return;
-        }
-
-        isLoading = true;
-        loadingIndicator.classList.remove('hidden');
-
-        try {
-            const response = await fetch(nextPageUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+            rows.forEach((row, index) => {
+                const rect = row.getBoundingClientRect();
+                if (firstVisibleIndex === -1 && rect.bottom > visibleTop && rect.top < visibleBottom) {
+                    firstVisibleIndex = index;
                 }
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to load audit logs.');
+            if (firstVisibleIndex === -1) firstVisibleIndex = rows.length - 1;
+
+            const pageOffset = Math.floor(firstVisibleIndex / perPage);
+            return Math.min(lastPage, Math.max(1, initialPage + pageOffset));
+        }
+
+        function updatePaginationNumbers(pageToShow) {
+            const page = Math.min(lastPage, Math.max(1, pageToShow));
+            if (visualPage === page && paginationContainer.children.length > 0) return;
+
+            visualPage = page;
+            let html = '';
+            const startPage = Math.max(1, page - 3);
+            const endPage = Math.min(lastPage, page + 3);
+            const currentUrl = new URL(window.location.href);
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === page) {
+                    html += `<span class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">${i}</span>`;
+                } else {
+                    const pageUrl = new URL(currentUrl.href);
+                    pageUrl.searchParams.set('page', i);
+                    html += `<a href="${pageUrl.pathname + pageUrl.search}" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</a>`;
+                }
+            }
+            paginationContainer.innerHTML = html;
+        }
+
+        function updateResultsCounter() {
+            const rowsLoaded = tableBody.querySelectorAll('tr[data-record-row="true"]').length;
+            const firstRecord = rowsLoaded > 0 ? ((initialPage - 1) * perPage) + 1 : 0;
+            const lastRecord = Math.min(firstRecord + rowsLoaded - 1, totalRecords);
+            const resultsText = document.getElementById('resultsText');
+
+            if (totalRecords === 0 || rowsLoaded === 0) {
+                resultsText.textContent = 'No records found';
+                return;
             }
 
-            const data = await response.json();
+            resultsText.innerHTML = `
+                Showing <span class="font-semibold text-gray-900 dark:text-white">${firstRecord}</span>
+                to <span class="font-semibold text-gray-900 dark:text-white">${lastRecord}</span>
+                of <span class="font-semibold text-gray-900 dark:text-white">${totalRecords}</span> records
+            `;
+        }
 
-            if (data.html) {
-                tableBody.insertAdjacentHTML('beforeend', data.html);
+        async function loadMoreLogs() {
+            if (!nextPageUrl || isLoading) return;
+
+            isLoading = true;
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                const response = await fetch(nextPageUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load audit logs.');
+
+                const data = await response.json();
+
+                if (data.html) tableBody.insertAdjacentHTML('beforeend', data.html);
+
+                nextPageUrl = data.next_page_url;
+                currentPage = data.current_page;
+                lastPage = data.last_page;
+                totalRecords = data.total_records;
+                perPage = data.per_page;
+
+                updateResultsCounter();
+                updatePaginationNumbers(getVisiblePage());
+
+            } catch (error) {
+                console.error('Error loading audit logs:', error);
+            } finally {
+                isLoading = false;
+                loadingIndicator.classList.add('hidden');
             }
+        }
 
-            nextPageUrl = data.next_page_url;
-            currentPage = data.current_page;
-            lastPage = data.last_page;
-            totalRecords = data.total_records;
-            perPage = data.per_page;
-
-            updateResultsCounter();
-
-            // Recalculate the active page using the current scroll position.
+        // SCROLL LOGIC
+        function handleScroll() {
             updatePaginationNumbers(getVisiblePage());
 
-        } catch (error) {
-            console.error('Error loading audit logs:', error);
-        } finally {
-            isLoading = false;
-            loadingIndicator.classList.add('hidden');
-        }
-    }
+            // Calculate distance from bottom of the table container
+            const distanceFromBottom = tableContainer.scrollHeight - tableContainer.scrollTop - tableContainer.clientHeight;
 
-    // Scroll listener: updates the active page in both directions.
-    tableContainer.addEventListener('scroll', function () {
+            if (distanceFromBottom < 100) {
+                loadMoreLogs();
+            }
+        }
+
+        tableContainer.addEventListener('scroll', handleScroll);
+
         updatePaginationNumbers(getVisiblePage());
+        updateResultsCounter();
 
-        const distanceFromBottom =
-            tableContainer.scrollHeight -
-            tableContainer.scrollTop -
-            tableContainer.clientHeight;
-
-        // Load more records when the user is near the bottom.
-        if (distanceFromBottom < 100) {
-            loadMoreLogs();
-        }
-    });
-
-    // Keep the pagination correct after loading additional records.
-    updatePaginationNumbers(getVisiblePage());
-    updateResultsCounter();
-
-
-    // =====================================================
-    // LIVE SEARCH
-    // =====================================================
-
-    document.addEventListener('DOMContentLoaded', function () {
+        // =====================================================
+        // LIVE SEARCH
+        // =====================================================
         const searchInput = document.getElementById('searchInput');
         const filterForm = document.getElementById('filterForm');
-
         let debounceTimer;
 
-        if (!searchInput) {
-            return;
+        if (searchInput) {
+            const savedCursorPos = sessionStorage.getItem('searchCursorPos');
+            if (savedCursorPos !== null) {
+                searchInput.focus();
+                const cursorPosition = parseInt(savedCursorPos, 10);
+                searchInput.setSelectionRange(cursorPosition, cursorPosition);
+                sessionStorage.removeItem('searchCursorPos');
+            } else if (searchInput.value.length > 0) {
+                searchInput.focus();
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                sessionStorage.setItem('searchCursorPos', searchInput.selectionStart);
+                debounceTimer = setTimeout(function () {
+                    filterForm.submit();
+                }, 300);
+            });
         }
-
-        const savedCursorPos = sessionStorage.getItem('searchCursorPos');
-
-        if (savedCursorPos !== null) {
-            searchInput.focus();
-
-            const cursorPosition = parseInt(savedCursorPos, 10);
-
-            searchInput.setSelectionRange(
-                cursorPosition,
-                cursorPosition
-            );
-
-            sessionStorage.removeItem('searchCursorPos');
-        } else if (searchInput.value.length > 0) {
-            searchInput.focus();
-
-            searchInput.setSelectionRange(
-                searchInput.value.length,
-                searchInput.value.length
-            );
-        }
-
-        searchInput.addEventListener('input', function () {
-            clearTimeout(debounceTimer);
-
-            sessionStorage.setItem(
-                'searchCursorPos',
-                searchInput.selectionStart
-            );
-
-            debounceTimer = setTimeout(function () {
-                filterForm.submit();
-            }, 300);
-        });
     });
-
 
     // =====================================================
     // AUDIT LOG DETAIL MODAL
     // =====================================================
-
     function openAuditModal(id) {
         const modal = document.getElementById('auditModal');
-
         modal.classList.remove('hidden');
-
-        document.getElementById('modalDescription').innerText =
-            'Fetching specifications...';
-
+        document.getElementById('modalDescription').innerText = 'Fetching specifications...';
         document.getElementById('modalUser').innerText = 'Loading...';
         document.getElementById('modalEvent').innerText = 'Loading...';
         document.getElementById('modalTarget').innerText = 'Loading...';
@@ -574,70 +499,44 @@
             }
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Unable to fetch audit log details.');
-            }
-
+            if (!response.ok) throw new Error('Unable to fetch audit log details.');
             return response.json();
         })
         .then(res => {
-            if (!res.success) {
-                throw new Error('Audit log details were not returned.');
-            }
-
+            if (!res.success) throw new Error('Audit log details were not returned.');
             const data = res.data;
 
-            document.getElementById('modalDescription').innerText =
-                data.description ?? '';
-
-            document.getElementById('modalUser').innerText =
-                data.user ?? 'System / Guest';
-
-            document.getElementById('modalEvent').innerText =
-                data.event ?? '';
-
-            document.getElementById('modalTarget').innerText =
-                data.target_model ?? '';
-
-            document.getElementById('modalIp').innerText =
-                data.ip_address ?? '—';
-
-            document.getElementById('modalContext').innerText =
-                data.direction_context ?? '';
-
-            document.getElementById('modalTimestamp').innerText =
-                data.timestamp ?? '';
+            document.getElementById('modalDescription').innerText = data.description ?? '';
+            document.getElementById('modalUser').innerText = data.user ?? 'System / Guest';
+            document.getElementById('modalEvent').innerText = data.event ?? '';
+            document.getElementById('modalTarget').innerText = data.target_model ?? '';
+            document.getElementById('modalIp').innerText = data.ip_address ?? '—';
+            document.getElementById('modalContext').innerText = data.direction_context ?? '';
+            document.getElementById('modalTimestamp').innerText = data.timestamp ?? '';
 
             const changesTable = document.getElementById('modalChangesTable');
-
             changesTable.innerHTML = '';
 
             if (data.changes && data.changes.length > 0) {
                 data.changes.forEach(change => {
                     const row = document.createElement('tr');
-
-                    row.className =
-                        'hover:bg-gray-50 dark:hover:bg-[#161B26]/30';
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-[#161B26]/30';
 
                     const fieldCell = document.createElement('td');
-                    fieldCell.className =
-                        'px-4 py-3 font-medium text-gray-900 dark:text-white';
+                    fieldCell.className = 'px-4 py-3 font-medium text-gray-900 dark:text-white';
                     fieldCell.textContent = change.field ?? '';
 
                     const oldCell = document.createElement('td');
-                    oldCell.className =
-                        'px-4 py-3 text-rose-500 dark:text-rose-400 line-through font-mono text-xs break-all';
+                    oldCell.className = 'px-4 py-3 text-rose-500 dark:text-rose-400 line-through font-mono text-xs break-all';
                     oldCell.textContent = change.old ?? 'None';
 
                     const newCell = document.createElement('td');
-                    newCell.className =
-                        'px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs break-all';
+                    newCell.className = 'px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs break-all';
                     newCell.textContent = change.new ?? 'None';
 
                     row.appendChild(fieldCell);
                     row.appendChild(oldCell);
                     row.appendChild(newCell);
-
                     changesTable.appendChild(row);
                 });
             } else {
@@ -652,7 +551,6 @@
         })
         .catch(error => {
             console.error(error);
-
             document.getElementById('modalChangesTable').innerHTML = `
                 <tr>
                     <td colspan="3" class="px-4 py-6 text-center text-red-400">
@@ -660,9 +558,7 @@
                     </td>
                 </tr>
             `;
-
-            document.getElementById('modalDescription').innerText =
-                'Unable to load audit log specifications.';
+            document.getElementById('modalDescription').innerText = 'Unable to load audit log specifications.';
         });
     }
 
@@ -670,18 +566,12 @@
         document.getElementById('auditModal').classList.add('hidden');
     }
 
-    // Close modal when clicking outside it.
     document.getElementById('auditModal').addEventListener('click', function (event) {
-        if (event.target === this) {
-            closeAuditModal();
-        }
+        if (event.target === this) closeAuditModal();
     });
 
-    // Close modal using Escape key.
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-            closeAuditModal();
-        }
+        if (event.key === 'Escape') closeAuditModal();
     });
 </script>
 @endpush

@@ -26,8 +26,8 @@ class AuditLogController extends Controller
                     ->orWhere('auditable_id', 'like', "%{$search}%")
                     ->orWhere('actor_name', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'like', "%{$search}%")
-                            ->orWhere('firstname', 'like', "%{$search}%")
+                        // FIXED: Removed 'name' column from the search
+                        $u->where('firstname', 'like', "%{$search}%")
                             ->orWhere('lastname', 'like', "%{$search}%");
                     });
             });

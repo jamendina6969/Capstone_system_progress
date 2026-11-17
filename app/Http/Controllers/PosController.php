@@ -1019,30 +1019,38 @@ class PosController extends Controller
                         ]);
 
                         foreach ($item['project_breakdown']['materials'] as $mat) {
-                            // NORMALIZED DATA INSERTION
-                            TransactionItemMaterial::create([
-                                'transaction_item_id' => $projectItem->id,
-                                'product_id'          => $mat['product_id'],
-                                'product_name'        => $mat['name'],
-                                'quantity'            => $mat['qty'],
-                                'price'               => $mat['price'],
-                                'subtotal'            => $mat['subtotal'],
-                                'source'              => $mat['source'],
-                            ]);
-
                             $product = Product::whereKey($mat['product_id'])->lockForUpdate()->firstOrFail();
+                            $qty = (int) $mat['qty'];
+                            $unitPrice = (float) $mat['price'];
+
+                            // Expand each unit into its own individual record so it gets a unique item_sku and max 1 tracking
+                            for ($i = 0; $i < $qty; $i++) {
+                                $matItemSku = $product->item_sku ?: $product->product_sku . '-' . strtoupper(substr(uniqid(), -5));
+
+                                TransactionItemMaterial::create([
+                                    'transaction_item_id' => $projectItem->id,
+                                    'product_id'          => $mat['product_id'],
+                                    'product_sku'         => $product->product_sku,
+                                    'item_sku'            => $matItemSku,
+                                    'product_name'        => $mat['name'],
+                                    'quantity'            => 1,
+                                    'price'               => $unitPrice,
+                                    'subtotal'            => $unitPrice,
+                                    'source'              => $mat['source'],
+                                ]);
+                            }
                             
                             if ($mat['source'] === 'store') {
-                                $product->decrement('store_quantity', $mat['qty']);
+                                $product->decrement('store_quantity', $qty);
                             } else {
-                                $product->decrement('warehouse_quantity', $mat['qty']);
+                                $product->decrement('warehouse_quantity', $qty);
                             }
 
                             SalesRecord::create([
                                 'product_id' => $mat['product_id'],
                                 'transaction_id' => $transaction->id,
                                 'record_date' => now()->toDateString(),
-                                'quantity' => $mat['qty'],
+                                'quantity' => $qty,
                                 'source' => 'pos',
                             ]);
                         }

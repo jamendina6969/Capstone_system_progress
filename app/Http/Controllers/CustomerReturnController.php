@@ -17,6 +17,153 @@ use Illuminate\Support\Str;
 
 class CustomerReturnController extends Controller
 {
+    private const PER_PAGE = 12;
+
+    public function index(Request $request)
+    {
+        $query = CustomerReturn::with(['user', 'transaction', 'items.product']);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('return_number', 'like', "%{$search}%")
+                    ->orWhere('reason', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('transaction', function ($tq) use ($search) {
+                        $tq->where('transaction_id', 'like', "%{$search}%")
+                            ->orWhere('customer_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('firstname', 'like', "%{$search}%")
+                            ->orWhere('lastname', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if (in_array($request->input('status'), ['completed', 'voided'], true)) {
+            $query->where('status', $request->status);
+        }
+
+        if (in_array($request->input('refund_method'), ['cash', 'original', 'store_credit'], true)) {
+            $query->where('refund_method', $request->refund_method);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $returns = $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(self::PER_PAGE)
+            ->withQueryString();
+
+        $completed = fn () => CustomerReturn::where('status', 'completed');
+
+        $todayTotal      = $completed()->whereDate('created_at', today())->sum('refund_amount');
+        $yesterdayTotal  = $completed()->whereDate('created_at', today()->subDay())->sum('refund_amount');
+
+        $weekTotal       = $completed()->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->sum('refund_amount');
+        $lastWeekTotal   = $completed()->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])->sum('refund_amount');
+
+        $monthTotal      = $completed()->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('refund_amount');
+        $lastMonth       = now()->subMonth();
+        $lastMonthTotal  = $completed()->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->sum('refund_amount');
+
+        $yearTotal       = $completed()->whereYear('created_at', now()->year)->sum('refund_amount');
+        $lastYearTotal   = $completed()->whereYear('created_at', now()->subYear()->year)->sum('refund_amount');
+
+        $overallTotal    = $completed()->sum('refund_amount');
+
+        $calcChange = function ($current, $previous) {
+            if ((float) $previous == 0) {
+                return (float) $current > 0 ? 100.0 : 0.0;
+            }
+            return round((($current - $previous) / $previous) * 100, 1);
+        };
+
+        $summary = [
+            'today'        => $todayTotal,
+            'today_change' => $calcChange($todayTotal, $yesterdayTotal),
+            'week'         => $weekTotal,
+            'week_change'  => $calcChange($weekTotal, $lastWeekTotal),
+            'month'        => $monthTotal,
+            'month_change' => $calcChange($monthTotal, $lastMonthTotal),
+            'year'         => $yearTotal,
+            'year_change'  => $calcChange($yearTotal, $lastYearTotal),
+            'overall'      => $overallTotal,
+        ];
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html'          => view('customer-returns.partials.rows', compact('returns'))->render(),
+                'next_page_url' => $returns->nextPageUrl(),
+                'current_page'  => $returns->currentPage(),
+                'last_page'     => $returns->lastPage(),
+                'total_records' => $returns->total(),
+                'per_page'      => $returns->perPage(),
+            ]);
+        }
+
+        return view('customer-returns.index', compact('returns', 'summary'));
+    }
+
+    /**
+     * Search sale transactions for the Create Return modal.
+     */
+    public function searchTransactions(Request $request)
+    {
+        try {
+            $q = $request->get('q');
+
+            $query = \App\Models\Transaction::query();
+
+            if ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('transaction_id', 'like', "%{$q}%")
+                        ->orWhere('customer_name', 'like', "%{$q}%");
+                });
+            }
+
+            $transactions = $query->latest()->limit(20)->get();
+
+            $data = $transactions->map(function ($tx) {
+                $skus = [];
+                if (method_exists($tx, 'items') && $tx->items) {
+                    foreach ($tx->items as $item) {
+                        if (isset($item->product) && isset($item->product->product_sku)) {
+                            $skus[] = $item->product->product_sku;
+                        }
+                        if (isset($item->item_sku)) {
+                            $skus[] = $item->item_sku;
+                        }
+                    }
+                }
+
+                return [
+                    'id' => $tx->id,
+                    'transaction_id' => $tx->transaction_id ?? 'N/A',
+                    'customer_name' => $tx->customer_name ?? 'Walk-in',
+                    'date_short' => $tx->created_at ? $tx->created_at->format('M d, Y') : 'N/A',
+                    'created_at' => $tx->created_at ? $tx->created_at->format('M d, Y h:i A') : 'N/A',
+                    'total_amount' => $tx->total_amount ?? 0,
+                    'transaction_type' => $tx->transaction_type ?? 0,
+                    'skus' => array_values(array_unique($skus))
+                ];
+            });
+
+            return response()->json($data);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Backend Error: ' . $e->getMessage() . ' on line ' . $e->getLine()
+            ], 500);
+        }
+    }
+
     public function store(Request $request, Transaction $transaction)
     {
         $request->validate([
@@ -69,7 +216,7 @@ class CustomerReturnController extends Controller
                                 ->whereNull('product_id')
                                 ->whereHas('customerReturn', fn ($q) => $q->where('status', 'completed'))
                                 ->exists();
-                            
+
                             if ($alreadyReturned) {
                                 throw new \DomainException("The entire project has already been returned.");
                             }
@@ -87,7 +234,7 @@ class CustomerReturnController extends Controller
                             $materialRefundTotal = 0.0;
 
                             $item->loadMissing('materials');
-                            
+
                             foreach ($item->materials as $index => $mat) {
                                 $reqQty = (int) ($materialsReq[$index] ?? 0);
                                 if ($reqQty <= 0) continue;
@@ -192,7 +339,7 @@ class CustomerReturnController extends Controller
 
                 foreach ($lines as $line) {
                     $item = $line['item'];
-                    
+
                     if ($line['type'] === 'whole_project') {
                         CustomerReturnItem::create([
                             'customer_return_id' => $return->id,
@@ -300,11 +447,16 @@ class CustomerReturnController extends Controller
                             ->where('product_id', $mat->product_id)
                             ->whereHas('customerReturn', fn ($q) => $q->where('status', 'completed'))
                             ->sum('quantity');
-                        
+
+                        $productSku = $mat->product_sku ?? ($mat->product ? $mat->product->product_sku : 'N/A');
+                        $itemSku = $mat->item_sku ?? ($mat->product ? $mat->product->product_sku . '-SYNC' : 'N/A');
+
                         $materialsData[] = [
                             'product_id' => $mat->product_id,
                             'name'       => $mat->product_name,
-                            'sku'        => $mat->product ? $mat->product->product_sku : '',
+                            'product_sku'=> $productSku,
+                            'item_sku'   => $itemSku,
+                            'sku'        => $productSku,
                             'price'      => (float) $mat->price,
                             'qty'        => (int) $mat->quantity,
                             'returned'   => (int) $returned,
@@ -315,17 +467,18 @@ class CustomerReturnController extends Controller
                 }
 
                 return [
-                    'id'                => $i->id,
-                    'name'              => $i->product_name,
-                    'item_type'         => $i->item_type ?? 'product', 
-                    'qty'               => (int) $i->quantity,
-                    'returned'          => (int) ($i->returned_qty ?? 0),
-                    'max'               => max(0, (int) $i->quantity - (int) ($i->returned_qty ?? 0)),
-                    'unit'              => round((float) $i->subtotal / max((int) $i->quantity, 1), 2),
-                    'materials'         => $materialsData,
+                    'id'                 => $i->id,
+                    'name'               => $i->product_name,
+                    'item_type'          => $i->item_type ?? 'product',
+                    'qty'                => (int) $i->quantity,
+                    'returned'           => (int) ($i->returned_qty ?? 0),
+                    'max'                => max(0, (int) $i->quantity - (int) ($i->returned_qty ?? 0)),
+                    'unit'               => round((float) $i->subtotal / max((int) $i->quantity, 1), 2),
+                    'subtotal'           => (float) $i->subtotal,
+                    'materials'          => $materialsData,
                     'whole_project_returned' => $wholeProjectReturned,
-                    'product_sku'       => $i->product_sku, 
-                    'item_sku'          => $i->item_sku,    
+                    'product_sku'        => $i->product_sku ?? ($i->product ? $i->product->product_sku : 'N/A'),
+                    'item_sku'           => $i->item_sku ?? $i->product_sku ?? ($i->product ? $i->product->product_sku : 'N/A'),
                 ];
             });
 
@@ -364,7 +517,7 @@ class CustomerReturnController extends Controller
                     'quantity_before' => $before,
                     'quantity_after'  => $before - $line->quantity,
                     'status'          => 'approved',
-                    'delivery_status' => 'delivered', // <--- FIXED: Added for the Model update
+                    'delivery_status' => 'delivered',
                     'requested_by'    => $user->id,
                     'requester_name'  => $user->full_name,
                     'approved_by'     => $user->id,
@@ -422,7 +575,7 @@ class CustomerReturnController extends Controller
             'quantity_before' => $before,
             'quantity_after'  => $before + $qty,
             'status'          => 'approved',
-            'delivery_status' => 'delivered', // <--- FIXED: Added for the Model update
+            'delivery_status' => 'delivered',
             'requested_by'    => $user->id,
             'requester_name'  => $user->full_name,
             'approved_by'     => $user->id,

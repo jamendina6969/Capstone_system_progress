@@ -561,10 +561,10 @@ function openReturnModal(btn) {
               <div class="flex-1 text-xs">
                 <p class="font-bold text-gray-900 dark:text-white">${m.name}</p>
                 
-                <!-- SHOWING PRODUCT SKU FOR MATERIALS -->
-                <div class="flex gap-2 mt-1 mb-1">
-                  <span class="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                    Product SKU: ${m.sku || 'N/A'}
+                <!-- SHOWING SKU FOR MATERIALS -->
+                <div class="flex gap-2 mt-1.5 mb-1.5">
+                  <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600">
+                    SKU: ${m.sku || 'N/A'}
                   </span>
                 </div>
 
@@ -618,15 +618,15 @@ function openReturnModal(btn) {
               <p class="text-sm font-bold text-gray-900 dark:text-white truncate">${it.name}</p>
               
               <!-- SHOWING BOTH SKUs FOR STANDARD PRODUCTS -->
-              <div class="flex flex-wrap gap-2 mt-1.5 mb-2">
-                ${it.product_sku ? `
-                  <span class="text-[10px] font-mono font-bold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-300 dark:border-gray-600">
-                    Base SKU: ${it.product_sku}
-                  </span>
-                ` : ''}
+              <div class="flex flex-wrap gap-2 mt-2 mb-2">
+                <!-- Primary SKU (Large and prominent) -->
+                <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600">
+                  SKU: ${it.product_sku || it.item_sku || 'N/A'}
+                </span>
                 
-                ${it.item_sku ? `
-                  <span class="text-[10px] font-mono font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                <!-- Secondary Item SKU (Only show if it exists AND is different from the primary SKU) -->
+                ${it.item_sku && it.item_sku !== it.product_sku ? `
+                  <span class="text-xs font-mono font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
                     Item SKU: ${it.item_sku}
                   </span>
                 ` : ''}
@@ -763,9 +763,6 @@ function toggleWholeProject(checkbox) {
   if (checkbox.checked) {
     container.style.display = 'none';
     if (hiddenInput) hiddenInput.value = 1;
-    
-    // If whole project is checked, we don't need to scan individual SKUs
-    // Just leave the inputs locked or hidden. The backend handles the rest.
   } else {
     container.style.display = 'block';
     if (hiddenInput) hiddenInput.value = 0;

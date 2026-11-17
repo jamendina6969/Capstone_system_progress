@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div>
-                <p id="kpi-today-sales" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($todaySales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($todaySales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
                     <span>Daily revenue total</span>
                 </div>
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div>
-                <p id="kpi-overall-sales" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($overallSales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($overallSales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <span>All-time accumulated revenue</span>
                 </div>
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div>
-                <p id="kpi-pos-orders" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $todayTransactions }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $todayTransactions }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400">
                     <span>Completed today</span>
                 </div>
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div>
-                <p id="kpi-total-products" class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $totalProducts }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $totalProducts }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400">
                     <span>Active catalog items</span>
                 </div>
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div>
-                <p id="kpi-restock-needed" class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2" style="font-size: 2rem;">{{ $restockNeededCount }}</p>
+                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2" style="font-size: 2rem;">{{ $restockNeededCount }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-rose-400">
                     <span>Items require attention</span>
                 </div>
@@ -96,7 +96,7 @@
 
     {{-- Demand Forecast Line Chart Component --}}
     @if (in_array(auth()->user()->role, ['admin', 'manager']))
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-6 mb-8">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 mb-8">
             <form method="GET" action="{{ route('home') }}" id="forecastFilterForm">
                 {{-- Preserve Fast/Slow parameters --}}
                 @if(request('product_category'))
@@ -112,148 +112,149 @@
                     <input type="hidden" name="fast_slow_date_to" value="{{ request('fast_slow_date_to') }}">
                 @endif
 
-                {{-- Header & Filters --}}
                 <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-4">
-                    <div class="shrink-0">
+                    <div>
                         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Sales Predictions</h2>
-                        <p class="text-sm text-gray-500 dark:text-slate-400" id="forecastShowingText">
-                            Showing {{ $forecastProductName }}
+                        <p class="text-sm text-gray-500 dark:text-slate-400">
+                            Showing <strong class="text-gray-700 dark:text-slate-200">{{ $forecastProductName }}</strong>
                             @if($forecastCategoryName)
-                                &middot; {{ $forecastCategoryName }}
+                                &middot; <span class="text-gray-600 dark:text-slate-300">{{ $forecastCategoryName }}</span>
                             @endif
                         </p>
                     </div>
 
-                    {{-- Filter Row: Compact & Right Aligned --}}
-                    <div class="flex flex-wrap xl:flex-nowrap items-center justify-end gap-2 w-full xl:w-auto xl:ml-auto">
-                        
-                        {{-- Category Dropdown --}}
-                        <div class="custom-dropdown relative w-[135px]" id="filter-category-dropdown">
-                            <input type="hidden" name="forecast_category" id="forecastCategoryInput" value="{{ request('forecast_category') }}">
-                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
-                                <span class="dropdown-label truncate">
-                                    @if($selectedForecastCategory)
+                    <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            
+                            {{-- Category Dropdown (Custom UI) --}}
+                            <div class="custom-dropdown relative w-full sm:w-56 shrink-0" id="filter-category-dropdown">
+                                <input type="hidden" name="forecast_category" id="forecastCategoryInput" value="{{ request('forecast_category') }}">
+                                <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left">
+                                    <span class="dropdown-label truncate">
+                                        @if($selectedForecastCategory)
+                                            @php
+                                                $selectedCatName = $allCategories->firstWhere('id', $selectedForecastCategory)?->name ?? 'All Categories';
+                                            @endphp
+                                            {{ $selectedCatName }}
+                                        @else
+                                            All Categories
+                                        @endif
+                                    </span>
+                                    <svg class="dropdown-chevron w-4 h-4 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-lg py-1">
+                                    <button type="button" data-value="" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Categories</button>
+                                    @foreach($mainCategories as $mainCat)
+                                        <div class="mt-1">
+                                            <div class="px-3.5 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">{{ strtoupper($mainCat->name) }}</div>
+                                            <button type="button" data-value="{{ $mainCat->id }}" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $mainCat->name }} (Main)</button>
+                                            @foreach($allCategories->where('parent_id', $mainCat->id) as $subCat)
+                                                <button type="button" data-value="{{ $subCat->id }}" class="dropdown-option w-full text-left pl-7 pr-3.5 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $subCat->name }}</button>
+                                            @endforeach
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- Product Dropdown (Custom UI) --}}
+                            <div class="custom-dropdown relative w-full sm:w-64 shrink-0" id="filter-product-dropdown">
+                                <input type="hidden" name="forecast_product" id="forecastProductInput" value="{{ request('forecast_product') }}">
+                                <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left">
+                                    <span class="dropdown-label truncate">
+                                        @if($selectedForecastProduct)
+                                            {{ $forecastProducts->firstWhere('id', $selectedForecastProduct)?->product_name ?? 'All Products (Combined)' }}
+                                        @else
+                                            All Products (Combined)
+                                        @endif
+                                    </span>
+                                    <svg class="dropdown-chevron w-4 h-4 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-lg py-1">
+                                    <button type="button" data-value="" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Products (Combined)</button>
+                                    @foreach($forecastProducts as $prod)
+                                        <button type="button" data-value="{{ $prod->id }}" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">
+                                            {{ $prod->product_name }}{{ $prod->product_sku ? ' (' . $prod->product_sku . ')' : '' }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- Range Dropdown (Custom UI) --}}
+                            <div class="custom-dropdown relative w-full sm:w-40 shrink-0" id="filter-range-dropdown">
+                                <input type="hidden" name="forecast_range" id="forecastRangeInput" value="{{ request('forecast_range', '3months') }}">
+                                <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left">
+                                    <span class="dropdown-label truncate">
                                         @php
-                                            $selectedCatName = $allCategories->firstWhere('id', $selectedForecastCategory)?->name ?? 'All Categories';
+                                            $rangeLabels = [
+                                                '7days' => 'Next 7 Days',
+                                                '14days' => 'Next 14 Days',
+                                                '1month' => 'Next 1 Month',
+                                                '3months' => 'Next 3 Months',
+                                                '6months' => 'Next 6 Months',
+                                                '1yr' => 'Next 1 Year',
+                                                'custom' => 'Custom Range'
+                                            ];
                                         @endphp
-                                        {{ $selectedCatName }}
-                                    @else
-                                        All Categories
-                                    @endif
-                                </span>
-                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
-                                <button type="button" data-value="" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Categories</button>
-                                @foreach($mainCategories as $mainCat)
-                                    <div class="mt-1">
-                                        <div class="px-3 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">{{ strtoupper($mainCat->name) }}</div>
-                                        <button type="button" data-value="{{ $mainCat->id }}" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $mainCat->name }} (Main)</button>
-                                        @foreach($allCategories->where('parent_id', $mainCat->id) as $subCat)
-                                            <button type="button" data-value="{{ $subCat->id }}" class="dropdown-option w-full text-left pl-6 pr-3 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536]">{{ $subCat->name }}</button>
-                                        @endforeach
-                                    </div>
-                                @endforeach
+                                        {{ $rangeLabels[request('forecast_range', '3months')] ?? 'Next 3 Months' }}
+                                    </span>
+                                    <svg class="dropdown-chevron w-4 h-4 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-lg py-1">
+                                    <button type="button" data-value="7days" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 7 Days</button>
+                                    <button type="button" data-value="14days" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 14 Days</button>
+                                    <button type="button" data-value="1month" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Month</button>
+                                    <button type="button" data-value="3months" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 3 Months</button>
+                                    <button type="button" data-value="6months" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 6 Months</button>
+                                    <button type="button" data-value="1yr" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Year</button>
+                                    <button type="button" data-value="custom" class="dropdown-option w-full text-left px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Custom Range</button>
+                                </div>
                             </div>
-                        </div>
 
-                        {{-- Product Dropdown --}}
-                        <div class="custom-dropdown relative w-[170px]" id="filter-product-dropdown">
-                            <input type="hidden" name="forecast_product" id="forecastProductInput" value="{{ request('forecast_product') }}">
-                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
-                                <span class="dropdown-label truncate">
-                                    @if($selectedForecastProduct)
-                                        {{ $forecastProducts->firstWhere('id', $selectedForecastProduct)?->product_name ?? 'All Products' }}
-                                    @else
-                                        All Products (Combined)
-                                    @endif
-                                </span>
-                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
-                                <button type="button" data-value="" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">All Products (Combined)</button>
-                                @foreach($forecastProducts as $prod)
-                                    <button type="button" data-value="{{ $prod->id }}" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">
-                                        {{ $prod->product_name }}{{ $prod->product_sku ? ' (' . $prod->product_sku . ')' : '' }}
-                                    </button>
-                                @endforeach
+                            {{-- Custom Date Inputs (Hidden unless Custom is selected) --}}
+                            <div id="forecastCustomDateContainer" class="{{ $forecastRange == 'custom' ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap">
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
+                                    <input type="date" name="forecast_date_from" value="{{ $forecastDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
+                                    <input type="date" name="forecast_date_to" value="{{ $forecastDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                </div>
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs">Apply</button>
                             </div>
-                        </div>
 
-                        {{-- Range Dropdown --}}
-                        <div class="custom-dropdown relative w-[115px]" id="filter-range-dropdown">
-                            <input type="hidden" name="forecast_range" id="forecastRangeInput" value="{{ request('forecast_range', '3months') }}">
-                            <button type="button" class="dropdown-trigger w-full flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-slate-400 cursor-pointer text-left shadow-sm">
-                                <span class="dropdown-label truncate">
-                                    @php
-                                        $rangeLabels = [
-                                            '7days' => '7 Days',
-                                            '14days' => '14 Days',
-                                            '1month' => '1 Month',
-                                            '3months' => '3 Months',
-                                            '6months' => '6 Months',
-                                            '1yr' => '1 Year',
-                                            'custom' => 'Custom'
-                                        ];
-                                    @endphp
-                                    {{ $rangeLabels[request('forecast_range', '3months')] ?? '3 Months' }}
-                                </span>
-                                <svg class="dropdown-chevron w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="dropdown-menu hidden absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto custom-scrollbar bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg shadow-lg py-1">
-                                <button type="button" data-value="7days" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 7 Days</button>
-                                <button type="button" data-value="14days" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 14 Days</button>
-                                <button type="button" data-value="1month" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Month</button>
-                                <button type="button" data-value="3months" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 3 Months</button>
-                                <button type="button" data-value="6months" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 6 Months</button>
-                                <button type="button" data-value="1yr" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Next 1 Year</button>
-                                <button type="button" data-value="custom" class="dropdown-option w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-[#1e2536]">Custom Range</button>
-                            </div>
-                        </div>
+                            <div class="h-5 w-px bg-gray-200 dark:bg-[#1e2536] hidden sm:block"></div>
 
-                        {{-- Settings Button --}}
-                        <a href="{{ route('forecast.settings') }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] text-xs font-medium px-3 py-2 rounded-lg transition-colors shadow-sm shrink-0">
-                            Settings
-                        </a>
+                            <a href="{{ route('forecast.settings') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-all duration-300 ease-in-out shadow-xs">
+                                Settings
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Custom Date Inputs (Shown only if Custom Range is selected) --}}
-                <div id="forecastCustomDateContainer" class="{{ $forecastRange == 'custom' ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap mb-4">
-                    <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 rounded-lg">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
-                        <input type="date" name="forecast_date_from" value="{{ $forecastDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                {{-- Friendly Legend / Info Bar --}}
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1e2536] mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-1 bg-blue-600 rounded-full"></span>
+                        <span><strong>Past Sales:</strong> What you actually sold.</span>
                     </div>
-                    <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 rounded-lg">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
-                        <input type="date" name="forecast_date_to" value="{{ $forecastDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-1 bg-[#8b5cf6] rounded-full" style="border-top: 1px dashed #8b5cf6;"></span>
+                        <span><strong>Prediction:</strong> What we expect you to sell.</span>
                     </div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm">Apply</button>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-3 bg-purple-100 dark:bg-purple-900/40 rounded-sm"></span>
+                        <span><strong>Shaded Area:</strong> The expected range (best & worst case).</span>
+                    </div>
                 </div>
             </form>
 
-            {{-- Legend Bar (Refined pill design) --}}
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] px-5 py-2.5 rounded-full border border-gray-200 dark:border-[#1e2536] mb-6 shadow-sm w-full xl:w-auto self-start inline-flex">
-                <div class="flex items-center gap-2">
-                    <span class="w-5 h-1 bg-blue-600 rounded-full shrink-0"></span>
-                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Past Sales:</strong> What you actually sold.</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-5 h-0.5 border-t-2 border-dashed border-[#8b5cf6] shrink-0"></span>
-                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Prediction:</strong> What we expect you to sell.</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 bg-purple-100 dark:bg-purple-900/40 rounded-sm border border-purple-200 dark:border-purple-800 shrink-0"></span>
-                    <span><strong class="text-gray-800 dark:text-slate-200 font-semibold">Shaded Area:</strong> The expected range (best & worst case).</span>
-                </div>
-            </div>
-
-            <div style="position: relative; height: 380px; width: 100%;" id="chartContainer">
+            <div style="position: relative; height: 420px; width: 100%;">
                 <canvas id="demandForecastChart"></canvas>
             </div>
             
             {{-- Friendly Footer Tip --}}
-            <div class="mt-6 flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
+            <div class="mt-4 flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
                 <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <p><strong>Why does the prediction line drop after a spike?</strong> The system calculates an average based on your recent history. A single large sale is spread out over time, so the system expects your normal baseline to continue.</p>
             </div>
@@ -553,46 +554,7 @@
     
     <script>
         // =====================================================
-        // LIVE KPI POLLING (Updates top cards without refresh)
-        // =====================================================
-        function startLiveDashboardPolling() {
-            setInterval(async () => {
-                if (document.hidden) return; // Pause when tab is in background
-
-                try {
-                    const url = new URL("{{ route('home') }}", window.location.origin);
-                    url.searchParams.set('live_poll', '1');
-                    url.searchParams.set('t', Date.now());
-
-                    const response = await fetch(url.toString(), {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) return;
-                    const data = await response.json();
-
-                    const todaySalesEl = document.getElementById('kpi-today-sales');
-                    const overallSalesEl = document.getElementById('kpi-overall-sales');
-                    const posOrdersEl = document.getElementById('kpi-pos-orders');
-                    const totalProductsEl = document.getElementById('kpi-total-products');
-                    const restockNeededEl = document.getElementById('kpi-restock-needed');
-
-                    if (todaySalesEl) todaySalesEl.textContent = data.todaySales;
-                    if (overallSalesEl) overallSalesEl.textContent = data.overallSales;
-                    if (posOrdersEl) posOrdersEl.textContent = data.todayTransactions;
-                    if (totalProductsEl) totalProductsEl.textContent = data.totalProducts;
-                    if (restockNeededEl) restockNeededEl.textContent = data.restockNeededCount;
-                } catch (err) {
-                    console.error('Live dashboard poll error:', err);
-                }
-            }, 10000); // Polls every 10 seconds
-        }
-
-        // =====================================================
-        // CUSTOM DROPDOWNS LOGIC (With AJAX Submit)
+        // CUSTOM DROPDOWNS LOGIC
         // =====================================================
         function initCustomDropdowns() {
             document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
@@ -624,11 +586,9 @@
                         // Custom Submits based on dropdown ID
                         if (dropdown.id === 'filter-category-dropdown') {
                             document.getElementById('forecastProductInput').value = ''; // Clear product
-                            fetchForecastData(document.getElementById('forecastFilterForm'));
-                        } else if (dropdown.id === 'filter-product-dropdown') {
-                            fetchForecastData(document.getElementById('forecastFilterForm'));
-                        } else if (dropdown.id === 'filter-fs-category-dropdown') {
-                            dropdown.closest('form').submit(); // Standard submit for Fast/Slow
+                            document.getElementById('forecastFilterForm').submit();
+                        } else if (dropdown.id === 'filter-product-dropdown' || dropdown.id === 'filter-fs-category-dropdown') {
+                            dropdown.closest('form').submit();
                         } else if (dropdown.id === 'filter-range-dropdown' || dropdown.id === 'filter-fs-range-dropdown') {
                             const isForecast = dropdown.id === 'filter-range-dropdown';
                             const customContainer = document.getElementById(isForecast ? 'forecastCustomDateContainer' : 'fastSlowCustomDateContainer');
@@ -643,11 +603,7 @@
                                     customContainer.classList.remove('flex');
                                     customContainer.classList.add('hidden');
                                 }
-                                if (isForecast) {
-                                    fetchForecastData(document.getElementById('forecastFilterForm'));
-                                } else {
-                                    dropdown.closest('form').submit();
-                                }
+                                dropdown.closest('form').submit();
                             }
                         }
                     });
@@ -656,68 +612,6 @@
                 document.addEventListener('click', e => { if (!dropdown.contains(e.target)) closeMenu(); });
                 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
                 dropdown.dataset.initialized = 'true';
-            });
-        }
-
-        // =====================================================
-        // AJAX FORECAST FETCH (No Refresh)
-        // =====================================================
-        async function fetchForecastData(form) {
-            const formData = new FormData(form);
-            const queryString = new URLSearchParams(formData).toString();
-            const url = `${form.action}?${queryString}`;
-
-            const canvas = document.getElementById('demandForecastChart');
-            const ctx = canvas.getContext('2d');
-            if (demandChartInstance) {
-                demandChartInstance.destroy();
-            }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "14px Inter, sans-serif";
-            ctx.fillStyle = "#64748b";
-            ctx.textAlign = "center";
-            ctx.fillText("Loading new data...", canvas.width / 2, canvas.height / 2);
-
-            try {
-                const response = await fetch(url, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const html = await response.text();
-                
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                const scripts = Array.from(doc.querySelectorAll('script'));
-                const chartScript = scripts.find(s => s.textContent.includes('const chartData ='));
-                
-                if (chartScript) {
-                    const match = chartScript.textContent.match(/const chartData = (\{.*?\});/s);
-                    if (match && match[1]) {
-                        const newChartData = JSON.parse(match[1]);
-                        renderBackendForecastChart(newChartData);
-                    }
-                }
-
-                const newShowingText = doc.getElementById('forecastShowingText');
-                if (newShowingText) {
-                    document.getElementById('forecastShowingText').innerHTML = newShowingText.innerHTML;
-                }
-
-                window.history.pushState({}, '', url);
-
-            } catch (error) {
-                console.error('Error fetching forecast data:', error);
-                canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm font-semibold text-rose-500">Error loading data. Please try again.</div>';
-            }
-        }
-
-        const forecastForm = document.getElementById('forecastFilterForm');
-        if (forecastForm) {
-            forecastForm.addEventListener('submit', function(e) {
-                if (document.getElementById('forecastRangeInput').value === 'custom') {
-                    e.preventDefault();
-                    fetchForecastData(this);
-                }
             });
         }
 
@@ -758,7 +652,6 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             initCustomDropdowns();
-            startLiveDashboardPolling();
 
             // 1. Initialize Chart
             const canvas = document.getElementById('demandForecastChart');
@@ -780,21 +673,15 @@
             initInventoryAlerts();
         });
 
-        function renderBackendForecastChart(providedData = null) {
+        function renderBackendForecastChart() {
             const canvas = document.getElementById('demandForecastChart');
-            if (!canvas) return;
-            
-            if (canvas.parentElement.innerHTML.includes('Loading new data...') || canvas.parentElement.innerHTML.includes('Error loading data')) {
-                canvas.parentElement.innerHTML = '<canvas id="demandForecastChart"></canvas>';
-            }
-            
-            const ctx = document.getElementById('demandForecastChart').getContext('2d');
+            const ctx = canvas.getContext('2d');
 
             if (demandChartInstance) {
                 demandChartInstance.destroy();
             }
 
-            const chartData = providedData || @json($forecastChart) || {};
+            const chartData = @json($forecastChart) || {};
 
             if (!chartData.labels || chartData.labels.length === 0) {
                 canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-sm text-gray-500">No data available for the selected period.</div>';
@@ -821,8 +708,8 @@
                     c.moveTo(x, top);
                     c.lineTo(x, bottom);
                     c.lineWidth = 1.5;
-                    c.strokeStyle = 'rgba(100, 116, 139, 0.5)';
-                    c.setLineDash([5, 5]);
+                    c.strokeStyle = 'rgba(100, 116, 139, 0.55)';
+                    c.setLineDash([6, 4]);
                     c.stroke();
 
                     c.fillStyle = 'rgba(100, 116, 139, 0.9)';
@@ -840,41 +727,37 @@
                     labels: chartData.labels,
                     datasets: [
                         {
-                            label: 'Past Sales',
+                            label: 'Past Sales (Actual)',
                             data: chartData.historical,
                             borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.05)',
-                            borderWidth: 2,
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            borderWidth: 2.5,
                             pointRadius: 3,
-                            pointHoverRadius: 5,
+                            pointHoverRadius: 6,
                             pointBackgroundColor: '#2563eb',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 1,
                             fill: 'origin',
                             tension: 0.2,
                             spanGaps: false,
                         },
                         {
-                            label: 'Prediction',
+                            label: 'Predicted Future Sales',
                             data: chartData.forecast,
                             borderColor: '#8b5cf6',
                             backgroundColor: '#8b5cf6',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
+                            borderWidth: 2.5,
+                            borderDash: [6, 4],
                             pointRadius: 3,
-                            pointHoverRadius: 5,
+                            pointHoverRadius: 6,
                             pointBackgroundColor: '#8b5cf6',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 1,
                             fill: false,
                             tension: 0.2,
                             spanGaps: false,
                         },
                         {
-                            label: 'Lower Bound',
+                            label: 'Low Estimate',
                             data: chartData.lower_bound,
-                            borderColor: 'rgba(139, 92, 246, 0.2)',
-                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                            borderColor: 'rgba(139, 92, 246, 0.3)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
                             borderWidth: 1,
                             borderDash: [3, 3],
                             pointRadius: 0,
@@ -884,10 +767,9 @@
                             spanGaps: false,
                         },
                         {
-                            label: 'Upper Bound',
+                            label: 'High Estimate',
                             data: chartData.upper_bound,
-                            borderColor: 'rgba(139, 92, 246, 0.2)',
-                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                            borderColor: 'rgba(139, 92, 246, 0.3)',
                             borderWidth: 1,
                             borderDash: [3, 3],
                             pointRadius: 0,
@@ -915,7 +797,7 @@
                             callbacks: {
                                 label: function (context) {
                                     let label = context.dataset.label || '';
-                                    if (label === 'Lower Bound' || label === 'Upper Bound') {
+                                    if (label === 'Low Estimate' || label === 'High Estimate') {
                                         return null; 
                                     }
                                     if (context.parsed.y !== null) {
@@ -929,19 +811,13 @@
                     scales: {
                         y: {
                             min: 0,
-                            ticks: { 
-                                precision: 0,
-                                stepSize: 500
-                            },
-                            grid: { 
-                                color: 'rgba(0,0,0,0.04)',
-                                drawBorder: false
-                            },
-                            title: { display: true, text: 'Number of Items Sold', font: { size: 11, weight: '500' }, color: '#64748b' }
+                            ticks: { precision: 0 },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            title: { display: true, text: 'Number of Items Sold', font: { size: 11, weight: 'bold' }, color: '#64748b' }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, maxTicksLimit: 12, color: '#94a3b8' }
+                            ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, maxTicksLimit: 12 }
                         }
                     }
                 }
@@ -1072,11 +948,6 @@
                 } finally {
                     isLoading = false;
                     loadingIndicator.classList.add('hidden');
-
-                    // Recursively load if the container still does not have a scrollbar
-                    if (nextPageUrl && container.scrollHeight <= container.clientHeight + 20) {
-                        setTimeout(loadMoreAlerts, 100);
-                    }
                 }
             }
 
