@@ -119,7 +119,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/checkout', [PosController::class, 'checkout'])->name('checkout');
         Route::post('/checkout', [PosController::class, 'processCheckout'])->name('checkout.process');
         
-        // Receipt is handled by TransactionController, not ReceiptController!
         Route::get('/receipt/{id}', [TransactionController::class, 'showReceipt'])->name('receipt');
         Route::get('/transactions/payment/{id}/receipt', [TransactionController::class, 'showPaymentReceipt'])->name('transaction.payment.receipt');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transaction.history');
@@ -141,16 +140,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin,manager,warehouse_staff,staff')->group(function () {
         Route::get('/inventory/view', [InventoryController::class, 'index'])->name('inventory.view');
         Route::post('/inventory/{product}/restock', [InventoryController::class, 'restock'])->name('inventory.restock');
-        
-        /* 
-         * ⚠️ WARNING: The following 5 routes point to methods that DO NOT EXIST in InventoryController.
-         * Commented out to prevent 500 errors until you build these methods.
-         */
-        // Route::get('/inventory/{product}/details', [InventoryController::class, 'show'])->name('inventory.show');
-        // Route::post('/inventory/my-requests/{movement}/fulfill', [InventoryController::class, 'fulfill'])->name('inventory.fulfill');
-        // Route::delete('/inventory/my-requests/{movement}', [InventoryController::class, 'cancelRequest'])->name('inventory.cancelRequest');
-        // Route::get('/inventory/my-requests/{movement}/edit', [InventoryController::class, 'editRequest'])->name('inventory.editRequest');
-        // Route::put('/inventory/my-requests/{movement}', [InventoryController::class, 'updateRequest'])->name('inventory.updateRequest');
 
         Route::get('/inventory/my-requests', [InventoryController::class, 'myRequests'])->name('inventory.myRequests');
         Route::post('/inventory/my-requests/store', [InventoryController::class, 'storeRequest'])->name('inventory.storeRequest');
@@ -170,7 +159,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{supplier}/payment', [SupplierController::class, 'addPayment'])->name('payment');
             Route::get('/{supplier}/ledger', [SupplierController::class, 'ledger'])->name('ledger');
             Route::post('/{supplier}/rate', [SupplierController::class, 'rate'])->name('rate');
-            Route::get('/discrepancy-report', [SupplierReturnController::class, 'discrepancyReport'])->name('discrepancy');
+            Route::get('/discrepancy-report', [SupplierController::class, 'discrepancyReport'])->name('discrepancy');
         });
 
         Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
