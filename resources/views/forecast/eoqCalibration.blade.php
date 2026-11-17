@@ -137,7 +137,7 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
-                    @include('forecast.eoqTable', ['products' => $products, 'timeframe' => $timeframe])
+                    @include('forecast.partials.eoqTable', ['products' => $products, 'timeframe' => $timeframe])
                 </tbody>
             </table>
 
