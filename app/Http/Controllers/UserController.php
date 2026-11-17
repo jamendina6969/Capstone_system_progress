@@ -238,8 +238,8 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'loginname' => ['required'],
-            'password'  => ['required'],
+            'loginname'     => ['required'],
+            'loginpassword' => ['required'],
         ]);
 
         $field = filter_var($data['loginname'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
@@ -256,7 +256,7 @@ class UserController extends Controller
                         ->withInput($request->only('loginname'));
         }
 
-        if (Auth::attempt([$field => $data['loginname'], 'password' => $data['password']])) {
+        if (Auth::attempt([$field => $data['loginname'], 'password' => $data['loginpassword']])) {
             $request->session()->regenerate();
             
             try {
