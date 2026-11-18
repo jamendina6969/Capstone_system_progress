@@ -501,34 +501,52 @@ class SalesRecordController extends Controller
                         $categoryId = $fallbackCategoryId;
 
                         if ($mainCatName !== '') {
-                            $mainCat = Category::firstOrCreate(
-                                [
-                                    'name' => $mainCatName,
-                                    'parent_id' => null
-                                ],
-                                [
+                            // Case-insensitive lookup for Main Category to prevent duplicates
+                            $mainCat = Category::whereNull('parent_id')
+                                ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($mainCatName))])
+                                ->first();
+
+                            if (!$mainCat) {
+                                $mainCat = Category::create([
+                                    'name' => trim($mainCatName),
+                                    'parent_id' => null,
                                     'type' => 'product',
                                     'code' => strtoupper(substr(md5($mainCatName), 0, 6))
-                                ]
-                            );
+                                ]);
+                            }
 
                             if ($brandCatName !== '') {
-                                $brandCat = Category::firstOrCreate(
-                                    [
-                                        'name' => $brandCatName,
-                                        'parent_id' => $mainCat->id
-                                    ],
-                                    [
+                                // Case-insensitive lookup for Brand Subcategory
+                                $brandCat = Category::where('parent_id', $mainCat->id)
+                                    ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($brandCatName))])
+                                    ->first();
+
+                                if (!$brandCat) {
+                                    $brandCat = Category::create([
+                                        'name' => trim($brandCatName),
+                                        'parent_id' => $mainCat->id,
                                         'type' => 'product',
-                                        'code' => strtoupper(
-                                            substr(md5($mainCatName . $brandCatName), 0, 6)
-                                        )
-                                    ]
-                                );
+                                        'code' => strtoupper(substr(md5($mainCatName . $brandCatName), 0, 6))
+                                    ]);
+                                }
 
                                 $categoryId = $brandCat->id;
                             } else {
-                                $categoryId = $mainCat->id;
+                                // If main category is specified but brand is blank, fallback to an "Uncategorized" brand under this main category
+                                $defaultBrand = Category::where('parent_id', $mainCat->id)
+                                    ->whereRaw('LOWER(TRIM(name)) = ?', ['uncategorized'])
+                                    ->first();
+
+                                if (!$defaultBrand) {
+                                    $defaultBrand = Category::create([
+                                        'name' => 'Uncategorized',
+                                        'parent_id' => $mainCat->id,
+                                        'type' => 'product',
+                                        'code' => strtoupper(substr(md5($mainCat->name . 'Uncategorized'), 0, 6))
+                                    ]);
+                                }
+
+                                $categoryId = $defaultBrand->id;
                             }
                         }
 

@@ -77,14 +77,16 @@ class CategoryController extends Controller
             'mainCategories' => $mainCategories
         ]);
     }
-
-    // ... (The rest of your controller methods remain exactly the same: show, showSubcategoryDetail, etc.)
     
     public function show(Category $category)
     {
         $category->load(['children.products', 'products']);
         
-        return view('admin.categories.show', compact('category'));
+        return view('admin.categories.show', [
+            'category' => $category,
+            'subcategory' => $category,
+            'parentCategory' => $category->parent,
+        ]);
     }
 
     public function showSubcategoryDetail(Request $request, Category $category)
