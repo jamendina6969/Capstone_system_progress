@@ -26,12 +26,12 @@ class BackupController extends Controller
             File::makeDirectory($this->backupPath, 0755, true);
         }
 
-        // Detect XAMPP paths on Windows. We will hardcode these for your local setup.
-        // If you deploy later, you will update these to just 'mysqldump' and 'mysql'
+        // Dynamically detect environment (XAMPP on Windows vs Cloud Linux/Wasmer)
         if (PHP_OS_FAMILY === 'Windows') {
             $this->mysqldumpPath = '"C:\xampp\mysql\bin\mysqldump.exe"';
             $this->mysqlPath = '"C:\xampp\mysql\bin\mysql.exe"';
         } else {
+            // For cloud/Linux environments (like Wasmer), use system commands
             $this->mysqldumpPath = 'mysqldump';
             $this->mysqlPath = 'mysql';
         }
@@ -203,7 +203,7 @@ class BackupController extends Controller
         exec($command, $output, $returnVar);
 
         if ($returnVar !== 0) {
-            throw new Exception("Database dump failed. Check your XAMPP MySQL path.");
+            throw new Exception("Database dump failed. Check your database paths or permissions.");
         }
     }
 
@@ -223,7 +223,7 @@ class BackupController extends Controller
         exec($command, $output, $returnVar);
 
         if ($returnVar !== 0) {
-            throw new Exception("Database restore failed. Check your XAMPP MySQL path.");
+            throw new Exception("Database restore failed. Check your database paths or permissions.");
         }
     }
 
