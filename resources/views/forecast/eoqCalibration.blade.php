@@ -566,7 +566,22 @@
     }
 
     function submitBatchForm() {
-        document.getElementById('batchForm').submit();
+        const form = document.getElementById('batchForm');
+        
+        // Remove any previously appended dynamic product inputs
+        form.querySelectorAll('input.dynamic-product-id').forEach(el => el.remove());
+
+        // Gather all checked checkboxes (including those loaded via infinite scroll)
+        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'product_ids[]';
+            input.value = cb.value;
+            input.className = 'dynamic-product-id';
+            form.appendChild(input);
+        });
+
+        form.submit();
     }
 
     function openEoqSettingsModal() {
