@@ -1,0 +1,24 @@
+# Predictive Inventory System for Steven Hydrotech Exponent Water Treatment and Supply Services Using the Economic Order Quantity (EOQ)
+
+> One "##" block per scene. The id after "##" must match a function in scenes.js.
+> Write narration the way you would say it. [#name] marks a moment you can
+> animate on, [pause 0.5] adds silence, {API|A P I} shows "API" but says "A P I".
+> Replace each line below with your own narration, and rename the scenes as you like.
+
+## intro
+Welcome to the Predictive Inventory System built for Steven Hydrotech Exponent Water Treatment and Supply Services. [#login_banner] [pause 0.5] Designed to eliminate guesswork across both our main store and warehouse, this platform combines historical demand forecasting with the Economic Order Quantity, or {EOQ|E O Q}, model to keep essential water treatment supplies in stock without overbuying. [pause 0.8]
+
+## dashboard
+Right after signing in, administrators and managers land on the main dashboard. [#kpi_cards] At the top, five summary cards give an immediate snapshot of Today's Sales, Overall Sales, {POS|P O S} Orders, total catalog products, and items flagged as Restock Needed. [pause 0.5] Scrolling down, the Fast and Slow Moving Products panel [#fast_slow_panel] tracks product velocity across customizable categories and date ranges. High-demand items appear on the left with their units sold and current stock, while slow-moving items on the right highlight excess inventory so managers know when to pause reordering. [pause 0.5] Below that, the Inventory Alerts table [#inventory_alerts] tracks store, warehouse, and combined stock status side by side against each product's reorder point, automatically flagging low-stock and out-of-stock supplies before they disrupt operations. [pause 0.8]
+
+## demand_forecast
+To plan ahead, the Sales Predictions chart [#sales_predictions_chart] projects future water treatment supply demand based on historical usage. [pause 0.4] Drawing from both live {POS|P O S} checkouts and imported {CSV|C S V} sales history, the chart plots actual past sales in blue alongside dashed purple predictions and a shaded confidence range for best- and worst-case estimates. [#forecast_filters] Presenters can filter predictions by category, brand, individual product, or time horizon—from seven days out to a full year. [pause 0.5] Inside Forecast Settings, [#forecast_settings] managers control the Simple Moving Average, or {SMA|S M A}, lookback window, setting a global default in days with custom overrides for specific categories or fast-turning products. [pause 0.8]
+
+## eoq_calculator
+Those demand projections feed directly into the {EOQ|E O Q} Calibration module, [#eoq_calibration_table] which calculates the optimal order size for every water treatment product. [pause 0.4] For each item, the model balances projected demand against ordering costs and annual holding costs—factoring in either a percentage of purchase cost or storage volume in cubic meters for bulky tanks and media—to minimize total inventory costs. [#eoq_timeframe_filter] Switching timeframes updates demand and target {EOQ|E O Q} units across daily, weekly, monthly, quarterly, or annual views. [pause 0.5] Managers can also select multiple products to batch-calibrate custom ordering or holding costs, [#eoq_batch_apply] or configure system-wide defaults in Global {EOQ|E O Q} Settings, [#eoq_global_settings] turning accurate reorder points and optimal order quantities into timely purchase requests. [pause 0.8]
+
+## transaction_management
+Day-to-day operations stay just as reliable across checkout and auditing. [#pos_parked_orders] In Point of Sale, cashiers can put an active retail cart or custom project bundle on hold, creating a parked order that can later be viewed, merged, or restored with discounts intact. [pause 0.5] In Transaction History, [#transaction_history_returns] every {POS|P O S} sale, imported record, refund, and supplier payment voucher appears in one searchable ledger, backed by {SKU|S K U}-verified customer returns that cross-check items against the original receipt before restocking inventory. [pause 0.5] Finally, every create, update, delete, and authentication event is recorded in snapshot-based Audit Logs, [#audit_log_modal] preserving actor names, roles, {IP|I P} addresses, and field-level before-and-after values even if a user account is later deleted. [pause 0.8]
+
+## outro {hold=1.5}
+By integrating predictive demand analytics with {EOQ|E O Q} optimization, Steven Hydrotech Exponent achieves leaner inventory costs, fewer stockouts, and smarter supply chain decisions every day. [#system_overview]
