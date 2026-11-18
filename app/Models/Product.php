@@ -11,18 +11,19 @@ class Product extends Model
     use HasFactory, AuditsChanges;
 
     protected $fillable = [
-        'product_sku',      
+        'product_sku',
+        'category_id',     
         'product_name',
         'product_description',
         'purchase_cost',
         'selling_price',
+        'reorder_point',
+        'approx_volume',
+        'storage_volume_cbm',
+        'product_image', 
         'store_quantity',
         'warehouse_quantity',
-        'reorder_point',
-        'product_image',
-        'category_id',
-        'approx_volume',
-        'storage_volume_cbm', // <--- ADDED to support EoqService
+        // <--- ADDED to support EoqService
     ];
 
     public function category()

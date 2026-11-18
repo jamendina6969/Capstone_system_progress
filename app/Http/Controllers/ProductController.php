@@ -192,6 +192,20 @@ class ProductController extends Controller
             'autoProductSku'
         ));
     }
+    public function transfer(Request $request)
+    {
+        $request->validate([
+            'product_ids' => ['required', 'array'],
+            'product_ids.*' => ['exists:products,id'],
+            'category_id' => ['required', 'exists:categories,id'],
+        ]);
+
+        Product::whereIn('id', $request->product_ids)->update([
+            'category_id' => $request->category_id,
+        ]);
+
+        return back()->with('success', 'Products transferred successfully.');
+    }
 
     public function store(Request $request)
     {

@@ -9,6 +9,8 @@ use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\SupplierLedger;
 use App\Models\StockMovement;
+use App\Services\DemandForecastService;
+use App\Services\EoqService;
 use App\Imports\PurchaseOrdersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -354,12 +356,25 @@ class PurchaseOrderController extends Controller
         return $pdf->download("PO-{$purchaseOrder->po_number}.pdf");
     }
 
-    public function lowStockSuggestions()
+    public function lowStockSuggestions(DemandForecastService $forecastService, EoqService $eoqService)
     {
+        // 1. Fetch ONLY products that are actually at or below their reorder point from the database
         $lowStockProducts = Product::with('category')
             ->whereRaw('(store_quantity + warehouse_quantity) <= COALESCE(reorder_point, 10)')
             ->orderBy('product_name')
-            ->get();
+            ->get()
+            ->transform(function ($product) use ($forecastService, $eoqService) {
+                // 2. Compute EOQ only for low-stock items
+                $annualDemand = $forecastService->projectedAnnualDemand($product);
+                $eoq = $eoqService->calculate($product, $annualDemand);
+                
+                $totalStock = (int) ($product->store_quantity ?? 0) + (int) ($product->warehouse_quantity ?? 0);
+                
+                // 3. Suggested Qty = EOQ - Current Stock (minimum 0)
+                $product->suggested_qty = max(0, (int) round($eoq - $totalStock));
+                
+                return $product;
+            });
 
         $grouped = $lowStockProducts->groupBy('category_id');
 

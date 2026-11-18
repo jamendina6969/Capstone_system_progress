@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
     // ==================== PRODUCTS / CATEGORIES ====================
     Route::middleware('role:admin,manager')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class)->except(['show']);
+        Route::post('/products/transfer', [ProductController::class, 'transfer'])->name('products.transfer');
 
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');

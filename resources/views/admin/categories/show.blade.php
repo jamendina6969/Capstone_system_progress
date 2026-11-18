@@ -353,11 +353,16 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Category</label>
-                        <select id="edit_category_id" name="category_id" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 cursor-pointer">
-                            <option value="{{ $category->id }}">{{ $category->name }} (Current)</option>
-                            @foreach($category->children as $child)
-                                <option value="{{ $child->id }}">{{ $child->name }}</option>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Category / Brand</label>
+                        <select id="edit_category_id" name="category_id" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 cursor-pointer">
+                            @php
+                                $allMainCategories = \App\Models\Category::whereNull('parent_id')->with('children')->orderBy('name')->get();
+                            @endphp
+                            @foreach($allMainCategories as $mainCat)
+                                <option value="{{ $mainCat->id }}">{{ $mainCat->name }} (Main Category)</option>
+                                @foreach($mainCat->children as $subCat)
+                                    <option value="{{ $subCat->id }}">  — {{ $subCat->name }}</option>
+                                @endforeach
                             @endforeach
                         </select>
                     </div>
