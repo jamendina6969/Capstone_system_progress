@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
     // ==================== INVENTORY / SALES / FORECAST ====================
     Route::middleware('role:admin,manager')->group(function () {
         Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+        Route::get('/inventory/export', [InventoryController::class, 'export'])->name('inventory.export');
         Route::post('/inventory/{product}/transfer', [InventoryController::class, 'transfer'])->name('inventory.transfer');
         Route::get('/inventory/logs', [InventoryController::class, 'logs'])->name('inventory.logs');
         Route::get('/inventory/approvals', [InventoryController::class, 'pendingApprovals'])->name('inventory.approvals');

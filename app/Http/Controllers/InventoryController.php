@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InventoryController extends Controller
 {
@@ -128,6 +129,124 @@ class InventoryController extends Controller
         return view('inventory.index', compact('products', 'categories'));
     }
 
+    public function export(Request $request)
+    {
+        $query = Product::with('category.parent');
+
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('product_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('product_sku', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $categoryIds = $this->getCategoryAndDescendantIds($request->category_id);
+            $query->whereIn('category_id', $categoryIds);
+        }
+
+        if ($request->filled('status')) {
+            $reorder = 'COALESCE(reorder_point, 10)';
+            $store = 'COALESCE(store_quantity, 0)';
+            $wh = 'COALESCE(warehouse_quantity, 0)';
+            $total = "($store + $wh)";
+
+            if ($request->status === 'store_out') {
+                $query->whereRaw("$store <= 0");
+            } elseif ($request->status === 'store_low') {
+                $query->whereRaw("$store > 0")->whereRaw("$store <= $reorder");
+            } elseif ($request->status === 'wh_out') {
+                $query->whereRaw("$wh <= 0");
+            } elseif ($request->status === 'wh_low') {
+                $query->whereRaw("$wh > 0")->whereRaw("$wh <= $reorder");
+            } elseif ($request->status === 'total_out') {
+                $query->whereRaw("$total <= 0");
+            } elseif ($request->status === 'total_low') {
+                $query->whereRaw("$total > 0")->whereRaw("$total <= $reorder");
+            }
+        }
+
+        $sortField = $request->input('sort', 'product_name');
+        $sortDirection = $request->input('direction', 'asc');
+        $allowedSorts = [
+            'product_name', 'product_sku', 'store_quantity', 'warehouse_quantity',
+            'selling_price', 'purchase_cost', 'created_at',
+        ];
+
+        if (in_array($sortField, $allowedSorts, true)) {
+            $query->orderBy($sortField, $sortDirection === 'desc' ? 'desc' : 'asc');
+        }
+
+        $products = $query->get();
+
+        // Return partial view for the modal popup preview
+        if ($request->ajax() || $request->has('modal')) {
+            return view('inventory.partials.print-modal-content', compact('products'))->render();
+        }
+
+        if ($request->has('print')) {
+            return view('inventory.print', compact('products'));
+        }
+
+        $filename = 'inventory_report_' . date('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($products) {
+            $file = fopen('php://output', 'w');
+            
+            // Metadata rows at the top
+            fputcsv($file, ['Inventory Stock Report']);
+            fputcsv($file, ['Exported Date & Time:', date('F d, Y - h:i:s A')]);
+            fputcsv($file, []); // Blank separator row
+
+            // Table Header with Main Category and Subcategory
+            fputcsv($file, ['Product Name', 'SKU', 'Main Category', 'Subcategory', 'Cost', 'Price', 'Store Qty', 'Warehouse Qty', 'Total Qty']);
+
+            foreach ($products as $product) {
+                $storeQty = $product->store_quantity ?? 0;
+                $whQty = $product->warehouse_quantity ?? 0;
+
+                $category = $product->category;
+                $mainCategory = '—';
+                $subCategory = '—';
+
+                if ($category) {
+                    if ($category->parent_id) {
+                        $mainCategory = optional($category->parent)->name ?? '—';
+                        $subCategory = $category->name;
+                    } else {
+                        $mainCategory = $category->name;
+                        $subCategory = '—';
+                    }
+                }
+
+                fputcsv($file, [
+                    $product->product_name,
+                    $product->product_sku ?? '—',
+                    $mainCategory,
+                    $subCategory,
+                    $product->purchase_cost ?? 0,
+                    $product->selling_price ?? 0,
+                    $storeQty,
+                    $whQty,
+                    $storeQty + $whQty
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
+    }
+
     public function transfer(Request $request, Product $product)
     {
         $validated = $request->validate([
@@ -195,7 +314,7 @@ class InventoryController extends Controller
             return back()->with('error', $exception->getMessage())->withInput();
         } catch (\Throwable $exception) {
             report($exception);
-            return back()->withErrors(['quantity' => 'Could not process the transfer. ' . $exception->getMessage()])->withInput();
+            return backErrors(['quantity' => 'Could not process the transfer. ' . $exception->getMessage()])->withInput();
         }
 
         $destination = $direction === 'to_store' ? 'store' : 'warehouse';
@@ -654,7 +773,6 @@ class InventoryController extends Controller
     {
         $user = Auth::user();
 
-        // Admins and Managers bypass the action password check here as well
         if (!in_array($user->role, ['admin', 'manager'])) {
             $validated = $request->validate([
                 'action_password' => ['required', 'string'],

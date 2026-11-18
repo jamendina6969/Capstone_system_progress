@@ -219,7 +219,7 @@
                     </table>
                 </div>
 
-                <!-- GRID VIEW (Added exact Tailwind classes from Inventory) -->
+                <!-- GRID VIEW -->
                 <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-6">
                     @include('admin.products.partials.items', [
                         'products' => $products,
@@ -305,8 +305,8 @@
                 @endif
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Product SKU (Auto-Generated)</label>
-                    <input type="text" id="modal_product_sku" readonly class="w-full rounded-lg bg-gray-100 dark:bg-[#161B26]/60 border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-500 dark:text-slate-400 cursor-not-allowed font-mono">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Product SKU <span class="text-gray-400 font-normal">(optional — leave blank to auto-generate)</span></label>
+                    <input type="text" id="modal_product_sku" name="product_sku" value="{{ old('product_sku') }}" placeholder="e.g. PRD-XYZ123" class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100 font-mono">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -419,7 +419,6 @@
     #productResultsContainer[data-view="list"] .view-list { display: block !important; }
     #productResultsContainer[data-view="grid"] .view-grid { display: grid !important; }
 
-    /* EXACT MATCH: Product Grid CSS from Inventory */
     #productResultsContainer[data-view="grid"] #productGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 16px !important;
@@ -718,6 +717,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const categoryLabel = document.querySelector('#add-category-dropdown .dropdown-label');
         const skuInput = document.getElementById('modal_product_sku');
         if (!skuInput) return;
+        // Only auto-generate if the field is currently empty or contains an old auto-generated pattern
+        if (skuInput.value.trim() !== '' && !skuInput.value.startsWith('PRD-')) return;
+        
         let prefix = 'PRD';
         if (categoryLabel) {
             const text = categoryLabel.textContent.trim();

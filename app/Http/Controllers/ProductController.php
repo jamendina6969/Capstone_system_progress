@@ -79,7 +79,7 @@ class ProductController extends Controller
             $query->whereIn('category_id', $categoryIds);
         }
 
-        // --- UPDATED: SPECIFIC STATUS FILTERS ---
+        // --- STATUS FILTERS ---
         if ($request->filled('status')) {
             $reorder = 'COALESCE(reorder_point, 10)';
             $store = 'COALESCE(store_quantity, 0)';
@@ -100,7 +100,6 @@ class ProductController extends Controller
                 $query->whereRaw("$total > 0")->whereRaw("$total <= $reorder");
             }
         }
-        // ----------------------------------------
 
         // ALLOWED SORT COLUMNS
         $allowedSorts = [
@@ -133,9 +132,7 @@ class ProductController extends Controller
 
         $categories = $this->getProductCategories();
 
-        // =====================================================
         // AJAX / INFINITE SCROLL RESPONSE
-        // =====================================================
         if ($request->ajax() || $request->expectsJson()) {
             $viewData = [
                 'products' => $products,
@@ -174,9 +171,7 @@ class ProductController extends Controller
             ]);
         }
 
-        // =====================================================
         // FULL PAGE RESPONSE
-        // =====================================================
         $autoProductSku = 'PRD-' . strtoupper(substr(uniqid(), -6));
 
         return view('admin.products.index', compact(
@@ -201,6 +196,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'product_sku' => ['nullable', 'string', 'max:255', 'unique:products,product_sku'],
             'product_name' => ['required', 'string', 'max:255'],
             'product_description' => ['nullable', 'string'],
             'approx_volume' => ['nullable', 'string', 'max:255'],
@@ -218,25 +214,37 @@ class ProductController extends Controller
             ],
         ]);
 
-        $prefix = 'PRD';
-
-        if ($request->filled('category_id')) {
-            $category = Category::find($request->category_id);
-
-            if ($category) {
-                $cleaned = strtoupper(
-                    preg_replace('/[^a-zA-Z]/', '', $category->name)
-                );
-
-                if (strlen($cleaned) >= 3) {
-                    $prefix = substr($cleaned, 0, 3);
-                } elseif (strlen($cleaned) > 0) {
-                    $prefix = $cleaned;
-                }
-            }
+        // Fallback category logic: if empty, pick "Uncategorized" or the first available category
+        $categoryId = $request->input('category_id');
+        if (empty($categoryId)) {
+            $defaultCategory = Category::where('name', 'like', '%Uncategorized%')->first() ?? Category::first();
+            $categoryId = $defaultCategory ? $defaultCategory->id : null;
         }
 
-        $productSku = $prefix . '-' . strtoupper(substr(uniqid(), -6));
+        // SKU generation logic: use user input if filled, otherwise auto-generate
+        if ($request->filled('product_sku')) {
+            $productSku = trim($request->product_sku);
+        } else {
+            $prefix = 'PRD';
+
+            if ($categoryId) {
+                $category = Category::find($categoryId);
+
+                if ($category) {
+                    $cleaned = strtoupper(
+                        preg_replace('/[^a-zA-Z]/', '', $category->name)
+                    );
+
+                    if (strlen($cleaned) >= 3) {
+                        $prefix = substr($cleaned, 0, 3);
+                    } elseif (strlen($cleaned) > 0) {
+                        $prefix = $cleaned;
+                    }
+                }
+            }
+
+            $productSku = $prefix . '-' . strtoupper(substr(uniqid(), -6));
+        }
 
         $product = new Product();
 
@@ -249,7 +257,7 @@ class ProductController extends Controller
         $product->store_quantity = $request->store_quantity;
         $product->warehouse_quantity = $request->warehouse_quantity;
         $product->reorder_point = $request->reorder_point ?? 0;
-        $product->category_id = $request->category_id;
+        $product->category_id = $categoryId; // Safe fallback ID preventing null constraint errors
 
         if ($request->hasFile('product_image')) {
             $product->product_image = $request
@@ -300,6 +308,12 @@ class ProductController extends Controller
             ],
         ]);
 
+        $categoryId = $request->input('category_id');
+        if (empty($categoryId)) {
+            $defaultCategory = Category::where('name', 'like', '%Uncategorized%')->first() ?? Category::first();
+            $categoryId = $defaultCategory ? $defaultCategory->id : null;
+        }
+
         if ($request->hasFile('product_image')) {
             if (
                 $product->product_image &&
@@ -322,7 +336,7 @@ class ProductController extends Controller
         $product->store_quantity = $request->store_quantity;
         $product->warehouse_quantity = $request->warehouse_quantity;
         $product->reorder_point = $request->reorder_point ?? 0;
-        $product->category_id = $request->category_id;
+        $product->category_id = $categoryId;
 
         $product->save();
 

@@ -10,7 +10,7 @@
         @if ($errors->any())
             <div class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3 text-sm">
                 <ul class="list-disc list-inside space-y-1">
-                    @foreach ($errors->all() as $error)
+                    @foreach ($errors->all() as$error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
@@ -45,9 +45,9 @@
 
             <div>
                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name
+                    Product Name <span class="text-red-500">*</span>
                 </label>
-                <input type="text" name="product_name" id="product_name" value="{{ old('product_name') }}"
+                <input type="text" name="product_name" id="product_name" value="{{ old('product_name') }}" required
                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                               focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
             </div>
@@ -64,13 +64,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">
-                        Category <span class="text-gray-400">(optional)</span>
+                        Category <span class="text-red-500">*</span>
                     </label>
-                    <select name="category_id" id="category_id"
+                    <select name="category_id" id="category_id" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
-                        <option value="">Uncategorized (default)</option>
-                        @foreach ($categories as $category)
+                        <option value="" disabled selected>-- Select Category --</option>
+                        @foreach ($categories as$category)
                             <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }} ({{ ucfirst($category->type) }})
                             </option>
@@ -102,18 +102,18 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="purchase_cost" class="block text-sm font-medium text-gray-700 mb-1">
-                        Purchase Cost
+                        Purchase Cost <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" step="0.01" min="0" name="purchase_cost" id="purchase_cost" value="{{ old('purchase_cost') }}"
+                    <input type="number" step="0.01" min="0" name="purchase_cost" id="purchase_cost" value="{{ old('purchase_cost') }}" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                   focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
                 </div>
 
                 <div>
                     <label for="selling_price" class="block text-sm font-medium text-gray-700 mb-1">
-                        Selling Price
+                        Selling Price <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" step="0.01" min="0" name="selling_price" id="selling_price" value="{{ old('selling_price') }}"
+                    <input type="number" step="0.01" min="0" name="selling_price" id="selling_price" value="{{ old('selling_price') }}" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                   focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
                 </div>
@@ -122,20 +122,20 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="store_quantity" class="block text-sm font-medium text-gray-700 mb-1">
-                        Store Quantity
+                        Store Quantity <span class="text-red-500">*</span>
                     </label>
                     <input type="number" min="0" name="store_quantity" id="store_quantity"
-                        value="{{ old('store_quantity', 0) }}"
+                        value="{{ old('store_quantity', 0) }}" required
                         class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
                 </div>
 
                 <div>
                     <label for="warehouse_quantity" class="block text-sm font-medium text-gray-700 mb-1">
-                        Warehouse Quantity
+                        Warehouse Quantity <span class="text-red-500">*</span>
                     </label>
                     <input type="number" min="0" name="warehouse_quantity" id="warehouse_quantity"
-                        value="{{ old('warehouse_quantity', 0) }}"
+                        value="{{ old('warehouse_quantity', 0) }}" required
                         class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
                 </div>

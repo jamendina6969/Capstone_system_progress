@@ -53,7 +53,21 @@
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Product Inventory</h2>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage store and warehouse stock levels, items, and transfers</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
+                    {{-- Export & Print Report Buttons --}}
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('inventory.export', request()->query()) }}" target="_blank"
+                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Export CSV
+                        </a>
+                        <button type="button" onclick="openPrintModal()"
+                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Print Report
+                        </button>
+                    </div>
+
                     @include('partials.viewToggle')
                     <a href="{{ route('inventory.restockBatch') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center whitespace-nowrap">+ Restock Mode</a>
                 </div>
@@ -208,6 +222,29 @@
         </div>
     </div>
 
+    <!-- PRINT REPORT MODAL -->
+    <div id="printReportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs hidden" onclick="closePrintModal()">
+        <div class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 w-full max-w-5xl shadow-2xl mx-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-[#1e2536] mb-4">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print Report Preview
+                </h3>
+                <button type="button" onclick="closePrintModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer p-1 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div id="printModalBody">
+                <div class="py-12 text-center text-gray-400">Loading report preview...</div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536] mt-4">
+                <button type="button" onclick="closePrintModal()" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#161B26] rounded-xl transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
     @include('partials.productDetailModal')
 
 @endsection
@@ -237,11 +274,77 @@
     @media (max-width: 639px) {
         #productResultsContainer[data-view="list"] .view-list { overflow-x: auto; }
     }
+
+    /* =====================================================
+       PRINT STYLES: HIDE EVERYTHING EXCEPT THE PRINT MODAL
+       ===================================================== */
+    @media print {
+        body * {
+            visibility: hidden !important;
+        }
+        #printReportModal, #printReportModal * {
+            visibility: visible !important;
+        }
+        #printReportModal {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            background: white !important;
+            backdrop-filter: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+        #printReportModal > div {
+            border: none !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: white !important;
+        }
+        #printReportModal button {
+            display: none !important;
+        }
+        #printModalBody .max-h-\[60vh\] {
+            max-height: none !important;
+            overflow: visible !important;
+            border: none !important;
+        }
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
+function openPrintModal() {
+    const modal = document.getElementById('printReportModal');
+    const modalBody = document.getElementById('printModalBody');
+    modalBody.innerHTML = '<div class="py-12 text-center text-gray-400">Loading report preview...</div>';
+    modal.classList.remove('hidden');
+
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set('modal', '1');
+
+    fetch(`{{ route('inventory.export') }}?` + currentParams.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.text())
+    .then(html => {
+        modalBody.innerHTML = html;
+    })
+    .catch(err => {
+        modalBody.innerHTML = '<div class="py-8 text-center text-rose-500 text-sm">Failed to load print preview. Please try again.</div>';
+    });
+}
+
+function closePrintModal() {
+    document.getElementById('printReportModal').classList.add('hidden');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const productResultsContainer = document.getElementById('productResultsContainer');
     const tableContainer = document.getElementById('tableScrollContainer');
@@ -341,7 +444,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const temp = document.createElement('tbody');
                 temp.innerHTML = data.html;
                 tableBody.querySelector('[data-empty-row="true"]')?.remove();
-                // Append both main rows AND hidden restock/transfer form rows so toggles work on lazy-loaded items
                 Array.from(temp.children).forEach(row => {
                     if (row.tagName === 'TR') tableBody.appendChild(row);
                 });
@@ -387,15 +489,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-set-view]').forEach(button => {
             const active = button.dataset.setView === view;
             
-            // 1. Remove the active styles first to ensure a clean state
             button.classList.remove('bg-white', 'dark:bg-[#1E293B]', 'text-slate-900', 'dark:text-white', 'shadow-sm');
             
-            // 2. Add the active styles only to the clicked button
             if (active) {
                 button.classList.add('bg-white', 'dark:bg-[#1E293B]', 'text-slate-900', 'dark:text-white', 'shadow-sm');
             }
             
-            // 3. Accessibility
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
     }
@@ -481,13 +580,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Init counters
     updateResultsCounter();
     updatePaginationNumbers(initialPage);
 
-    // =====================================================
-    // EXISTING LOGIC: toggleInventoryAction
-    // =====================================================
     function toggleInventoryAction(productId, actionType) {
         const isCard = actionType.startsWith('card-');
         const restockId = isCard ? `card-restock-${productId}` : `restock-${productId}`;
