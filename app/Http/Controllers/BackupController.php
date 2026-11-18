@@ -189,41 +189,62 @@ class BackupController extends Controller
 
     private function dumpDatabase($outputFile)
     {
-        $host = config('database.connections.mysql.host');
-        $port = config('database.connections.mysql.port');
-        $user = config('database.connections.mysql.username');
-        $pass = config('database.connections.mysql.password');
-        $db   = config('database.connections.mysql.database');
+        try {
+            $tables = \DB::select('SHOW TABLES');
+            $dbNameKey = 'Tables_in_' . config('database.connections.mysql.database');
+            $sql = "-- Database Backup generated via Pure PHP\n-- Date: " . date('Y-m-d H:i:s') . "\n\n";
+            
+            set_time_limit(300);
 
-        $passwordString = $pass ? "--password={$pass}" : "";
+            foreach ($tables as $tableObj) {
+                $table = $tableObj->$dbNameKey;
+                
+                // Get Create Table syntax
+                $createTable = \DB::select("SHOW CREATE TABLE `{$table}`");
+                $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
+                $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
 
-        // Command to dump database
-        $command = "{$this->mysqldumpPath} --user={$user} {$passwordString} --host={$host} --port={$port} --single-transaction --quick {$db} > \"{$outputFile}\"";
-        
-        exec($command, $output, $returnVar);
+                // Get Table Data
+                $rows = \DB::table($table)->get();
+                foreach ($rows as $row) {
+                    $rowArray = (array) $row;
+                    $fields = array_keys($rowArray);
+                    $values = array_values($rowArray);
+                    
+                    $escapedValues = array_map(function($val) {
+                        if (is_null($val)) return 'NULL';
+                        return "'" . addslashes($val) . "'";
+                    }, $values);
 
-        if ($returnVar !== 0) {
-            throw new Exception("Database dump failed. Check your database paths or permissions.");
+                    $sql .= "INSERT INTO `{$table}` (`" . implode('`, `', $fields) . "`) VALUES (" . implode(', ', $escapedValues) . ");\n";
+                }
+                $sql .= "\n";
+            }
+
+            File::put($outputFile, $sql);
+            
+        } catch (\Exception $e) {
+            throw new Exception("Pure PHP database dump failed: " . $e->getMessage());
         }
     }
 
     private function restoreDatabase($sqlFile)
     {
-        $host = config('database.connections.mysql.host');
-        $port = config('database.connections.mysql.port');
-        $user = config('database.connections.mysql.username');
-        $pass = config('database.connections.mysql.password');
-        $db   = config('database.connections.mysql.database');
-
-        $passwordString = $pass ? "--password={$pass}" : "";
-
-        // Command to import database
-        $command = "{$this->mysqlPath} --user={$user} {$passwordString} --host={$host} --port={$port} {$db} < \"{$sqlFile}\"";
-        
-        exec($command, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            throw new Exception("Database restore failed. Check your database paths or permissions.");
+        try {
+            $sql = File::get($sqlFile);
+            
+            // Disable foreign key checks temporarily to avoid constraint errors during import
+            \DB::statement('SET foreign_key_checks = 0');
+            
+            // Execute SQL statements
+            \DB::unprepared($sql);
+            
+            // Re-enable foreign key checks
+            \DB::statement('SET foreign_key_checks = 1');
+            
+        } catch (\Exception $e) {
+            \DB::statement('SET foreign_key_checks = 1');
+            throw new Exception("Pure PHP database restore failed: " . $e->getMessage());
         }
     }
 
