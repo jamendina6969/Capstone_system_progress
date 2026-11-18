@@ -14,7 +14,7 @@
         </button>
     </div>
 
-    {{-- SUCCESS MESSAGE --}}
+    {{-- SUCCESS MESSAGE (Single Instance) --}}
     @if (session('success'))
         <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
             {{ session('success') }}
@@ -148,7 +148,7 @@
 
     <!-- Add Supplier Modal -->
     <div id="addModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-lg p-8">
+        <div class="relative w-full max-w-xl bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-lg p-8">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Add New Supplier</h3>
                 <button type="button" onclick="toggleAddModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer">&times;</button>
@@ -175,7 +175,6 @@
 
                     <div class="relative" id="addPhoneWrapper">
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Phone <span class="text-rose-500">*</span></label>
-
                         <input type="hidden" name="country_code" id="addHiddenCountryCode" value="+63" required>
 
                         <div class="flex border-2 border-gray-200 dark:border-[#1e2536] rounded-xl overflow-hidden focus-within:border-slate-400 dark:focus-within:border-slate-500 bg-white dark:bg-[#161B26]">
@@ -184,7 +183,6 @@
                                 <span id="addSelectedDial" class="text-sm font-semibold text-gray-700 dark:text-slate-300">+63</span>
                                 <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-
                             <input type="number" name="phone" required placeholder="9123456789" class="flex-1 w-full bg-transparent px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         </div>
 
@@ -197,9 +195,67 @@
                     </div>
                 </div>
 
+                {{-- CASCADING ADDRESS DROPDOWNS: PROVINCE, CITY, BARANGAY --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Province Dropdown -->
+                    <div class="relative custom-address-dropdown" id="addProvinceContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Province <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="province" id="addProvinceInput" required>
+                        <button type="button" onclick="toggleAddressDropdown('add', 'province')" class="w-full flex items-center justify-between rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400 text-left cursor-pointer">
+                            <span id="addProvinceLabel" class="truncate text-gray-400">Select Province</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="addProvinceMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="addProvinceSearch" oninput="filterAddressList('add', 'province')" placeholder="Search province..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="addProvinceList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+
+                    <!-- City / Municipality Dropdown -->
+                    <div class="relative custom-address-dropdown" id="addCityContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">City / Municipality <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="city" id="addCityInput" required>
+                        <button type="button" id="addCityBtn" onclick="toggleAddressDropdown('add', 'city')" disabled class="w-full flex items-center justify-between rounded-xl bg-gray-100 dark:bg-[#161B26]/50 border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-400 dark:text-slate-500 text-left cursor-not-allowed">
+                            <span id="addCityLabel" class="truncate">Select Province first</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="addCityMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="addCitySearch" oninput="filterAddressList('add', 'city')" placeholder="Search city..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="addCityList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Barangay Dropdown -->
+                    <div class="relative custom-address-dropdown" id="addBrgyContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Barangay <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="barangay" id="addBrgyInput" required>
+                        <button type="button" id="addBrgyBtn" onclick="toggleAddressDropdown('add', 'brgy')" disabled class="w-full flex items-center justify-between rounded-xl bg-gray-100 dark:bg-[#161B26]/50 border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-400 dark:text-slate-500 text-left cursor-not-allowed">
+                            <span id="addBrgyLabel" class="truncate">Select City first</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="addBrgyMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="addBrgySearch" oninput="filterAddressList('add', 'brgy')" placeholder="Search barangay..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="addBrgyList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Postal Code <span class="text-rose-500">*</span></label>
+                        <input type="text" name="postal_code" id="addPostalInput" required placeholder="e.g. 4114" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Address <span class="text-rose-500">*</span></label>
-                    <textarea name="address" rows="3" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white"></textarea>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Street Address <span class="text-rose-500">*</span></label>
+                    <input type="text" name="street" required placeholder="e.g. Blk 12 Lot 5 Sampaguita St." class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white">
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
@@ -212,7 +268,7 @@
 
     <!-- Edit Supplier Modal -->
     <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-lg p-8">
+        <div class="relative w-full max-w-xl bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-lg p-8">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Edit Supplier</h3>
                 <button type="button" onclick="toggleEditModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer">&times;</button>
@@ -240,7 +296,6 @@
 
                     <div class="relative" id="editPhoneWrapper">
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Phone <span class="text-rose-500">*</span></label>
-
                         <input type="hidden" name="country_code" id="editHiddenCountryCode" required>
 
                         <div class="flex border-2 border-gray-200 dark:border-[#1e2536] rounded-xl overflow-hidden focus-within:border-slate-400 dark:focus-within:border-slate-500 bg-white dark:bg-[#161B26]">
@@ -249,7 +304,6 @@
                                 <span id="editSelectedDial" class="text-sm font-semibold text-gray-700 dark:text-slate-300"></span>
                                 <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-
                             <input type="number" name="phone" id="edit_phone" required class="flex-1 w-full bg-transparent px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         </div>
 
@@ -262,9 +316,67 @@
                     </div>
                 </div>
 
+                {{-- CASCADING ADDRESS DROPDOWNS FOR EDIT --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Province Dropdown -->
+                    <div class="relative custom-address-dropdown" id="editProvinceContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Province <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="province" id="editProvinceInput" required>
+                        <button type="button" onclick="toggleAddressDropdown('edit', 'province')" class="w-full flex items-center justify-between rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400 text-left cursor-pointer">
+                            <span id="editProvinceLabel" class="truncate text-gray-400">Select Province</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="editProvinceMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="editProvinceSearch" oninput="filterAddressList('edit', 'province')" placeholder="Search province..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="editProvinceList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+
+                    <!-- City / Municipality Dropdown -->
+                    <div class="relative custom-address-dropdown" id="editCityContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">City / Municipality <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="city" id="editCityInput" required>
+                        <button type="button" id="editCityBtn" onclick="toggleAddressDropdown('edit', 'city')" disabled class="w-full flex items-center justify-between rounded-xl bg-gray-100 dark:bg-[#161B26]/50 border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-400 dark:text-slate-500 text-left cursor-not-allowed">
+                            <span id="editCityLabel" class="truncate">Select Province first</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="editCityMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="editCitySearch" oninput="filterAddressList('edit', 'city')" placeholder="Search city..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="editCityList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Barangay Dropdown -->
+                    <div class="relative custom-address-dropdown" id="editBrgyContainer">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Barangay <span class="text-rose-500">*</span></label>
+                        <input type="hidden" name="barangay" id="editBrgyInput" required>
+                        <button type="button" id="editBrgyBtn" onclick="toggleAddressDropdown('edit', 'brgy')" disabled class="w-full flex items-center justify-between rounded-xl bg-gray-100 dark:bg-[#161B26]/50 border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-400 dark:text-slate-500 text-left cursor-not-allowed">
+                            <span id="editBrgyLabel" class="truncate">Select City first</span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="editBrgyMenu" class="hidden absolute left-0 right-0 top-full mt-1 z-[120] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
+                                <input type="text" id="editBrgySearch" oninput="filterAddressList('edit', 'brgy')" placeholder="Search barangay..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                            </div>
+                            <ul id="editBrgyList" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Postal Code <span class="text-rose-500">*</span></label>
+                        <input type="text" name="postal_code" id="editPostalInput" required placeholder="e.g. 4114" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Address <span class="text-rose-500">*</span></label>
-                    <textarea name="address" id="edit_address" rows="3" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white"></textarea>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Street Address <span class="text-rose-500">*</span></label>
+                    <input type="text" name="street" id="edit_street" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white">
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
@@ -290,12 +402,8 @@
             </p>
 
             <div class="flex justify-center gap-3">
-                <button type="button" onclick="toggleDeleteModal(false)" class="w-full bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs">
-                    Cancel
-                </button>
-                <button type="button" onclick="submitDelete()" class="w-full bg-white border-2 border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs">
-                    Delete
-                </button>
+                <button type="button" onclick="toggleDeleteModal(false)" class="w-full bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs">Cancel</button>
+                <button type="button" onclick="submitDelete()" class="w-full bg-white border-2 border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs">Delete</button>
             </div>
         </div>
     </div>
@@ -313,7 +421,6 @@
 
             <form id="paymentForm" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
-
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Amount Tendered (₱)</label>
                     <input type="number" step="0.01" min="0.01" name="amount" id="paymentAmountInput" required oninput="calculateChange()" placeholder="Enter payment amount" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white">
@@ -322,9 +429,7 @@
                 <div class="bg-gray-50 dark:bg-[#161B26]/50 p-3 rounded-xl border border-gray-200 dark:border-[#1e2536]">
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Sukli / Change (Auto-calculated)</label>
                     <input type="hidden" name="change_amount" id="paymentChangeInput" value="0">
-                    <div id="paymentChangeDisplay" class="text-lg font-bold text-gray-900 dark:text-white">
-                        ₱0.00
-                    </div>
+                    <div id="paymentChangeDisplay" class="text-lg font-bold text-gray-900 dark:text-white">₱0.00</div>
                 </div>
 
                 <div>
@@ -495,6 +600,219 @@
         renderCountryList(type, searchTerm);
     }
 
+    // =====================================================
+    // CASCADING PHILIPPINE ADDRESS DROPDOWNS (PSGC API)
+    // =====================================================
+    const addressCache = {
+        provinces: null,
+        cities: {},
+        brgys: {}
+    };
+
+    async function fetchProvinces() {
+        if (addressCache.provinces) return addressCache.provinces;
+        try {
+            const res = await fetch('https://psgc.gitlab.io/api/provinces.json');
+            const data = await res.json();
+            addressCache.provinces = data.sort((a, b) => a.name.localeCompare(b.name));
+            return addressCache.provinces;
+        } catch (e) {
+            console.error('Failed to load provinces', e);
+            return [];
+        }
+    }
+
+    async function fetchCities(provinceCode) {
+        if (addressCache.cities[provinceCode]) return addressCache.cities[provinceCode];
+        try {
+            const res = await fetch(`https://psgc.gitlab.io/api/provinces/${provinceCode}/cities-municipalities.json`);
+            const data = await res.json();
+            addressCache.cities[provinceCode] = data.sort((a, b) => a.name.localeCompare(b.name));
+            return addressCache.cities[provinceCode];
+        } catch (e) {
+            console.error('Failed to load cities/municipalities', e);
+            return [];
+        }
+    }
+
+    async function fetchBarangays(cityCode) {
+        if (addressCache.brgys[cityCode]) return addressCache.brgys[cityCode];
+        try {
+            const res = await fetch(`https://psgc.gitlab.io/api/cities-municipalities/${cityCode}/barangays.json`);
+            const data = await res.json();
+            addressCache.brgys[cityCode] = data.sort((a, b) => a.name.localeCompare(b.name));
+            return addressCache.brgys[cityCode];
+        } catch (e) {
+            console.error('Failed to load barangays', e);
+            return [];
+        }
+    }
+
+    const addressState = {
+        add: { provinceCode: null, provinceName: '', cityCode: null, cityName: '', brgyName: '' },
+        edit: { provinceCode: null, provinceName: '', cityCode: null, cityName: '', brgyName: '' }
+    };
+
+    async function toggleAddressDropdown(type, field) {
+        ['province', 'city', 'brgy'].forEach(f => {
+            if (f !== field) {
+                document.getElementById(`${type}${capitalize(f)}Menu`)?.classList.add('hidden');
+            }
+        });
+
+        const menu = document.getElementById(`${type}${capitalize(field)}Menu`);
+        if (!menu) return;
+
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            const searchInput = document.getElementById(`${type}${capitalize(field)}Search`);
+            if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+
+            if (field === 'province') {
+                const provinces = await fetchProvinces();
+                renderAddressList(type, 'province', provinces);
+            } else if (field === 'city') {
+                const pCode = addressState[type].provinceCode;
+                if (pCode) {
+                    const cities = await fetchCities(pCode);
+                    renderAddressList(type, 'city', cities);
+                }
+            } else if (field === 'brgy') {
+                const cCode = addressState[type].cityCode;
+                if (cCode) {
+                    const brgys = await fetchBarangays(cCode);
+                    renderAddressList(type, 'brgy', brgys);
+                }
+            }
+        } else {
+            menu.classList.add('hidden');
+        }
+    }
+
+    function capitalize(str) {
+        if (str === 'brgy') return 'Brgy';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function renderAddressList(type, field, items, filter = '') {
+        const listEl = document.getElementById(`${type}${capitalize(field)}List`);
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        const filtered = items.filter(i => i.name.toLowerCase().includes(filter.toLowerCase()));
+        if (filtered.length === 0) {
+            listEl.innerHTML = `<li class="px-4 py-3 text-center text-gray-400 text-xs">No results found</li>`;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const li = document.createElement('li');
+            li.className = "px-4 py-2.5 text-xs text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#1e2536] cursor-pointer transition-colors truncate";
+            li.textContent = item.name;
+            li.onclick = () => selectAddressItem(type, field, item);
+            listEl.appendChild(li);
+        });
+    }
+
+    function filterAddressList(type, field) {
+        const query = document.getElementById(`${type}${capitalize(field)}Search`).value;
+        if (field === 'province') {
+            fetchProvinces().then(provs => renderAddressList(type, 'province', provs, query));
+        } else if (field === 'city') {
+            const pCode = addressState[type].provinceCode;
+            if (pCode) fetchCities(pCode).then(cities => renderAddressList(type, 'city', cities, query));
+        } else if (field === 'brgy') {
+            const cCode = addressState[type].cityCode;
+            if (cCode) fetchBarangays(cCode).then(brgys => renderAddressList(type, 'brgy', brgys, query));
+        }
+    }
+
+    async function selectAddressItem(type, field, item) {
+        const state = addressState[type];
+        document.getElementById(`${type}${capitalize(field)}Menu`).classList.add('hidden');
+
+        if (field === 'province') {
+            state.provinceCode = item.code;
+            state.provinceName = item.name;
+            document.getElementById(`${type}ProvinceInput`).value = item.name;
+            document.getElementById(`${type}ProvinceLabel`).textContent = item.name;
+            document.getElementById(`${type}ProvinceLabel`).classList.remove('text-gray-400');
+
+            state.cityCode = null;
+            state.cityName = '';
+            state.brgyName = '';
+            document.getElementById(`${type}CityInput`).value = '';
+            document.getElementById(`${type}CityLabel`).textContent = 'Select City / Municipality';
+            document.getElementById(`${type}CityLabel`).classList.add('text-gray-400');
+            
+            const cityBtn = document.getElementById(`${type}CityBtn`);
+            cityBtn.disabled = false;
+            cityBtn.classList.remove('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+            cityBtn.classList.add('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+
+            lockChildDropdown(type, 'brgy', 'Select City first');
+
+        } else if (field === 'city') {
+            state.cityCode = item.code;
+            state.cityName = item.name;
+            document.getElementById(`${type}CityInput`).value = item.name;
+            document.getElementById(`${type}CityLabel`).textContent = item.name;
+            document.getElementById(`${type}CityLabel`).classList.remove('text-gray-400');
+
+            state.brgyName = '';
+            document.getElementById(`${type}BrgyInput`).value = '';
+            document.getElementById(`${type}BrgyLabel`).textContent = 'Select Barangay';
+            document.getElementById(`${type}BrgyLabel`).classList.add('text-gray-400');
+
+            const brgyBtn = document.getElementById(`${type}BrgyBtn`);
+            brgyBtn.disabled = false;
+            brgyBtn.classList.remove('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+            brgyBtn.classList.add('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+
+        } else if (field === 'brgy') {
+            state.brgyName = item.name;
+            document.getElementById(`${type}BrgyInput`).value = item.name;
+            document.getElementById(`${type}BrgyLabel`).textContent = item.name;
+            document.getElementById(`${type}BrgyLabel`).classList.remove('text-gray-400');
+        }
+    }
+
+    function lockChildDropdown(type, field, placeholder) {
+        stateRef = addressState[type];
+        if (field === 'city') {
+            stateRef.cityCode = null;
+            stateRef.cityName = '';
+            document.getElementById(`${type}CityInput`).value = '';
+            const btn = document.getElementById(`${type}CityBtn`);
+            btn.disabled = true;
+            btn.classList.add('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+            btn.classList.remove('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+            document.getElementById(`${type}CityLabel`).textContent = placeholder;
+            document.getElementById(`${type}CityLabel`).classList.add('text-gray-400');
+        }
+        if (field === 'brgy' || field === 'city') {
+            stateRef.brgyName = '';
+            document.getElementById(`${type}BrgyInput`).value = '';
+            const btn = document.getElementById(`${type}BrgyBtn`);
+            btn.disabled = true;
+            btn.classList.add('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+            btn.classList.remove('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+            document.getElementById(`${type}BrgyLabel`).textContent = field === 'brgy' ? placeholder : 'Select City first';
+            document.getElementById(`${type}BrgyLabel`).classList.add('text-gray-400');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.custom-address-dropdown')) {
+            ['add', 'edit'].forEach(type => {
+                ['Province', 'City', 'Brgy'].forEach(f => {
+                    document.getElementById(`${type}${f}Menu`)?.classList.add('hidden');
+                });
+            });
+        }
+    });
+
     document.addEventListener('click', function(e) {
         const addWrapper = document.getElementById('addPhoneWrapper');
         const editWrapper = document.getElementById('editPhoneWrapper');
@@ -589,7 +907,7 @@
                 if (i === page) {
                     html += `<span class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">${i}</span>`;
                 } else {
-                    html += `<button type="button" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</button>`;
+                    html += `<button type="button" data-page="${page}" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</button>`;
                 }
             }
             paginationContainer.innerHTML = html;
@@ -656,7 +974,6 @@
 
         retryLoadButton?.addEventListener('click', function () { loadMoreRecords(); });
 
-        // Live search
         const searchInput = document.getElementById('searchInput');
         const filterForm = document.getElementById('filterForm');
         let debounceTimer;
@@ -678,13 +995,12 @@
             });
         }
 
-        // Init counters
         updateResultsCounter();
         updatePaginationNumbers(initialPage);
     });
 
     // =====================================================
-    // REST OF EXISTING LOGIC (Modals, Create Form, etc.)
+    // MODALS & EDIT LOGIC
     // =====================================================
     function openActionMenu(event, id, name, rating, supplierData) {
         event.stopPropagation();
@@ -738,7 +1054,6 @@
 
             document.getElementById('paymentChangeInput').value = '0';
             document.getElementById('paymentChangeDisplay').innerText = '₱0.00';
-            document.getElementById('paymentChangeDisplay').className = 'text-lg font-bold text-gray-900 dark:text-white';
 
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -758,7 +1073,6 @@
 
         changeInput.value = change.toFixed(2);
         display.innerText = `₱${change.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        display.className = 'text-lg font-bold text-gray-900 dark:text-white';
     }
 
     function toggleRateModal(supplierId, name) {
@@ -798,14 +1112,60 @@
         });
     });
 
-    function openEditModal(button) {
+    async function openEditModal(button) {
         const supplier = JSON.parse(button.dataset.supplier);
         document.getElementById('editForm').action = `/suppliers/${supplier.id}`;
 
         document.getElementById('edit_name').value = supplier.name;
         document.getElementById('edit_contact_person').value = supplier.contact_person || '';
         document.getElementById('edit_email').value = supplier.email || '';
-        document.getElementById('edit_address').value = supplier.address || '';
+        document.getElementById('editPostalInput').value = supplier.postal_code || '';
+        document.getElementById('edit_street').value = supplier.street || supplier.address || '';
+
+        const provName = supplier.province || '';
+        addressState.edit.provinceName = provName;
+        document.getElementById('editProvinceInput').value = provName;
+        document.getElementById('editProvinceLabel').textContent = provName || 'Select Province';
+        if (provName) document.getElementById('editProvinceLabel').classList.remove('text-gray-400');
+
+        if (provName) {
+            const provinces = await fetchProvinces();
+            const matchedProv = provinces.find(p => p.name.toLowerCase() === provName.toLowerCase());
+            if (matchedProv) {
+                addressState.edit.provinceCode = matchedProv.code;
+                const cities = await fetchCities(matchedProv.code);
+                
+                const cityName = supplier.city || '';
+                addressState.edit.cityName = cityName;
+                document.getElementById('editCityInput').value = cityName;
+                document.getElementById('editCityLabel').textContent = cityName || 'Select City / Municipality';
+                if (cityName) {
+                    document.getElementById('editCityLabel').classList.remove('text-gray-400');
+                    const cityBtn = document.getElementById('editCityBtn');
+                    cityBtn.disabled = false;
+                    cityBtn.classList.remove('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+                    cityBtn.classList.add('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+
+                    const matchedCity = cities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+                    if (matchedCity) {
+                        addressState.edit.cityCode = matchedCity.code;
+                        const brgys = await fetchBarangays(matchedCity.code);
+
+                        const brgyName = supplier.barangay || '';
+                        addressState.edit.brgyName = brgyName;
+                        document.getElementById('editBrgyInput').value = brgyName;
+                        document.getElementById('editBrgyLabel').textContent = brgyName || 'Select Barangay';
+                        if (brgyName) {
+                            document.getElementById('editBrgyLabel').classList.remove('text-gray-400');
+                            const brgyBtn = document.getElementById('editBrgyBtn');
+                            brgyBtn.disabled = false;
+                            brgyBtn.classList.remove('bg-gray-100', 'dark:bg-[#161B26]/50', 'cursor-not-allowed', 'text-gray-400');
+                            brgyBtn.classList.add('bg-white', 'dark:bg-[#161B26]', 'cursor-pointer', 'text-gray-900', 'dark:text-white');
+                        }
+                    }
+                }
+            }
+        }
 
         let countryCode = "+63";
         let localPhone = supplier.phone || "";

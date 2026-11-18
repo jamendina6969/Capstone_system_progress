@@ -15,6 +15,11 @@ class Supplier extends Model
         'contact_person',
         'email',
         'phone',
+        'province',
+        'city',
+        'barangay',
+        'postal_code',
+        'street',
         'address',
         'status',
     ];

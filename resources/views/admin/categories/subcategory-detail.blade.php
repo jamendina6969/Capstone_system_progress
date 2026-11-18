@@ -23,7 +23,7 @@
             </button>
             <a href="{{ route('admin.categories.show', $parentCategory) }}"
                class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer whitespace-nowrap">
-                &larr; Back to Main Category
+                ← Back to Main Category
             </a>
         </div>
     </div>
@@ -59,7 +59,7 @@
                                 {{ $product->product_name }}
                             </td>
                             <td class="px-8 py-4 font-mono text-xs text-gray-600 dark:text-slate-400">
-                                {{ $product->sku ?? ($product->code ?? '—') }}
+                                {{ $product->product_sku ?? '—' }}
                             </td>
                             <td class="px-8 py-4 text-gray-600 dark:text-slate-400">
                                 {{ $product->approx_volume ?? ($product->volume_liters ? $product->volume_liters . 'L' : '—') }}
@@ -116,7 +116,7 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">PRODUCT</span>
                         </div>
 
-                        <p class="text-xs text-gray-400 dark:text-slate-400 font-mono mb-2">SKU: {{ $product->sku ?? ($product->code ?? '—') }}</p>
+                        <p class="text-xs text-gray-400 dark:text-slate-400 font-mono mb-2">SKU: {{ $product->product_sku ?? '—' }}</p>
                         
                         <div class="mb-4 flex items-center justify-between text-xs text-gray-600 dark:text-slate-300">
                             <span>Price: <strong class="text-gray-900 dark:text-white">₱{{ number_format($product->selling_price, 2) }}</strong></span>
@@ -165,7 +165,7 @@
             <div class="flex items-center justify-between pb-6 mb-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Product Details</h3>
                 <button type="button" onclick="toggleViewProductModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors text-xl font-bold">
-                    &times;
+                    ×
                 </button>
             </div>
 
@@ -242,7 +242,7 @@
             <div class="flex items-center justify-between pb-6 mb-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Edit Product</h3>
                 <button type="button" onclick="toggleEditProductModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors text-xl font-bold">
-                    &times;
+                    ×
                 </button>
             </div>
 
@@ -258,42 +258,48 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">SKU / Code</label>
+                        <input type="text" id="edit_product_sku" name="product_sku" required
+                               class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Category</label>
                         <select id="edit_category_id" name="category_id" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 cursor-pointer">
                             <option value="{{ $subcategory->id }}">{{ $subcategory->name }} (Current Brand)</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Approx. Volume</label>
                         <input type="text" id="edit_approx_volume" name="approx_volume"
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
+                </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Volume (Liters)</label>
                         <input type="number" step="0.01" id="edit_volume_liters" name="volume_liters"
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Purchase Cost</label>
                         <input type="number" step="0.01" id="edit_purchase_cost" name="purchase_cost" required
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
+                </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Selling Price</label>
                         <input type="number" step="0.01" id="edit_selling_price" name="selling_price" required
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Store Quantity</label>
                         <input type="number" id="edit_store_quantity" name="store_quantity" required
@@ -305,7 +311,9 @@
                         <input type="number" id="edit_warehouse_quantity" name="warehouse_quantity" required
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
+                </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Reorder Point</label>
                         <input type="number" id="edit_reorder_point" name="reorder_point"
@@ -348,7 +356,7 @@
         <div class="relative w-full max-w-md bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl p-8 transform transition-all text-left" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">Confirm Deletion</h3>
-                <button type="button" onclick="toggleDeleteProductModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors text-xl font-bold">&times;</button>
+                <button type="button" onclick="toggleDeleteProductModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors text-xl font-bold">×</button>
             </div>
             <p class="text-sm text-gray-600 dark:text-slate-300 mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
             <form id="deleteProductForm" method="POST" class="flex items-center justify-end gap-3">
@@ -371,7 +379,7 @@
             <div class="flex items-center justify-between pb-6 mb-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Add New Product to {{ $subcategory->name }}</h3>
                 <button type="button" onclick="toggleAddProductModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors text-xl font-bold">
-                    &times;
+                    ×
                 </button>
             </div>
 
@@ -387,9 +395,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Assigned Brand Subcategory</label>
-                        <input type="text" readonly value="{{ $subcategory->name }} ({{ $parentCategory->name ?? '' }})"
-                               class="w-full rounded-xl bg-gray-100 dark:bg-[#161B26]/50 border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-500 dark:text-slate-400 cursor-not-allowed focus:outline-none">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">SKU / Code <span class="text-gray-400 font-normal">(Optional)</span></label>
+                        <input type="text" name="product_sku" placeholder="Leave blank to auto-generate"
+                               class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 font-mono">
                     </div>
                 </div>
 
@@ -519,7 +527,7 @@
 
     function openViewProductModal(product) {
         document.getElementById('modal_product_name').textContent = product.product_name || '—';
-        document.getElementById('modal_sku').textContent = product.sku || product.code || '—';
+        document.getElementById('modal_sku').textContent = product.product_sku || product.sku || product.code || '—';
         document.getElementById('modal_approx_volume').textContent = product.approx_volume || '—';
         document.getElementById('modal_volume_liters').textContent = product.volume_liters ? product.volume_liters + ' L' : '—';
         document.getElementById('modal_purchase_cost').textContent = '₱' + Number(product.purchase_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -545,6 +553,7 @@
         form.action = `/admin/products/${product.id}`;
 
         document.getElementById('edit_product_name').value = product.product_name || '';
+        document.getElementById('edit_product_sku').value = product.product_sku || product.sku || product.code || '';
         document.getElementById('edit_category_id').value = product.category_id || '';
         document.getElementById('edit_product_description').value = product.product_description || product.description || '';
         document.getElementById('edit_approx_volume').value = product.approx_volume || '';

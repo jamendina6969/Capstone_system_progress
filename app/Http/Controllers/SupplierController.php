@@ -137,11 +137,18 @@ class SupplierController extends Controller
             'email' => 'required|email|max:255',
             'country_code' => 'required|string|max:10',
             'phone' => 'required|numeric',
-            'address' => 'required|string',
+            'province' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:50',
+            'street' => 'required|string|max:255',
         ]);
 
         $data['phone'] = $data['country_code'] . ' ' . $data['phone'];
         unset($data['country_code']);
+
+        // Generate full formatted address string for backward compatibility
+        $data['address'] = trim("{$data['street']}, {$data['barangay']}, {$data['city']}, {$data['province']} {$data['postal_code']}");
 
         Supplier::create($data);
 
@@ -156,11 +163,18 @@ class SupplierController extends Controller
             'email' => 'required|email|max:255',
             'country_code' => 'required|string|max:10',
             'phone' => 'required|numeric',
-            'address' => 'required|string',
+            'province' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:50',
+            'street' => 'required|string|max:255',
         ]);
 
         $data['phone'] = $data['country_code'] . ' ' . $data['phone'];
         unset($data['country_code']);
+
+        // Generate full formatted address string for backward compatibility
+        $data['address'] = trim("{$data['street']}, {$data['barangay']}, {$data['city']}, {$data['province']} {$data['postal_code']}");
 
         $supplier->update($data);
 
