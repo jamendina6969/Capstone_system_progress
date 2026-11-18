@@ -7,7 +7,7 @@ use App\Models\TransactionItem;
 use App\Models\SalesRecord;
 use App\Models\Product;
 use App\Models\Category;
-use App\Services\DemandService; // <--- ADDED
+use App\Services\DemandService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -328,7 +328,7 @@ class SalesRecordController extends Controller
         return view('sales.import', compact('categories'));
     }
 
-    public function processImport(Request $request, DemandService $demandService) // <--- INJECTED SERVICE
+    public function processImport(Request $request, DemandService $demandService)
     {
         $request->validate([
             'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
@@ -417,7 +417,7 @@ class SalesRecordController extends Controller
                 &$skipped,
                 &$rowNum,
                 $importerName,
-                $demandService // <--- PASSED TO TRANSACTION
+                $demandService
             ) {
                 $recordsToInsert = [];
                 $importedSignatures = []; // Tracks duplicates within the CSV itself
@@ -464,7 +464,24 @@ class SalesRecordController extends Controller
                     $sellingPrice = (float) $sellingPriceRaw;
 
                     try {
-                        $date = Carbon::parse($dateRaw);
+                        if (str_contains($dateRaw, '/')) {
+                            $parts = explode('/', $dateRaw);
+                            if (count($parts) === 3) {
+                                if ((int)$parts[0] > 12) {
+                                    $date = Carbon::createFromFormat('d/m/Y', $dateRaw);
+                                } else {
+                                    try {
+                                        $date = Carbon::createFromFormat('d/m/Y', $dateRaw);
+                                    } catch (\Exception $ex) {
+                                        $date = Carbon::createFromFormat('m/d/Y', $dateRaw);
+                                    }
+                                }
+                            } else {
+                                $date = Carbon::parse($dateRaw);
+                            }
+                        } else {
+                            $date = Carbon::parse($dateRaw);
+                        }
                     } catch (\Exception $e) {
                         $skipped[] = "Row {$rowNum}: invalid date '{$dateRaw}'";
                         continue;
@@ -603,7 +620,7 @@ class SalesRecordController extends Controller
                     $transaction->total_amount = $subtotal;
                     $transaction->amount_paid = $subtotal;
                     $transaction->amount_change = 0;
-                    $transaction->created_at = $date; // This now properly overrides the timestamp
+                    $transaction->created_at = $date;
                     $transaction->updated_at = $date;
                     $transaction->save();
 
@@ -620,7 +637,6 @@ class SalesRecordController extends Controller
                         'subtotal' => $subtotal,
                     ]);
 
-                    // Add to our bulk insert array instead of creating one-by-one
                     $recordsToInsert[] = [
                         'product_id' => $product->id,
                         'transaction_id' => $transaction->id,
@@ -634,19 +650,13 @@ class SalesRecordController extends Controller
                     $imported++;
                 }
 
-                // =====================================================
-                // HIGH-PERFORMANCE BULK INSERT & SYNC
-                // =====================================================
                 if (!empty($recordsToInsert)) {
-                    // 1. Insert without triggering the Observer
                     SalesRecord::withoutEvents(function () use ($recordsToInsert) {
-                        // Chunk to avoid MySQL parameter limits (e.g. 65535)
                         foreach (array_chunk($recordsToInsert, 500) as $chunk) {
                             SalesRecord::insert($chunk);
                         }
                     });
 
-                    // 2. Sync demand for the imported date range exactly once
                     if ($minDate && $maxDate) {
                         $demandService->syncFromSales(
                             $minDate->startOfDay(),

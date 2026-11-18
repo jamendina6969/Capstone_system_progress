@@ -1,4 +1,3 @@
-
 @extends('layouts.default')
 
 @section('title', 'Import Sales')
@@ -34,7 +33,7 @@
             <ul class="list-disc list-inside text-gray-600 dark:text-slate-400 space-y-1">
                 <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">product_name</code></li>
                 <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">quantity</code></li>
-                <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">date</code> — format: YYYY-MM-DD</li>
+                <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">date</code> — format: YYYY-MM-DD or DD/MM/YYYY</li>
                 <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">purchase_cost</code></li>
                 <li><code class="bg-gray-200 dark:bg-slate-800 px-1 rounded">selling_price</code></li>
             </ul>
