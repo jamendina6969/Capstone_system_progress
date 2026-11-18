@@ -373,8 +373,8 @@
                 {{-- Toggle View Buttons --}}
                 <div class="inline-flex rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] p-1 bg-gray-50 dark:bg-[#161B26] gap-1 self-end mb-1 w-full sm:w-auto justify-center sm:justify-start">
                     <button type="button" onclick="toggleProductView('both')" id="btn-both" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs">Show Both</button>
-                    <button type="button" onclick="toggleProductView('fast')" id="btn-fast" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-emerald-600 dark:text-emerald-400 hover:text-gray-900 dark:hover:text-white">🔥 Fast</button>
-                    <button type="button" onclick="toggleProductView('slow')" id="btn-slow" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-amber-600 dark:text-amber-400 hover:text-gray-900 dark:hover:text-white">📦 Slow</button>
+                    <button type="button" onclick="toggleProductView('fast')" id="btn-fast" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-emerald-600 dark:text-emerald-400 hover:text-gray-900 dark:hover:text-white">Fast</button>
+                    <button type="button" onclick="toggleProductView('slow')" id="btn-slow" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-amber-600 dark:text-amber-400 hover:text-gray-900 dark:hover:text-white">Slow</button>
                 </div>
             </form>
         </div>
