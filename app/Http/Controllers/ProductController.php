@@ -196,7 +196,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_sku' => ['nullable', 'string', 'max:255', 'unique:products,code'],
+            'product_sku' => ['nullable', 'string', 'max:255', 'unique:products,product_sku'],
             'product_name' => ['required', 'string', 'max:255'],
             'product_description' => ['nullable', 'string'],
             'approx_volume' => ['nullable', 'string', 'max:255'],

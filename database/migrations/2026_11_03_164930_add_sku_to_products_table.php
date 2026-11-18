@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             // Adds a unique 'code' column to your existing products table
-            $table->string('code')->unique()->after('id');
+            $table->string('product_sku')->unique()->after('id');
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('code');
+            $table->dropColumn('product_sku');
         });
     }
 };

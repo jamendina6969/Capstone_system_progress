@@ -14,8 +14,32 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        // Load parent categories with their direct children and products
-        $query = Category::whereNull('parent_id')->with(['children.products', 'products']);
+        // Automatically ensure every top-level category has an "Uncategorized" subcategory in the database
+        $topLevelCategories = Category::whereNull('parent_id')->get();
+        foreach ($topLevelCategories as $topCat) {
+            $hasUncategorized = Category::where('parent_id', $topCat->id)
+                ->whereRaw('LOWER(TRIM(name)) = ?', ['uncategorized'])
+                ->exists();
+
+            if (!$hasUncategorized) {
+                Category::create([
+                    'name' => 'Uncategorized',
+                    'parent_id' => $topCat->id,
+                    'type' => $topCat->type,
+                    'code' => strtoupper(substr(Str::slug($topCat->name, ''), 0, 3)) . 'UNC',
+                    'description' => 'Default fallback subcategory for unassigned products.',
+                ]);
+            }
+        }
+
+        // Load parent categories with children (Uncategorized sorted first) and products
+        $query = Category::whereNull('parent_id')->with([
+            'children' => function ($q) {
+                $q->orderByRaw("CASE WHEN LOWER(name) = 'uncategorized' THEN 0 ELSE 1 END")->orderBy('name');
+            },
+            'children.products',
+            'products'
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -39,34 +63,24 @@ class CategoryController extends Controller
 
         $categories = $query->orderBy('name')->paginate(self::PER_PAGE)->withQueryString();
         
-        // Only fetch true top-level categories for the dropdown
         $mainCategories = Category::whereNull('parent_id')->orderBy('name')->get();
 
-        // =====================================================
-        // AJAX / INFINITE SCROLL RESPONSE
-        // =====================================================
         if ($request->ajax() || $request->expectsJson()) {
             $viewData = [
                 'categories' => $categories,
                 'mainCategories' => $mainCategories
             ];
 
-            $rowsHtml = view('admin.categories.partials.rows', $viewData)->render();
-            $cardsHtml = view('admin.categories.partials.cards', $viewData)->render();
-            $modalsHtml = view('admin.categories.partials.modals', $viewData)->render();
-
             return response()->json([
-                'rows_html' => $rowsHtml,
-                'cards_html' => $cardsHtml,
-                'modals_html' => $modalsHtml,
-
+                'rows_html' => view('admin.categories.partials.rows', $viewData)->render(),
+                'cards_html' => view('admin.categories.partials.cards', $viewData)->render(),
+                'modals_html' => view('admin.categories.partials.modals', $viewData)->render(),
                 'current_page' => $categories->currentPage(),
                 'last_page' => $categories->lastPage(),
                 'per_page' => $categories->perPage(),
                 'total_records' => $categories->total(),
                 'first_item' => $categories->firstItem(),
                 'last_item' => $categories->lastItem(),
-
                 'next_page_url' => $categories->nextPageUrl(),
                 'has_more' => $categories->hasMorePages(),
             ]);
@@ -80,7 +94,25 @@ class CategoryController extends Controller
     
     public function show(Category $category)
     {
-        $category->load(['children.products', 'products']);
+        if (is_null($category->parent_id)) {
+            $hasUncategorized = $category->children()->whereRaw('LOWER(TRIM(name)) = ?', ['uncategorized'])->exists();
+            if (!$hasUncategorized) {
+                $category->children()->create([
+                    'name' => 'Uncategorized',
+                    'code' => strtoupper(substr(Str::slug($category->name, ''), 0, 3)) . 'UNC',
+                    'type' => $category->type,
+                    'description' => 'Default fallback subcategory for unassigned products.',
+                ]);
+            }
+        }
+
+        $category->load([
+            'children' => function ($q) {
+                $q->orderByRaw("CASE WHEN LOWER(name) = 'uncategorized' THEN 0 ELSE 1 END")->orderBy('name');
+            },
+            'children.products',
+            'products'
+        ]);
         
         return view('admin.categories.show', [
             'category' => $category,
@@ -162,7 +194,16 @@ class CategoryController extends Controller
         }
 
         $data['code'] = $this->generateUniqueCode($data['name']);
-        Category::create($data);
+        $category = Category::create($data);
+
+        if (is_null($category->parent_id)) {
+            $category->children()->create([
+                'name' => 'Uncategorized',
+                'code' => strtoupper(substr(Str::slug($category->name, ''), 0, 3)) . 'UNC',
+                'type' => $category->type,
+                'description' => 'Default fallback subcategory for unassigned products.',
+            ]);
+        }
 
         return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
     }
@@ -253,6 +294,10 @@ class CategoryController extends Controller
 
     public function destroySubcategory(Category $subcategory)
     {
+        if (strtolower(trim($subcategory->name)) === 'uncategorized') {
+            return back()->with('error', 'Cannot delete the default Uncategorized brand subcategory.');
+        }
+
         if ($subcategory->products()->exists()) {
             return back()->with('error', 'Cannot delete this brand subcategory because it still has products assigned to it.');
         }

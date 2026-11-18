@@ -69,7 +69,9 @@ class DashboardController extends Controller
         // Chart data (per-product or whole-catalog aggregate)
         $data['forecastChart'] = $forecastService->chartData(
             $forecastProduct ? (int) $forecastProduct : null,
-            $forecastRange
+            $forecastRange,
+            $forecastRange === 'custom' ? $forecastDateFrom : null,
+            $forecastRange === 'custom' ? $forecastDateTo : null
         );
 
         // Chart subtitle: which product / category is being shown

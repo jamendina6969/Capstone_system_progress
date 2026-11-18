@@ -118,7 +118,7 @@
                         <p class="text-sm text-gray-500 dark:text-slate-400">
                             Showing <strong class="text-gray-700 dark:text-slate-200">{{ $forecastProductName }}</strong>
                             @if($forecastCategoryName)
-                                &middot; <span class="text-gray-600 dark:text-slate-300">{{ $forecastCategoryName }}</span>
+                                · <span class="text-gray-600 dark:text-slate-300">{{ $forecastCategoryName }}</span>
                             @endif
                         </p>
                     </div>
@@ -256,7 +256,7 @@
             {{-- Friendly Footer Tip --}}
             <div class="mt-4 flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400">
                 <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p><strong>Why does the prediction line drop after a spike?</strong> The system calculates an average based on your recent history. A single large sale is spread out over time, so the system expects your normal baseline to continue.</p>
+                <p><strong>How is future demand calculated?</strong> Future monthly predictions (Nov, Dec, Jan) are generated using a 3-month simple moving average based on your past historical months (Aug, Sep, Oct), providing a stable monthly baseline for inventory planning.</p>
             </div>
         </div>
     @endif
@@ -715,7 +715,7 @@
                     c.fillStyle = 'rgba(100, 116, 139, 0.9)';
                     c.font = '600 10px Inter, sans-serif';
                     c.textAlign = 'center';
-                    c.fillText('TODAY', x, top - 8);
+                    c.fillText(chartData.pivot_label || 'TODAY', x, top - 8);
                     c.restore();
                 }
             };
@@ -801,7 +801,7 @@
                                         return null; 
                                     }
                                     if (context.parsed.y !== null) {
-                                        return label + ': ' + context.parsed.y + ' items';
+                                        return label + ': ' + context.parsed.y + ' items/month';
                                     }
                                     return null;
                                 }
