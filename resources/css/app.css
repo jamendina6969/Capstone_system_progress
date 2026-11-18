@@ -19,7 +19,8 @@
   bottom: 0;
   left: 0;
   z-index: 30;
-  width: 16rem;
+  width: 17rem;
+  max-width: 85vw; /* mobile safety: drawer never covers the entire phone screen */
   transform: translateX(-100%);
 }
 #sidebar nav {
@@ -62,11 +63,12 @@ html.sidebar-ready #sidebarOverlay {
     flex-shrink: 0;
     transform: none;
     width: 0;
+    max-width: none; /* reset mobile cap on desktop */
     overflow: hidden;
   }
 
   html.sidebar-open #sidebar {
-    width: 16rem;
+    width: 17rem;
   }
 
   html.sidebar-ready #sidebar {

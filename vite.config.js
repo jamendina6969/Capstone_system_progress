@@ -11,6 +11,10 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        host: '127.0.0.1', // Forces IPv4 server binding
+        hmr: {
+            host: '127.0.0.1', // Forces the HMR WebSocket to match IPv4
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

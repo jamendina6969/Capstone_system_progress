@@ -4,21 +4,21 @@
 
 @section('content')
 
-    <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Welcome, {{ auth()->user()->firstname }}</h1>
+    <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-white">Welcome, {{ auth()->user()->firstname }}</h1>
 
     {{-- Top Summary Cards Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 mb-6 sm:mb-8">
         <!-- Today's Sales Card -->
         <a href="{{ route('sales.records', ['date_from' => today()->toDateString(), 'date_to' => today()->toDateString()]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Today's Sales</span>
-                <div class="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Today's Sales</span>
+                <div class="p-2.5 sm:p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($todaySales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">₱{{ number_format($todaySales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
                     <span>Daily revenue total</span>
                 </div>
@@ -27,15 +27,15 @@
 
         <!-- Overall Sales Card -->
         <a href="{{ route('sales.records') }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Overall Sales</span>
-                <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Overall Sales</span>
+                <div class="p-2.5 sm:p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($overallSales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">₱{{ number_format($overallSales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <span>All-time accumulated revenue</span>
                 </div>
@@ -44,15 +44,15 @@
 
         <!-- POS Orders Card -->
         <a href="{{ route('transaction.history', ['date_from' => today()->toDateString(), 'date_to' => today()->toDateString()]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">POS Orders</span>
-                <div class="p-3 rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">POS Orders</span>
+                <div class="p-2.5 sm:p-3 rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $todayTransactions }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $todayTransactions }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400">
                     <span>Completed today</span>
                 </div>
@@ -61,15 +61,15 @@
 
         <!-- Total Products Card -->
         <a href="{{ route('admin.products.index') }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Products</span>
-                <div class="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Products</span>
+                <div class="p-2.5 sm:p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">{{ $totalProducts }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $totalProducts }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400">
                     <span>Active catalog items</span>
                 </div>
@@ -78,15 +78,15 @@
 
         <!-- Restock Needed Card -->
         <a href="{{ route('inventory.index', ['status' => 'restock']) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Restock Needed</span>
-                <div class="p-3 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-rose-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Restock Needed</span>
+                <div class="p-2.5 sm:p-3 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-rose-400">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
             </div>
             <div>
-                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2" style="font-size: 2rem;">{{ $restockNeededCount }}</p>
+                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $restockNeededCount }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-rose-400">
                     <span>Items require attention</span>
                 </div>
@@ -96,7 +96,7 @@
 
     {{-- Demand Forecast Line Chart Component --}}
     @if (in_array(auth()->user()->role, ['admin', 'manager']))
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 mb-8">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
             <form method="GET" action="{{ route('home') }}" id="forecastFilterForm">
                 {{-- Preserve Fast/Slow parameters --}}
                 @if(request('product_category'))
@@ -114,7 +114,7 @@
 
                 <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-4">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Sales Predictions</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1">Sales Predictions</h2>
                         <p class="text-sm text-gray-500 dark:text-slate-400">
                             Showing <strong class="text-gray-700 dark:text-slate-200">{{ $forecastProductName }}</strong>
                             @if($forecastCategoryName)
@@ -124,7 +124,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-                        <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap w-full xl:w-auto">
                             
                             {{-- Category Dropdown (Custom UI) --}}
                             <div class="custom-dropdown relative w-full sm:w-56 shrink-0" id="filter-category-dropdown">
@@ -211,21 +211,21 @@
                             </div>
 
                             {{-- Custom Date Inputs (Hidden unless Custom is selected) --}}
-                            <div id="forecastCustomDateContainer" class="{{ $forecastRange == 'custom' ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap">
-                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                            <div id="forecastCustomDateContainer" class="{{ $forecastRange == 'custom' ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap w-full sm:w-auto">
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl flex-1 sm:flex-initial">
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
-                                    <input type="date" name="forecast_date_from" value="{{ $forecastDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                    <input type="date" name="forecast_date_from" value="{{ $forecastDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer w-full min-w-0">
                                 </div>
-                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl flex-1 sm:flex-initial">
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
-                                    <input type="date" name="forecast_date_to" value="{{ $forecastDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                    <input type="date" name="forecast_date_to" value="{{ $forecastDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer w-full min-w-0">
                                 </div>
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs">Apply</button>
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs w-full sm:w-auto">Apply</button>
                             </div>
 
                             <div class="h-5 w-px bg-gray-200 dark:bg-[#1e2536] hidden sm:block"></div>
 
-                            <a href="{{ route('forecast.settings') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-all duration-300 ease-in-out shadow-xs">
+                            <a href="{{ route('forecast.settings') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-all duration-300 ease-in-out shadow-xs w-full sm:w-auto text-center">
                                 Settings
                             </a>
                         </div>
@@ -233,7 +233,7 @@
                 </div>
 
                 {{-- Friendly Legend / Info Bar --}}
-                <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1e2536] mb-6">
+                <div class="flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-2 text-xs text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-gray-200 dark:border-[#1e2536] mb-4 sm:mb-6">
                     <div class="flex items-center gap-2">
                         <span class="w-4 h-1 bg-blue-600 rounded-full"></span>
                         <span><strong>Past Sales:</strong> What you actually sold.</span>
@@ -249,7 +249,7 @@
                 </div>
             </form>
 
-            <div style="position: relative; height: 420px; width: 100%;">
+            <div class="relative w-full h-[280px] sm:h-[360px] lg:h-[420px]">
                 <canvas id="demandForecastChart"></canvas>
             </div>
             
@@ -262,17 +262,17 @@
     @endif
 
     {{-- Fast and Slow Moving Products Widget --}}
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 mb-8">
-        <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-6">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+        <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-4 sm:mb-6">
             <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     Fast and Slow Moving Products
                 </h2>
-                <p class="text-sm text-gray-500 dark:text-slate-400">Fast items sorted by sales velocity • Slow items sorted by stock quantity</p>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Fast items sorted by sales velocity • Slow items sorted by stock quantity</p>
             </div>
             
-            <form method="GET" action="{{ route('home') }}" id="fastSlowFilterForm" class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            <form method="GET" action="{{ route('home') }}" id="fastSlowFilterForm" class="flex flex-wrap items-end gap-3 w-full xl:w-auto">
                 {{-- Preserve Forecast parameters --}}
                 @if(request('forecast_category'))
                     <input type="hidden" name="forecast_category" value="{{ request('forecast_category') }}">
@@ -291,7 +291,7 @@
                 @endif
 
                 {{-- Grouped Main & Sub Category Dropdown (Custom UI) --}}
-                <div class="flex flex-col">
+                <div class="flex flex-col w-full sm:w-auto">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Category (Optional)</span>
                     <div class="custom-dropdown relative w-full sm:w-56 shrink-0" id="filter-fs-category-dropdown">
                         <input type="hidden" name="product_category" id="fsCategoryInput" value="{{ request('product_category') }}">
@@ -321,7 +321,7 @@
                 </div>
 
                 {{-- Date Range Select & Custom Date Pickers (Custom UI) --}}
-                <div class="flex flex-col">
+                <div class="flex flex-col w-full sm:w-auto">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Date Range</span>
                     <div class="flex items-center gap-2 flex-wrap">
                         <div class="custom-dropdown relative w-full sm:w-40 shrink-0" id="filter-fs-range-dropdown">
@@ -354,16 +354,16 @@
                             </div>
                         </div>
 
-                        <div id="fastSlowCustomDateContainer" class="{{ (isset($fastSlowRange) && $fastSlowRange == 'custom') ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap">
-                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                        <div id="fastSlowCustomDateContainer" class="{{ (isset($fastSlowRange) && $fastSlowRange == 'custom') ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap w-full sm:w-auto">
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl flex-1 sm:flex-initial">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM:</span>
-                                <input type="date" name="fast_slow_date_from" value="{{ $fastSlowDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                <input type="date" name="fast_slow_date_from" value="{{ $fastSlowDateFrom ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer w-full min-w-0">
                             </div>
-                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl">
+                            <div class="flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3.5 py-2 rounded-2xl flex-1 sm:flex-initial">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO:</span>
-                                <input type="date" name="fast_slow_date_to" value="{{ $fastSlowDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                                <input type="date" name="fast_slow_date_to" value="{{ $fastSlowDateTo ?? '' }}" class="bg-transparent text-gray-700 dark:text-slate-300 text-xs font-semibold focus:outline-none cursor-pointer w-full min-w-0">
                             </div>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs">Apply</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition-colors shadow-xs w-full sm:w-auto">Apply</button>
                         </div>
                     </div>
                 </div>
@@ -371,26 +371,26 @@
                 <div class="h-8 w-px bg-gray-200 dark:bg-[#1e2536] hidden xl:block self-end mb-1"></div>
 
                 {{-- Toggle View Buttons --}}
-                <div class="inline-flex rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] p-1 bg-gray-50 dark:bg-[#161B26] gap-1 self-end mb-1">
-                    <button type="button" onclick="toggleProductView('both')" id="btn-both" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs">Show Both</button>
-                    <button type="button" onclick="toggleProductView('fast')" id="btn-fast" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-emerald-600 dark:text-emerald-400 hover:text-gray-900 dark:hover:text-white">🔥 Fast</button>
-                    <button type="button" onclick="toggleProductView('slow')" id="btn-slow" class="px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-amber-600 dark:text-amber-400 hover:text-gray-900 dark:hover:text-white">📦 Slow</button>
+                <div class="inline-flex rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] p-1 bg-gray-50 dark:bg-[#161B26] gap-1 self-end mb-1 w-full sm:w-auto justify-center sm:justify-start">
+                    <button type="button" onclick="toggleProductView('both')" id="btn-both" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs">Show Both</button>
+                    <button type="button" onclick="toggleProductView('fast')" id="btn-fast" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-emerald-600 dark:text-emerald-400 hover:text-gray-900 dark:hover:text-white">🔥 Fast</button>
+                    <button type="button" onclick="toggleProductView('slow')" id="btn-slow" class="flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-amber-600 dark:text-amber-400 hover:text-gray-900 dark:hover:text-white">📦 Slow</button>
                 </div>
             </form>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {{-- Fast Moving Panel --}}
-            <div id="fastMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between">
+            <div id="fastMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                         <span class="inline-flex items-center text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 uppercase tracking-wider border border-emerald-200 dark:border-emerald-900">
                             🔥 Fast Moving Products
                         </span>
                         <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-lg">High Sales</span>
                     </div>
 
-                    <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="space-y-3 sm:space-y-4 max-h-[320px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
                         @php $maxSold = optional($fastMoving->first())['sold'] ?: 1; @endphp
                         @forelse($fastMoving as $item)
                         @php 
@@ -398,12 +398,12 @@
                         @endphp
                         <a href="{{ route('inventory.index', ['search' => $item['sku']]) }}"
                            class="relative z-10 block p-3 rounded-xl bg-white dark:bg-[#10141D] border border-gray-100 dark:border-[#1e2536] hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-sm transition-all cursor-pointer group">
-                            <div class="flex items-center justify-between text-sm mb-1">
-                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2 text-sm mb-1">
+                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors break-words">
                                     #{{ $item['rank'] }} {{ $item['name'] }} 
                                     <span class="text-xs font-normal text-gray-500 dark:text-slate-400 ml-1">({{ $item['sku'] }})</span>
                                 </span>
-                                <div class="text-xs">
+                                <div class="text-xs shrink-0">
                                     <span class="font-bold text-gray-900 dark:text-white">{{ $item['sold'] }} sold</span>
                                     <span class="text-gray-400">· {{ number_format($item['stock'], 2) }} in stock</span>
                                 </div>
@@ -424,25 +424,25 @@
             </div>
 
             {{-- Slow Moving Panel --}}
-            <div id="slowMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between">
+            <div id="slowMovingCol" class="bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                         <span class="inline-flex items-center text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 uppercase tracking-wider border border-amber-200 dark:border-amber-900">
                             📦 Slow Moving Products
                         </span>
                         <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 rounded-lg">High Stock</span>
                     </div>
 
-                    <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="space-y-3 sm:space-y-4 max-h-[320px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
                         @forelse($slowMoving as $item)
                         <a href="{{ route('inventory.index', ['search' => $item['sku']]) }}"
                            class="relative z-10 block p-3 rounded-xl bg-white dark:bg-[#10141D] border border-gray-100 dark:border-[#1e2536] hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-sm transition-all cursor-pointer group">
-                            <div class="flex items-center justify-between text-sm mb-1">
-                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2 text-sm mb-1">
+                                <span class="font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors break-words">
                                     #{{ $item['rank'] }} {{ $item['name'] }} 
                                     <span class="text-xs font-normal text-gray-500 dark:text-slate-400 ml-1">({{ $item['sku'] }})</span>
                                 </span>
-                                <div class="text-xs">
+                                <div class="text-xs shrink-0">
                                     <span class="font-bold text-gray-900 dark:text-white">{{ number_format($item['stock'], 2) }} in stock</span>
                                     <span class="text-gray-400">· {{ $item['sold'] }} sold</span>
                                 </div>
@@ -463,36 +463,36 @@
             </div>
         </div>
 
-        <div class="mt-6 flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] p-4 rounded-xl border border-gray-200 dark:border-[#1e2536]">
-            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="mt-4 sm:mt-6 flex items-start sm:items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-[#161B26] p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-[#1e2536]">
+            <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span><strong>Tip:</strong> Reorder <strong>Fast-Moving</strong> items to prevent stockouts, and pause <strong>Slow-Moving</strong> orders to prevent excess stock.</span>
         </div>
     </div>
 
     {{-- Admin + Manager: Inventory Alerts Table --}}
     @if (in_array(auth()->user()->role, ['admin', 'manager']))
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden flex flex-col h-[400px]">
-            <div class="flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] shrink-0">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm mb-8 overflow-hidden flex flex-col h-[450px] sm:h-[400px]">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] shrink-0">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Inventory Alerts</h2>
-                    <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Combined store, warehouse, and total stock tracking</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Inventory Alerts</h2>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-0.5 sm:mt-1">Combined store, warehouse, and total stock tracking</p>
                 </div>
-                <span class="bg-slate-100 text-slate-700 dark:bg-[#161B26] dark:text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">
+                <span class="bg-slate-100 text-slate-700 dark:bg-[#161B26] dark:text-slate-300 text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl self-start sm:self-auto">
                     {{ $lowStockProducts->total() }} Products
                 </span>
             </div>
 
             {{-- Scrollable Table Container --}}
             <div id="alertScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-                <table class="w-full text-sm text-left">
+                <table class="w-full min-w-[760px] text-sm text-left">
                     <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                         <tr>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Product Name</th>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Category</th>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Store Status</th>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Warehouse Status</th>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Total Status</th>
-                            <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Current Stock / ROP</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26]">Product Name</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26]">Category</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26]">Store Status</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26]">Warehouse Status</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26]">Total Status</th>
+                            <th class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-50 dark:bg-[#161B26] text-right">Current Stock / ROP</th>
                         </tr>
                     </thead>
                     <tbody id="alertTableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -516,8 +516,8 @@
             </div>
 
             {{-- Pagination Footer --}}
-            <div class="shrink-0 px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
-                <div class="whitespace-nowrap" id="alertResultsText">
+            <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+                <div class="text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap text-center sm:text-left w-full sm:w-auto" id="alertResultsText">
                     @if($lowStockProducts->total() > 0)
                         Showing
                         <span class="font-semibold text-gray-900 dark:text-white" id="alertFirstRecord">{{ $lowStockProducts->firstItem() }}</span>
@@ -535,9 +535,9 @@
                     <div id="alertPaginationContainer" class="overflow-x-auto no-scrollbar flex items-center gap-1.5 px-1 py-1">
                         @foreach ($lowStockProducts->getUrlRange(max(1, $lowStockProducts->currentPage() - 2), min($lowStockProducts->lastPage(), $lowStockProducts->currentPage() + 2)) as $page => $url)
                             @if ($page == $lowStockProducts->currentPage())
-                                <span data-page="{{ $page }}" class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">{{ $page }}</span>
+                                <span data-page="{{ $page }}" class="shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">{{ $page }}</span>
                             @else
-                                <button type="button" data-page="{{ $page }}" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">{{ $page }}</button>
+                                <button type="button" data-page="{{ $page }}" class="shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">{{ $page }}</button>
                             @endif
                         @endforeach
                     </div>
@@ -623,25 +623,25 @@
             const btnSlow = document.getElementById('btn-slow');
 
             [btnBoth, btnFast, btnSlow].forEach(btn => {
-                btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white';
+                btn.className = 'flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white';
             });
 
             if (type === 'fast') {
                 fastCol.style.display = 'block';
-                fastCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                fastCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between';
                 slowCol.style.display = 'none';
-                btnFast.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-emerald-600 dark:text-emerald-400 shadow-xs';
+                btnFast.className = 'flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-emerald-600 dark:text-emerald-400 shadow-xs';
             } else if (type === 'slow') {
                 slowCol.style.display = 'block';
-                slowCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                slowCol.className = 'lg:col-span-2 bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between';
                 fastCol.style.display = 'none';
-                btnSlow.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-amber-600 dark:text-amber-400 shadow-xs';
+                btnSlow.className = 'flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-amber-600 dark:text-amber-400 shadow-xs';
             } else {
                 fastCol.style.display = 'block';
-                fastCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
+                fastCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between';
                 slowCol.style.display = 'block';
-                slowCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-6 flex flex-col justify-between';
-                btnBoth.className = 'px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs';
+                slowCol.className = 'bg-gray-50 dark:bg-[#161B26]/50 border border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 sm:p-5 lg:p-6 flex flex-col justify-between';
+                btnBoth.className = 'flex-1 sm:flex-initial px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors bg-white dark:bg-[#10141D] text-blue-600 dark:text-blue-400 shadow-xs';
             }
         };
 
@@ -893,9 +893,9 @@
 
                 for (let i = startPage; i <= endPage; i++) {
                     if (i === page) {
-                        html += `<span class="shrink-0 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">${i}</span>`;
+                        html += `<span class="shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-white bg-slate-900 dark:bg-[#1E293B] rounded-full shadow-xs">${i}</span>`;
                     } else {
-                        html += `<button type="button" class="shrink-0 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</button>`;
+                        html += `<button type="button" class="shrink-0 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-full hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors">${i}</button>`;
                     }
                 }
                 paginationContainer.innerHTML = html;

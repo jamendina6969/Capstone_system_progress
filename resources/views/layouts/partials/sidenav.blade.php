@@ -39,8 +39,17 @@
             </div>
         </div>
 
+        {{-- Mobile: X close button (visible only below lg) --}}
+        <button type="button" data-sidebar-toggle aria-label="Close menu" title="Close Sidebar"
+                class="flex lg:hidden h-8 w-8 rounded-xl bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-300 items-center justify-center hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors cursor-pointer flex-shrink-0">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        {{-- Desktop: collapse chevron (visible only on lg when sidebar is open) --}}
         <button type="button" data-sidebar-toggle title="Collapse Sidebar"
-                class="sidebar-toggle-in-header h-8 w-8 rounded-xl bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-300 items-center justify-center hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors cursor-pointer flex-shrink-0">
+                class="sidebar-toggle-in-header hidden h-8 w-8 rounded-xl bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-300 items-center justify-center hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors cursor-pointer flex-shrink-0">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
             </svg>
@@ -374,6 +383,14 @@
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 17rem;
         min-width: 17rem;
+    }
+
+    /* Mobile: cap drawer width to 85% of viewport so it never covers the whole screen */
+    @media (max-width: 1023px) {
+        #sidebar {
+            min-width: 0;
+            max-width: 85vw;
+        }
     }
 
     @media (min-width: 1024px) {

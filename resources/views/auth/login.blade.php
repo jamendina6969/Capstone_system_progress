@@ -3,10 +3,10 @@
 @section('title', 'Login')
 
 @section('content')
-    <div class="fixed inset-0 w-screen h-screen flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D] m-0 p-0 overflow-hidden">
-        
-        <!-- LEFT SIDE: Professional Enterprise Brand Banner (Centered & Prominent) -->
-        <div class="lg:w-1/2 h-full bg-[#0b0e14] text-white flex flex-col justify-between p-8 lg:p-12 relative overflow-hidden border-r border-slate-800/80">
+    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D]">
+
+        <!-- LEFT SIDE: Professional Enterprise Brand Banner (desktop only) -->
+        <div class="hidden lg:flex lg:w-1/2 min-h-screen bg-[#0b0e14] text-white flex-col justify-between p-8 lg:p-12 relative overflow-hidden border-r border-slate-800/80">
             <!-- Subtle Background Glow -->
             <div class="absolute -top-32 -left-32 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -68,11 +68,27 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE: Clean Login Form -->
-        <div class="lg:w-1/2 h-full flex flex-col justify-center items-center p-8 lg:p-16 bg-white dark:bg-[#10141D] overflow-y-auto">
+        <!-- RIGHT SIDE: Clean Login Form (full screen on mobile) -->
+        <div class="w-full lg:w-1/2 min-h-screen flex flex-col justify-center items-center p-6 sm:p-8 lg:p-16 bg-white dark:bg-[#10141D]">
             <div class="w-full max-w-md space-y-6">
+
+                {{-- Mobile-only brand header --}}
+                <div class="flex lg:hidden flex-col items-center text-center space-y-3 mb-2">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+                        <img src="{{ asset('images/logo.svg') }}" alt="Steven Hydrotech Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div class="space-y-1">
+                        <h2 class="text-xl font-black tracking-wider text-gray-900 dark:text-white">STEVEN HYDROTECH</h2>
+                        <div class="flex items-center justify-center gap-2">
+                            <div class="h-[2px] w-8 bg-sky-400"></div>
+                            <span class="text-[10px] uppercase tracking-[0.3em] text-sky-500 dark:text-sky-300 font-extrabold">E X P O N E N T</span>
+                            <div class="h-[2px] w-8 bg-sky-400"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="text-center lg:text-left">
-                    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">Welcome!</h1>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Welcome!</h1>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Sign in to your account to continue</p>
                 </div>
 

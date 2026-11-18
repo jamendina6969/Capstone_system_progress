@@ -26,9 +26,10 @@
             try {
                 var savedState = localStorage.getItem('sidebarState');
                 var isDesktop = window.innerWidth >= 1024;
-                if (savedState === 'open' || (!savedState && isDesktop)) {
+                if (isDesktop && (savedState === 'open' || !savedState)) {
                     document.documentElement.classList.add('sidebar-open');
                 } else {
+                    // Mobile: never auto-open the drawer
                     document.documentElement.classList.remove('sidebar-open');
                 }
             } catch (e) {}
@@ -104,9 +105,16 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50 dark:bg-[#161B26]">
 
             <!-- Enterprise Topbar -->
-            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-6 flex items-center justify-between relative z-50 shadow-2xs">
+            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-3 sm:px-4 lg:px-6 flex items-center justify-between relative z-50 shadow-2xs">
                 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    {{-- Mobile hamburger (hidden on desktop) --}}
+                    <button type="button" data-sidebar-toggle aria-label="Open menu"
+                            class="lg:hidden p-2 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Right Utility Actions -->
@@ -150,7 +158,7 @@
                             @endif
                         </button>
 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-[#10141D] border border-slate-200 dark:border-[#1e2536] rounded-xl shadow-xl py-2 z-50">
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#10141D] border border-slate-200 dark:border-[#1e2536] rounded-xl shadow-xl py-2 z-50">
                             <div class="px-4 py-2 border-b border-slate-100 dark:border-[#1e2536] flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Notifications</span>
                                 @if($totalNotifications > 0)
@@ -243,7 +251,7 @@
             </header>
 
             <!-- Page content background area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-8">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-4 sm:p-6 lg:p-8">
                 
                 @if (session('error'))
                     <div class="mb-6 rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-3 text-sm flex items-center shadow-2xs">
@@ -269,25 +277,51 @@
         document.addEventListener('DOMContentLoaded', function () {
             const root = document.documentElement;
 
+            // Helper: close drawer only on mobile
+            function closeMobileDrawer() {
+                if (window.innerWidth < 1024) {
+                    root.classList.remove('sidebar-open');
+                }
+            }
+
+            // Toggle buttons (hamburger in topbar + chevron in sidenav header)
             document.querySelectorAll('[data-sidebar-toggle]').forEach(function (btn) {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
                     root.classList.toggle('sidebar-open');
-                    const isOpen = root.classList.contains('sidebar-open');
-                    try {
-                        localStorage.setItem('sidebarState', isOpen ? 'open' : 'collapsed');
-                    } catch (err) {}
+                    // Only persist the "open/collapsed" preference on desktop.
+                    // On mobile the drawer is transient — never remember it open.
+                    if (window.innerWidth >= 1024) {
+                        const isOpen = root.classList.contains('sidebar-open');
+                        try {
+                            localStorage.setItem('sidebarState', isOpen ? 'open' : 'collapsed');
+                        } catch (err) {}
+                    }
                 });
             });
 
+            // Overlay click closes drawer
             const overlay = document.getElementById('sidebarOverlay');
             if (overlay) {
                 overlay.addEventListener('click', function () {
                     root.classList.remove('sidebar-open');
-                    try { localStorage.setItem('sidebarState', 'collapsed'); } catch (err) {}
+                    if (window.innerWidth >= 1024) {
+                        try { localStorage.setItem('sidebarState', 'collapsed'); } catch (err) {}
+                    }
                 });
             }
 
+            // Auto-close drawer when a nav link is clicked (mobile only)
+            document.querySelectorAll('#sidebar a').forEach(function (link) {
+                link.addEventListener('click', closeMobileDrawer);
+            });
+
+            // Escape key closes drawer (mobile only)
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeMobileDrawer();
+            });
+
+            // Notification dropdown
             const notifBtn = document.getElementById('notificationBtn');
             const notifDropdown = document.getElementById('notificationDropdown');
             if (notifBtn && notifDropdown) {

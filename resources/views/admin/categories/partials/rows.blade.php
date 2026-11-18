@@ -37,7 +37,8 @@
             ₱{{ number_format($totalValuation, 2) }}
         </td>
         <td class="px-8 py-4 text-right">
-            <div class="flex justify-end items-center gap-2">
+            {{-- Added onclick="event.stopPropagation()" below to fix click interception --}}
+            <div class="flex justify-end items-center gap-2" onclick="event.stopPropagation()">
                 <button type="button" onclick="toggleAddBrandModal({{ $category->id }}, true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer whitespace-nowrap">Brand</button>
                 <button type="button" onclick="toggleEditCategoryModal({{ $category->id }}, true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Edit</button>
                 <button type="button" onclick="toggleDeleteCategoryModal({{ $category->id }}, true)" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Delete</button>
