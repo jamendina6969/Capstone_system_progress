@@ -74,16 +74,16 @@ class InventoryController extends Controller
             } elseif ($request->status === 'wh_low') {
                 $query->whereRaw("$wh > 0")->whereRaw("$wh <= $reorder");
             } elseif ($request->status === 'total_out') {
-                $query->whereRaw("$total <= 0");
+                $query->where('total_quantity', '<=', 0);
             } elseif ($request->status === 'total_low') {
-                $query->whereRaw("$total > 0")->whereRaw("$total <= $reorder");
+                $query->where('total_quantity', '>', 0)->whereRaw("total_quantity <= $reorder");
             } elseif ($request->status === 'restock') {
-                $query->where(function ($q) use ($store, $wh, $total, $reorder) {
-                    $q->whereRaw("$store = 0")
+                $query->where(function ($q) use ($store, $wh, $reorder) {
+                    $q->where('store_quantity', '<=', 0)
                       ->orWhereRaw("$store <= $reorder")
-                      ->orWhereRaw("$wh = 0")
+                      ->orWhere('warehouse_quantity', '<=', 0)
                       ->orWhereRaw("$wh <= $reorder")
-                      ->orWhereRaw("$total <= $reorder");
+                      ->orWhereRaw("total_quantity <= $reorder");
                 });
             }
         }
@@ -161,9 +161,9 @@ class InventoryController extends Controller
             } elseif ($request->status === 'wh_low') {
                 $query->whereRaw("$wh > 0")->whereRaw("$wh <= $reorder");
             } elseif ($request->status === 'total_out') {
-                $query->whereRaw("$total <= 0");
+                $query->where('total_quantity', '<=', 0);
             } elseif ($request->status === 'total_low') {
-                $query->whereRaw("$total > 0")->whereRaw("$total <= $reorder");
+                $query->where('total_quantity', '>', 0)->whereRaw("total_quantity <= $reorder");
             }
         }
 
@@ -245,6 +245,37 @@ class InventoryController extends Controller
         };
 
         return new StreamedResponse($callback, 200, $headers);
+    }
+
+    /**
+     * Real-time live sync endpoint for cross-terminal inventory & POS updates.
+     */
+    public function liveSync(Request $request)
+    {
+        $since = $request->input('since');
+        $query = Product::query();
+
+        if ($since) {
+            try {
+                $sinceDate = \Carbon\Carbon::parse($since);
+                $query->where('updated_at', '>=', $sinceDate);
+            } catch (\Exception $e) {
+                $query->latest('updated_at')->take(50);
+            }
+        } else {
+            $query->latest('updated_at')->take(50);
+        }
+
+        $products = $query->get([
+            'id', 'product_name', 'product_sku', 'selling_price',
+            'store_quantity', 'warehouse_quantity', 'total_quantity', 'reorder_point', 'updated_at'
+        ]);
+
+        return response()->json([
+            'timestamp' => now()->toISOString(),
+            'count' => $products->count(),
+            'products' => $products
+        ]);
     }
 
     public function transfer(Request $request, Product $product)

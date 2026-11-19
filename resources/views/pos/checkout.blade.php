@@ -165,3 +165,44 @@
 
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelector('form[action="{{ route('checkout.process') }}"]')?.addEventListener('submit', function(e) {
+        if (!navigator.onLine && window.PosOffline) {
+            e.preventDefault();
+            const grandTotal = {{ (float) $grandTotal }};
+            const amountPaid = parseFloat(this.querySelector('input[name="amount_paid"]')?.value) || grandTotal;
+            if (amountPaid < grandTotal) {
+                alert('Amount paid is less than total amount.');
+                return;
+            }
+
+            const cart = @json($cart);
+            const items = Object.values(cart).map(i => ({
+                id: i.id,
+                product_name: i.product_name,
+                product_sku: i.product_sku || '',
+                selling_price: parseFloat(i.selling_price) || 0,
+                quantity: parseInt(i.quantity) || 1,
+                subtotal: parseFloat(i.subtotal) || 0,
+                item_discount_amount: parseFloat(i.item_discount_amount) || 0
+            }));
+
+            const order = window.PosOffline.recordOfflineOrder({
+                customer_name: 'Walk-in Customer (Offline)',
+                items: items,
+                subtotal: {{ (float) $subtotal }},
+                vat_amount: {{ (float) $vatAmount }},
+                total_amount: grandTotal,
+                amount_paid: amountPaid,
+                cart_discount_type: '{{ $cartDiscount['type'] ?? 'none' }}',
+                cart_discount_value: {{ (float) ($cartDiscount['value'] ?? 0) }}
+            });
+
+            alert(`Offline order ${order.invoice_number} saved locally! It will automatically sync when connection returns.`);
+            window.location.href = "{{ route('pos') }}";
+        }
+    });
+</script>
+@endpush

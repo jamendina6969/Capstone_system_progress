@@ -55,6 +55,21 @@
         </div>
     </div>
 
+    <!-- Offline Status Banner -->
+    <div id="offlineStatusBanner" class="hidden mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-semibold shadow-xs transition-all">
+        <div class="flex items-center gap-3">
+            <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+            </span>
+            <span><strong>Offline Mode Active:</strong> Internet connection interrupted. You can continue ringing up retail sales. Transactions are safely stored locally and will automatically synchronize when connection is restored.</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="offlineQueueBadge" class="bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 px-3 py-1 rounded-full text-xs font-bold">0 Offline Sales Pending</span>
+            <button type="button" onclick="if(window.PosOffline) window.PosOffline.manualSync()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer">Sync Now</button>
+        </div>
+    </div>
+
     <div class="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6 pb-24 xl:pb-0">
 
         <!-- PRODUCTS SECTION -->
@@ -367,7 +382,7 @@
                         <button type="button" onclick="openClearModal()" class="w-1/3 text-center bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white font-bold py-3 px-2 rounded-full transition-all text-sm cursor-pointer shadow-xs">
                             Clear
                         </button>
-                        <a href="{{ route('checkout') }}" class="w-2/3 text-center bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-bold py-3 px-3 rounded-full transition-all text-sm shadow-xs cursor-pointer">
+                        <a href="{{ route('checkout') }}" onclick="return handlePosCheckout(event)" class="w-2/3 text-center bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-bold py-3 px-3 rounded-full transition-all text-sm shadow-xs cursor-pointer">
                             Proceed to Checkout
                         </a>
                     </div>
@@ -943,10 +958,162 @@
                 View Cart
             </button>
             @if(count($cart) > 0)
-                <a href="{{ route('checkout') }}" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+                <a href="{{ route('checkout') }}" onclick="return handlePosCheckout(event)" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
                     Checkout &rarr;
                 </a>
             @endif
+        </div>
+    </div>
+
+    {{-- OFFLINE CHECKOUT MODAL --}}
+    <div id="offlineCheckoutModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs hidden p-4" onclick="if(event.target===this) closeOfflineCheckoutModal()">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            <div class="px-6 sm:px-8 py-5 border-b-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Offline Quick Checkout</h3>
+                        <p class="text-xs text-amber-600 dark:text-amber-400 font-semibold">Terminal is offline. Order will be safely stored and synced.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeOfflineCheckoutModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1.5">Customer Name (Optional)</label>
+                    <input type="text" id="offlineCustomerName" placeholder="Walk-in Customer" class="w-full rounded-xl bg-gray-50 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-xs sm:text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
+                </div>
+
+                <div class="bg-gray-50 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] rounded-2xl p-4 space-y-2 text-xs">
+                    <div class="flex justify-between text-gray-500 dark:text-slate-400 font-medium">
+                        <span>Items in Cart</span>
+                        <span id="offlineModalItemCount" class="font-bold text-gray-800 dark:text-gray-200">{{ array_sum(array_column($cart, 'quantity')) }} items</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500 dark:text-slate-400 font-medium">
+                        <span>Subtotal</span>
+                        <span id="offlineModalSubtotal" class="font-bold text-gray-800 dark:text-gray-200">₱{{ number_format($subtotal, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500 dark:text-slate-400 font-medium">
+                        <span>VAT (12%)</span>
+                        <span id="offlineModalVat" class="font-bold text-gray-800 dark:text-gray-200">₱{{ number_format($vatAmount, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm sm:text-base font-bold text-gray-900 dark:text-white pt-2 border-t-2 border-gray-200 dark:border-[#1e2536]">
+                        <span>Grand Total</span>
+                        <span id="offlineModalGrandTotal" class="text-emerald-600 dark:text-emerald-400 font-black">₱{{ number_format($grandTotal, 2) }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1.5">Amount Tendered (₱) <span class="text-rose-500">*</span></label>
+                    <input type="number" step="0.01" min="{{ $grandTotal }}" id="offlineAmountPaid" value="{{ $grandTotal }}" oninput="updateOfflineChange()" placeholder="Enter amount" class="w-full rounded-xl bg-gray-50 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-base font-bold text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
+                </div>
+
+                <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-800/80">
+                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase">Change Due</span>
+                    <span id="offlineChangeDisplay" class="text-base font-black text-emerald-600 dark:text-emerald-400">₱0.00</span>
+                </div>
+            </div>
+
+            <div class="px-6 sm:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-end gap-3 shrink-0">
+                <button type="button" onclick="closeOfflineCheckoutModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="completeOfflineSale()" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-bold px-6 py-2.5 rounded-full transition-all shadow-xs cursor-pointer">
+                    Complete Offline Sale
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- OFFLINE THERMAL RECEIPT MODAL --}}
+    <div id="offlineReceiptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs hidden p-4" onclick="if(event.target===this) closeOfflineReceiptModal()">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[92vh]" onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">Offline Sale Receipt</span>
+                </div>
+                <button type="button" onclick="closeOfflineReceiptModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Receipt Content (Printable) -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 font-mono text-[11px] leading-tight text-gray-900 dark:text-gray-100" id="offlinePrintArea">
+                <div class="text-center pb-4 border-b border-dashed border-gray-300 dark:border-gray-700">
+                    <h2 class="text-xs font-black tracking-wider uppercase">STEVEN HYDROTECH EXPONENT</h2>
+                    <p class="text-[9px] text-gray-500 uppercase mt-0.5">Water Filtration & Treatment Specialist</p>
+                    <p class="text-[9px] text-gray-400 mt-1">OFFLINE TRANSACTION RECEIPT</p>
+                </div>
+
+                <div class="py-3 border-b border-dashed border-gray-300 dark:border-gray-700 space-y-1 text-[10px]">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Ref:</span>
+                        <span id="receiptRefNo" class="font-bold"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Date/Time:</span>
+                        <span id="receiptDateTime"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Cashier:</span>
+                        <span id="receiptCashier"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Customer:</span>
+                        <span id="receiptCustomer"></span>
+                    </div>
+                </div>
+
+                <!-- Receipt Items -->
+                <div class="py-3 border-b border-dashed border-gray-300 dark:border-gray-700 space-y-2" id="receiptItemsContainer">
+                </div>
+
+                <!-- Totals -->
+                <div class="py-3 border-b border-dashed border-gray-300 dark:border-gray-700 space-y-1 text-[10px]">
+                    <div class="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span id="receiptSubtotal" class="font-bold"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Tax (12% VAT):</span>
+                        <span id="receiptVat"></span>
+                    </div>
+                    <div class="flex justify-between text-xs font-black pt-1">
+                        <span>TOTAL:</span>
+                        <span id="receiptGrandTotal"></span>
+                    </div>
+                    <div class="flex justify-between pt-1">
+                        <span>Amount Paid:</span>
+                        <span id="receiptPaid"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Change:</span>
+                        <span id="receiptChange" class="font-bold"></span>
+                    </div>
+                </div>
+
+                <div class="text-center pt-4 text-[9px] text-gray-400 space-y-1">
+                    <p>*** STORED LOCALLY IN TERMINAL ***</p>
+                    <p>Auto-syncs to database when online.</p>
+                    <p>Thank you for your purchase!</p>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-end gap-3 shrink-0">
+                <button type="button" onclick="printOfflineReceipt()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print Receipt
+                </button>
+                <button type="button" onclick="closeOfflineReceiptModal()" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-bold px-6 py-2.5 rounded-full transition-all shadow-xs cursor-pointer">
+                    Done & New Order
+                </button>
+            </div>
         </div>
     </div>
 
@@ -966,12 +1133,169 @@
 
 @push('scripts')
 <script>
+    // State bootstrap for Modular POS & Offline Sync
+    window.currentPosCart = @json($cart);
+    window.currentPosSubtotal = {{ (float) $subtotal }};
+    window.currentPosVatAmount = {{ (float) $vatAmount }};
+    window.currentPosGrandTotal = {{ (float) $grandTotal }};
+    window.currentPosCartDiscount = @json($cartDiscount ?? ['type' => 'none', 'value' => 0]);
+    window.currentCashierName = "{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}";
+
+    // =====================================================
+    // OFFLINE POS LOGIC & WORKFLOWS
+    // =====================================================
+    function handlePosCheckout(event) {
+        if (!navigator.onLine) {
+            event.preventDefault();
+            openOfflineCheckoutModal();
+            return false;
+        }
+        return true;
+    }
+
+    function openOfflineCheckoutModal() {
+        const modal = document.getElementById('offlineCheckoutModal');
+        if (!modal) return;
+
+        const cartKeys = Object.keys(window.currentPosCart || {});
+        if (cartKeys.length === 0) {
+            alert('Your cart is empty.');
+            return;
+        }
+
+        const input = document.getElementById('offlineAmountPaid');
+        if (input) {
+            input.value = window.currentPosGrandTotal.toFixed(2);
+            input.min = window.currentPosGrandTotal;
+        }
+
+        updateOfflineChange();
+        modal.classList.remove('hidden');
+    }
+
+    function closeOfflineCheckoutModal() {
+        document.getElementById('offlineCheckoutModal')?.classList.add('hidden');
+    }
+
+    function updateOfflineChange() {
+        const input = document.getElementById('offlineAmountPaid');
+        const changeSpan = document.getElementById('offlineChangeDisplay');
+        if (!input || !changeSpan) return;
+
+        const paid = parseFloat(input.value) || 0;
+        const total = window.currentPosGrandTotal || 0;
+        const change = Math.max(0, paid - total);
+        changeSpan.textContent = '₱' + change.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function completeOfflineSale() {
+        const input = document.getElementById('offlineAmountPaid');
+        const paid = parseFloat(input?.value) || 0;
+        const total = window.currentPosGrandTotal || 0;
+
+        if (paid < total) {
+            alert(`Amount paid must be at least ₱${total.toFixed(2)}`);
+            return;
+        }
+
+        const customerName = document.getElementById('offlineCustomerName')?.value.trim() || 'Walk-in Customer (Offline)';
+        const items = Object.values(window.currentPosCart || {}).map(i => ({
+            id: i.id,
+            product_name: i.product_name,
+            product_sku: i.product_sku || '',
+            selling_price: parseFloat(i.selling_price) || 0,
+            quantity: parseInt(i.quantity) || 1,
+            subtotal: parseFloat(i.subtotal) || 0,
+            item_discount_amount: parseFloat(i.item_discount_amount) || 0
+        }));
+
+        const orderData = {
+            customer_name: customerName,
+            items: items,
+            subtotal: window.currentPosSubtotal,
+            vat_amount: window.currentPosVatAmount,
+            total_amount: window.currentPosGrandTotal,
+            amount_paid: paid,
+            cart_discount_type: window.currentPosCartDiscount?.type || 'none',
+            cart_discount_value: window.currentPosCartDiscount?.value || 0
+        };
+
+        if (window.PosOffline) {
+            const savedOrder = window.PosOffline.recordOfflineOrder(orderData);
+            closeOfflineCheckoutModal();
+            displayOfflineReceipt(savedOrder);
+        } else {
+            alert('Offline engine not initialized.');
+        }
+    }
+
+    function displayOfflineReceipt(order) {
+        document.getElementById('receiptRefNo').textContent = order.invoice_number;
+        document.getElementById('receiptDateTime').textContent = new Date(order.created_at).toLocaleString();
+        document.getElementById('receiptCashier').textContent = window.currentCashierName;
+        document.getElementById('receiptCustomer').textContent = order.customer_name;
+
+        const container = document.getElementById('receiptItemsContainer');
+        if (container) {
+            container.innerHTML = '';
+            order.items.forEach(it => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex justify-between items-start';
+                itemDiv.innerHTML = `
+                    <div class="max-w-[200px]">
+                        <span class="font-bold">${it.product_name}</span>
+                        <div class="text-[9px] text-gray-400">Qty: ${it.quantity} x ₱${it.selling_price.toFixed(2)}</div>
+                    </div>
+                    <span class="font-bold">₱${it.subtotal.toFixed(2)}</span>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        document.getElementById('receiptSubtotal').textContent = '₱' + order.subtotal.toFixed(2);
+        document.getElementById('receiptVat').textContent = '₱' + order.vat_amount.toFixed(2);
+        document.getElementById('receiptGrandTotal').textContent = '₱' + order.total_amount.toFixed(2);
+        document.getElementById('receiptPaid').textContent = '₱' + order.amount_paid.toFixed(2);
+        document.getElementById('receiptChange').textContent = '₱' + order.amount_change.toFixed(2);
+
+        document.getElementById('offlineReceiptModal')?.classList.remove('hidden');
+    }
+
+    function closeOfflineReceiptModal() {
+        document.getElementById('offlineReceiptModal')?.classList.add('hidden');
+        // Reset or clear cart locally
+        window.location.reload();
+    }
+
+    function printOfflineReceipt() {
+        const printContent = document.getElementById('offlinePrintArea')?.innerHTML;
+        if (!printContent) return;
+
+        const printWindow = window.open('', '', 'height=600,width=450');
+        printWindow.document.write('<html><head><title>Thermal Receipt</title>');
+        printWindow.document.write('<style>body{font-family:monospace;font-size:11px;line-height:1.2;margin:15px;color:#000;}.text-center{text-align:center;}.flex{display:flex;}.justify-between{justify-content:space-between;}.font-bold{font-weight:bold;}.border-b{border-bottom:1px dashed #666;padding-bottom:8px;margin-bottom:8px;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 250);
+    }
+
     // =====================================================
     // DUAL-MODE POS LOGIC & LOCKING
     // =====================================================
     let currentPosMode = 'retail';
 
     window.addEventListener('DOMContentLoaded', () => {
+        // Cache catalog for offline POS mode
+        if (window.PosOffline) {
+            window.PosOffline.cacheCatalog(@json($items->items()));
+        }
+
         const hasProject = {{ $hasProjectInCart ? 'true' : 'false' }};
         const cartCount = {{ count($cart) }};
 

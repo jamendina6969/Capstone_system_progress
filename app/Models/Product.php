@@ -23,8 +23,16 @@ class Product extends Model
         'product_image', 
         'store_quantity',
         'warehouse_quantity',
+        'total_quantity',
         // <--- ADDED to support EoqService
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($product) {
+            $product->total_quantity = (int) ($product->store_quantity ?? 0) + (int) ($product->warehouse_quantity ?? 0);
+        });
+    }
 
     public function category()
     {

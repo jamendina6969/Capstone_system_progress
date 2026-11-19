@@ -133,6 +133,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/checkout', [PosController::class, 'checkout'])->name('checkout');
         Route::post('/checkout', [PosController::class, 'processCheckout'])->name('checkout.process');
+        Route::post('/pos/sync-offline', [PosController::class, 'syncOfflineOrders'])->name('pos.syncOffline');
         
         Route::get('/receipt/{id}', [TransactionController::class, 'showReceipt'])->name('receipt');
         Route::get('/transactions/payment/{id}/receipt', [TransactionController::class, 'showPaymentReceipt'])->name('transaction.payment.receipt');
@@ -153,6 +154,7 @@ Route::middleware('auth')->group(function () {
 
     // ==================== INVENTORY STAFF ROUTES ====================
     Route::middleware('role:admin,manager,warehouse_staff,staff')->group(function () {
+        Route::get('/inventory/live-sync', [InventoryController::class, 'liveSync'])->name('inventory.liveSync');
         Route::get('/inventory/view', [InventoryController::class, 'index'])->name('inventory.view');
         Route::get('/inventory/{product}/details', [InventoryController::class, 'details'])->name('inventory.details');
         Route::post('/inventory/{product}/restock', [InventoryController::class, 'restock'])->name('inventory.restock');

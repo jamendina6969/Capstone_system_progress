@@ -55,11 +55,11 @@
             ₱{{ $product->selling_price !== null ? number_format($product->selling_price, 2) : '—' }}
         </td>
 
-        <td class="px-6 py-4 align-middle text-sm text-gray-700 dark:text-slate-300 font-semibold">
+        <td data-col="store_quantity" class="px-6 py-4 align-middle text-sm text-gray-700 dark:text-slate-300 font-semibold">
             {{ $storeQty }}
         </td>
 
-        <td class="px-6 py-4 align-middle text-sm text-gray-700 dark:text-slate-300 font-semibold">
+        <td data-col="warehouse_quantity" class="px-6 py-4 align-middle text-sm text-gray-700 dark:text-slate-300 font-semibold">
             {{ $whQty }}
         </td>
 

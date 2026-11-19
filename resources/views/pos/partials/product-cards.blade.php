@@ -106,7 +106,7 @@
                         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ $statusClass }} tracking-wide">{{ $statusText }}</span>
                         
                         <div class="flex items-baseline gap-1 mt-1">
-                            <div class="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black {{ $isOutOfStock ? 'text-gray-400' : 'text-gray-900 dark:text-white' }} leading-none tracking-tight">{{ $storeQty }}</div>
+                            <div data-pos-stock-id="{{ $item->id }}" class="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black {{ $isOutOfStock ? 'text-gray-400' : 'text-gray-900 dark:text-white' }} leading-none tracking-tight">{{ $storeQty }}</div>
                         </div>
                         
                         <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1.5 uppercase tracking-wide">UNIT : {{ $item->unit_of_measure ?? 'PIECE' }}</div>
