@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Suppliers Directory</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage vendors, track balances, and record payments</p>
@@ -41,10 +41,10 @@
     @endif
 
     <!-- Main Table Card -->
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
         
         <!-- Filter Section -->
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <form id="filterForm" method="GET" action="{{ route('suppliers.index') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
                     <div class="relative w-full sm:w-72">
@@ -60,14 +60,14 @@
 
         <!-- Scrollable Table -->
         <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[760px] text-sm text-left relative">
                 <thead id="supplierTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Supplier Name</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Contact Person</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Contact Info</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Outstanding Balance</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Supplier Name</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Contact Person</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Contact Info</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Outstanding Balance</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -91,7 +91,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($suppliers->total() > 0)
                     Showing
@@ -145,6 +145,49 @@
         @csrf
         @method('DELETE')
     </form>
+
+    <!-- Supplier Detail Modal -->
+    <div id="supplierDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeSupplierDetailModal()">
+        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl p-6 sm:p-8 text-left" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-gray-200 dark:border-[#1e2536]">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="sdmName">Supplier Details</h3>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5" id="sdmAddress"></p>
+                </div>
+                <button type="button" onclick="closeSupplierDetailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Contact Person</span>
+                    <span id="sdmContact" class="font-semibold text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Email</span>
+                    <span id="sdmEmail" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Phone</span>
+                    <span id="sdmPhone" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Outstanding Balance</span>
+                    <span id="sdmBalance" class="font-bold text-rose-600 dark:text-rose-400"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Rating</span>
+                    <span id="sdmRating" class="font-bold text-amber-500"></span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t-2 border-gray-200 dark:border-[#1e2536] mt-4">
+                <a id="sdmLedgerLink" href="#" class="bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-blue-600/80 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs inline-flex items-center gap-1.5">
+                    View Ledger
+                </a>
+                <button type="button" onclick="closeSupplierDetailModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Add Supplier Modal -->
     <div id="addModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1037,6 +1080,36 @@
         document.getElementById('deleteModal').classList.toggle('hidden', !show);
         document.body.classList.toggle('overflow-hidden', show);
     }
+
+    function openSupplierDetailModal(supplier) {
+        document.getElementById('sdmName').textContent = supplier.name || 'Supplier';
+        document.getElementById('sdmAddress').textContent = supplier.address || 'No address specified';
+        document.getElementById('sdmContact').textContent = supplier.contact_person || '—';
+        document.getElementById('sdmEmail').textContent = supplier.email || '—';
+        document.getElementById('sdmPhone').textContent = supplier.phone || '—';
+        const bal = parseFloat(supplier.balance || 0);
+        document.getElementById('sdmBalance').textContent = '₱' + Math.max(0, bal).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('sdmRating').textContent = (supplier.average_rating ? supplier.average_rating + ' ★' : 'Unrated');
+        document.getElementById('sdmLedgerLink').href = `{{ url('/suppliers') }}/${supplier.id}/ledger`;
+
+        const modal = document.getElementById('supplierDetailModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeSupplierDetailModal() {
+        const modal = document.getElementById('supplierDetailModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeSupplierDetailModal();
+    });
 
     function togglePaymentModal(supplierId, name = '', balance = 0) {
         const modal = document.getElementById('paymentModal');

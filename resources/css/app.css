@@ -203,3 +203,56 @@ html.dark[data-product-view="grid"] [data-set-view="grid"] {
   background-color: #475569;
   color: #ffffff;
 }
+
+/* ===== Comprehensive Multi-Device Support: Tablet, iPad, Landscape & Portrait ===== */
+
+/* Touch Ergonomics & Momentum Scrolling for Tablets (iPads, Android tablets) */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select {
+    touch-action: manipulation;
+  }
+  .overflow-y-auto, .overflow-x-auto, #productScrollContainer, #tableScrollContainer, #alertScrollContainer {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet Portrait Mode (iPad Mini, iPad 10.2", iPad Air/Pro 11" Portrait: 768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .tablet-portrait-stack {
+    flex-direction: column !important;
+  }
+  .tablet-portrait-full {
+    width: 100% !important;
+  }
+  .tablet-portrait-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Tablet Landscape Mode (iPad 1024px - 1366px Landscape) */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+  .tablet-landscape-compact {
+    gap: 1rem !important;
+  }
+}
+
+/* Short Viewports / Mobile & Tablet Landscape (height <= 550px) */
+@media (max-height: 550px) {
+  header.h-16 {
+    height: 3.25rem !important;
+  }
+  main {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  /* Modals in landscape: pin to top and scroll smoothly */
+  .fixed.inset-0 {
+    align-items: flex-start !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  .fixed.inset-0 > div {
+    max-height: 92vh !important;
+    margin: 0.5rem auto !important;
+  }
+}

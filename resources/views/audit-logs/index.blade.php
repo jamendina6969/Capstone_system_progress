@@ -16,7 +16,7 @@
     <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden mb-8">
 
         <!-- Filters -->
-        <div class="px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+        <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <form id="filterForm" method="GET" action="{{ route('audit-logs.index') }}"
                 class="flex flex-col xl:flex-row xl:items-center gap-4">
 
@@ -76,14 +76,15 @@
             class="overflow-x-auto custom-scrollbar relative"
             style="height: 600px; max-height: 600px; overflow-y: scroll;">
 
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[760px] text-sm text-left relative">
                 <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">User</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Action</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Target Model</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">IP Address</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Timestamp</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">User</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Action</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Target Model</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">IP Address</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Timestamp</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
 
@@ -107,7 +108,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
 
             <div class="whitespace-nowrap" id="resultsText">
                 @if($logs->total() > 0)
@@ -158,79 +159,101 @@
 
     <!-- Audit Log Detail Modal -->
     <div id="auditModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs hidden p-4"
+        onclick="if(event.target===this) closeAuditModal()">
 
-        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[90vh]"
+            onclick="event.stopPropagation()">
 
-            <div class="flex justify-between items-center px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                        Audit Log Specifications
-                    </h3>
-                    <p id="modalDescription" class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-                        Detailed breakdown of user action and data modifications.
-                    </p>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                            Audit Log Specifications
+                        </h3>
+                        <p id="modalDescription" class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                            Detailed breakdown of user action and data modifications.
+                        </p>
+                    </div>
                 </div>
 
                 <button type="button" onclick="closeAuditModal()"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold">
-                    &times;
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <div class="px-8 py-6 space-y-6 max-h-[65vh] overflow-y-auto text-sm">
+            <!-- Modal Body -->
+            <div class="px-8 py-6 space-y-6 overflow-y-auto custom-scrollbar text-sm flex-1">
 
-                <div class="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-[#161B26] p-4 rounded-2xl border border-gray-200 dark:border-[#1e2536]">
-                    <div>
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">User</span>
-                        <span id="modalUser" class="font-semibold text-gray-900 dark:text-white">-</span>
+                <!-- Meta Information Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- User & Action -->
+                    <div class="bg-gray-50 dark:bg-[#161B26] p-4 rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">User</span>
+                            <span id="modalUser" class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">-</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">Action</span>
+                            <div id="modalEventBadge">
+                                <span id="modalEvent" class="font-semibold text-gray-900 dark:text-white uppercase">-</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">Action</span>
-                        <span id="modalEvent" class="font-semibold text-gray-900 dark:text-white uppercase">-</span>
+                    <!-- Target Model & IP -->
+                    <div class="bg-gray-50 dark:bg-[#161B26] p-4 rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">Target Model</span>
+                            <span id="modalTarget" class="text-sm font-semibold text-gray-900 dark:text-white">-</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">IP Address</span>
+                            <span id="modalIp" class="text-xs font-mono font-semibold text-gray-700 dark:text-slate-300 bg-gray-200/70 dark:bg-[#10141D] px-2.5 py-1 rounded-lg border border-gray-300 dark:border-[#1e2536]">-</span>
+                        </div>
                     </div>
 
-                    <div>
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">Target Model</span>
-                        <span id="modalTarget" class="font-semibold text-gray-900 dark:text-white">-</span>
+                    <!-- Origin / Context -->
+                    <div class="bg-gray-50 dark:bg-[#161B26] p-4 rounded-2xl border-2 border-gray-200 dark:border-[#1e2536]">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">Origin / Context</span>
+                        <span id="modalContext" class="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-1.5">-</span>
                     </div>
 
-                    <div>
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">IP Address</span>
-                        <span id="modalIp" class="font-mono text-gray-900 dark:text-white">-</span>
-                    </div>
-
-                    <div class="col-span-2">
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">Origin / Context</span>
-                        <span id="modalContext" class="text-gray-900 dark:text-white">-</span>
-                    </div>
-
-                    <div class="col-span-2">
-                        <span class="text-gray-500 dark:text-slate-400 block text-xs">Timestamp</span>
-                        <span id="modalTimestamp" class="text-gray-900 dark:text-white">-</span>
+                    <!-- Timestamp -->
+                    <div class="bg-gray-50 dark:bg-[#161B26] p-4 rounded-2xl border-2 border-gray-200 dark:border-[#1e2536]">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 block mb-1">Timestamp</span>
+                        <span id="modalTimestamp" class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-1.5">-</span>
                     </div>
                 </div>
 
+                <!-- Activity Details Table -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                        Activity Details & Modifications
-                    </h4>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            Activity Details & Modifications
+                        </h4>
+                    </div>
 
-                    <div class="border border-gray-200 dark:border-[#1e2536] rounded-2xl overflow-hidden">
+                    <div class="border-2 border-gray-200 dark:border-[#1e2536] rounded-2xl overflow-hidden shadow-xs">
                         <table class="w-full text-left text-xs">
-                            <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-500 dark:text-slate-400 border-b border-gray-200 dark:border-[#1e2536]">
+                            <thead class="bg-gray-100 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 border-b-2 border-gray-200 dark:border-[#1e2536] uppercase text-[10px] tracking-wider font-bold">
                                 <tr>
-                                    <th class="px-4 py-3 font-semibold w-1/3">Field / Property</th>
-                                    <th class="px-4 py-3 font-semibold w-1/3">Previous Value</th>
-                                    <th class="px-4 py-3 font-semibold w-1/3">New Value</th>
+                                    <th class="px-5 py-3.5 w-1/3 whitespace-nowrap">Field / Property</th>
+                                    <th class="px-5 py-3.5 w-1/3 whitespace-nowrap">Previous Value</th>
+                                    <th class="px-5 py-3.5 w-1/3 whitespace-nowrap">New Value</th>
                                 </tr>
                             </thead>
 
                             <tbody id="modalChangesTable"
                                 class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                                 <tr>
-                                    <td colspan="3" class="px-4 py-6 text-center text-gray-400">
+                                    <td colspan="3" class="px-5 py-8 text-center text-gray-400 dark:text-slate-500 font-medium">
                                         Loading details...
                                     </td>
                                 </tr>
@@ -240,9 +263,10 @@
                 </div>
             </div>
 
-            <div class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] border-t-2 border-gray-200 dark:border-[#1e2536] flex justify-end">
+            <!-- Modal Footer with Official Rounded-Full Button -->
+            <div class="px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex justify-end shrink-0">
                 <button type="button" onclick="closeAuditModal()"
-                    class="px-5 py-2.5 bg-gray-200 dark:bg-[#1e2536] text-gray-700 dark:text-slate-200 rounded-xl text-sm font-semibold hover:bg-gray-300 dark:hover:bg-[#283248] transition-colors">
+                    class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
                     Close
                 </button>
             </div>
@@ -508,11 +532,24 @@
 
             document.getElementById('modalDescription').innerText = data.description ?? '';
             document.getElementById('modalUser').innerText = data.user ?? 'System / Guest';
-            document.getElementById('modalEvent').innerText = data.event ?? '';
-            document.getElementById('modalTarget').innerText = data.target_model ?? '';
+            
+            const ev = (data.event || '').toUpperCase();
+            let evBadge = '';
+            if (ev.includes('CREATE') || ev.includes('ADD') || ev.includes('RESTORE')) {
+                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60">${ev}</span>`;
+            } else if (ev.includes('DELETE') || ev.includes('REMOVE') || ev.includes('DESTROY')) {
+                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-800/60">${ev}</span>`;
+            } else if (ev.includes('UPDATE') || ev.includes('EDIT') || ev.includes('CHANGE')) {
+                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800/60">${ev}</span>`;
+            } else {
+                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-400 dark:border-purple-800/60">${ev}</span>`;
+            }
+            document.getElementById('modalEventBadge').innerHTML = evBadge;
+
+            document.getElementById('modalTarget').innerText = data.target_model ?? '—';
             document.getElementById('modalIp').innerText = data.ip_address ?? '—';
-            document.getElementById('modalContext').innerText = data.direction_context ?? '';
-            document.getElementById('modalTimestamp').innerText = data.timestamp ?? '';
+            document.getElementById('modalContext').innerText = data.direction_context ?? '—';
+            document.getElementById('modalTimestamp').innerText = data.timestamp ?? '—';
 
             const changesTable = document.getElementById('modalChangesTable');
             changesTable.innerHTML = '';
@@ -520,19 +557,21 @@
             if (data.changes && data.changes.length > 0) {
                 data.changes.forEach(change => {
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50 dark:hover:bg-[#161B26]/30';
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors';
 
                     const fieldCell = document.createElement('td');
-                    fieldCell.className = 'px-4 py-3 font-medium text-gray-900 dark:text-white';
+                    fieldCell.className = 'px-5 py-3.5 font-bold text-gray-900 dark:text-white align-middle';
                     fieldCell.textContent = change.field ?? '';
 
                     const oldCell = document.createElement('td');
-                    oldCell.className = 'px-4 py-3 text-rose-500 dark:text-rose-400 line-through font-mono text-xs break-all';
-                    oldCell.textContent = change.old ?? 'None';
+                    oldCell.className = 'px-5 py-3.5 align-middle';
+                    const oldVal = change.old ?? 'None';
+                    oldCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono ${oldVal === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-rose-50 text-rose-700 border border-rose-200 line-through dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60'} break-all">${oldVal}</span>`;
 
                     const newCell = document.createElement('td');
-                    newCell.className = 'px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs break-all';
-                    newCell.textContent = change.new ?? 'None';
+                    newCell.className = 'px-5 py-3.5 align-middle';
+                    const newVal = change.new ?? 'None';
+                    newCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${newVal === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60'} break-all">${newVal}</span>`;
 
                     row.appendChild(fieldCell);
                     row.appendChild(oldCell);
@@ -542,7 +581,7 @@
             } else {
                 changesTable.innerHTML = `
                     <tr>
-                        <td colspan="3" class="px-4 py-6 text-center text-gray-400">
+                        <td colspan="3" class="px-5 py-8 text-center text-gray-400 dark:text-slate-500 font-medium">
                             No specific field changes recorded for this action.
                         </td>
                     </tr>

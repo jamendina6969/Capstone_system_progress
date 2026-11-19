@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Restock Mode</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
@@ -12,8 +12,8 @@
                 <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] text-gray-800 dark:text-slate-200 rounded-lg text-xs">↓</kbd> to move to the next item.
             </p>
         </div>
-        <!-- Changed to route('dashboard') to prevent 403 on exit -->
-        <a href="{{ url('/dashboard') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer inline-flex items-center">
+        <!-- Admin/Manager -> Inventory Management; other roles -> shared inventory view (avoids 403) -->
+        <a href="{{ $exitUrl ?? route('inventory.index') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer inline-flex items-center">
             Exit Restock Mode
         </a>
     </div>
@@ -45,7 +45,7 @@
         <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden">
 
             <!-- Batch Configuration Header -->
-            <div class="flex flex-wrap items-end gap-4 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+            <div class="flex flex-wrap items-end gap-4 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
                 <div class="flex-1 min-w-[250px]">
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Batch Note (optional)</label>
                     <input type="text" name="note" placeholder="e.g. Weekly delivery from supplier"
@@ -61,16 +61,16 @@
 
             <!-- Products Table with Per-Item Location & Status Columns -->
             <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
-                <table class="w-full text-sm text-left">
+                <table class="w-full min-w-[850px] text-sm text-left">
                     <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs border-b-2 border-gray-200 dark:border-[#1e2536] sticky top-0">
                         <tr>
-                            <th class="px-8 py-4">Product</th>
-                            <th class="px-8 py-4 w-60">Add Quantity & Destination</th>
-                            <th class="px-8 py-4">Store Qty</th>
-                            <th class="px-8 py-4">Warehouse Qty</th>
-                            <th class="px-8 py-4">Store Status</th>
-                            <th class="px-8 py-4">Warehouse Status</th>
-                            <th class="px-8 py-4">Total Status</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Product</th>
+                            <th class="px-8 py-4 w-60 whitespace-nowrap">Add Quantity & Destination</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Store Qty</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Warehouse Qty</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Store Status</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Warehouse Status</th>
+                            <th class="px-8 py-4 whitespace-nowrap">Total Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -184,10 +184,10 @@
                 @endif
 
                 <div class="flex items-center justify-end space-x-3 pt-6 border-t-2 border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="toggleRestockConfirmModal(false)" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#161B26] transition-colors cursor-pointer">
+                    <button type="button" onclick="toggleRestockConfirmModal(false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
                         Cancel
                     </button>
-                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                         Yes, Submit Batch
                     </button>
                 </div>

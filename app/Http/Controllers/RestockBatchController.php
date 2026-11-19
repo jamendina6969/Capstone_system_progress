@@ -37,7 +37,12 @@ class RestockBatchController extends Controller
         $user = Auth::user();
         $location = $user->role === 'warehouse_staff' ? 'warehouse' : 'store';
 
-        return view('inventory.restockBatch', compact('products', 'categories', 'location'));
+        // Exit target: admins/managers/warehouse_staff go back to Inventory Management; other roles use the shared inventory view.
+        $exitUrl = in_array(strtolower(trim($user->role)), ['admin', 'manager', 'warehouse_staff'], true)
+            ? route('inventory.index')
+            : route('inventory.view');
+
+        return view('inventory.restockBatch', compact('products', 'categories', 'location', 'exitUrl'));
     }
 
     public function store(Request $request)
@@ -161,6 +166,9 @@ class RestockBatchController extends Controller
                     'approver_name'   => $approverName,
                     'type'            => $type,
                     'status'          => $requiresApproval ? 'pending' : 'approved',
+                    // Direct restocks (admin/manager or authorized override) are applied immediately,
+                    // so they are already delivered and must not appear in the approvals queue.
+                    'delivery_status' => $requiresApproval ? 'pending' : 'delivered',
                     'quantity_before' => $before,
                     'quantity_after'  => $after,
                     'quantity'        => $qty,

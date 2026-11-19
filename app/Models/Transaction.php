@@ -40,6 +40,11 @@ class Transaction extends Model
         return $this->hasMany(TransactionItem::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
+
     // ← NEW
     public function customerReturn()
     {

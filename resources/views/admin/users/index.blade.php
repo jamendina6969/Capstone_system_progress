@@ -8,10 +8,10 @@
 
     {{-- REMOVED: Flash messages (They are now handled globally in layouts/default.blade.php) --}}
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-140px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-140px)] min-h-[500px] mb-4">
 
         <!-- Header -->
-        <div class="shrink-0 flex items-center justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
+        <div class="shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
             <div>
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">System Users</h2>
                 <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage admin, manager, warehouse staff and staff accounts</p>
@@ -25,15 +25,15 @@
 
         <!-- Scrollable Table -->
         <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[760px] text-sm text-left relative">
                 <thead id="usersTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Name</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Username</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Email</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Role</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Status</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Name</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Username</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Email</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Role</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Status</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($users->total() > 0)
                     Showing
@@ -306,6 +306,50 @@
         </div>
     </div>
 
+    <!-- User Detail Modal -->
+    <div id="userDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeUserDetailModal()">
+        <div class="relative w-full max-w-md bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl p-6 sm:p-8 text-left" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-gray-200 dark:border-[#1e2536]">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] flex items-center justify-center font-bold text-gray-900 dark:text-white" id="udmInitial">
+                        U
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="udmFullName">User Details</h3>
+                        <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5" id="udmUsername">@username</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUserDetailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Email Address</span>
+                    <span id="udmEmail" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">System Role</span>
+                    <span id="udmRole" class="font-bold"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Account Status</span>
+                    <span id="udmStatus" class="font-bold"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Created Date</span>
+                    <span id="udmCreatedAt" class="text-xs text-gray-600 dark:text-slate-400"></span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-5 border-t-2 border-gray-200 dark:border-[#1e2536] mt-4">
+                <button type="button" id="udmEditBtn" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
+                    Edit User
+                </button>
+                <button type="button" onclick="closeUserDetailModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('styles')
@@ -453,6 +497,43 @@ function closeAddUserModal() {
     document.getElementById('addUserModal').classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
 }
+
+let currentUserDetailData = null;
+function openUserDetailModal(userJson) {
+    const user = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
+    currentUserDetailData = user;
+    const name = user.full_name || (user.firstname + ' ' + user.lastname);
+    document.getElementById('udmFullName').textContent = name;
+    document.getElementById('udmInitial').textContent = (name.charAt(0) || 'U').toUpperCase();
+    document.getElementById('udmUsername').textContent = '@' + user.username;
+    document.getElementById('udmEmail').textContent = user.email || '—';
+    document.getElementById('udmRole').textContent = (user.role || '').replace('_', ' ').toUpperCase();
+    document.getElementById('udmStatus').innerHTML = user.is_active ? '<span class="text-emerald-600 dark:text-emerald-400">Active</span>' : '<span class="text-rose-600 dark:text-rose-400">Inactive</span>';
+    document.getElementById('udmCreatedAt').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
+    
+    document.getElementById('udmEditBtn').onclick = function() {
+        closeUserDetailModal();
+        openEditUserModal(currentUserDetailData);
+    };
+
+    const modal = document.getElementById('userDetailModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeUserDetailModal() {
+    const modal = document.getElementById('userDetailModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    document.body.classList.remove('overflow-hidden');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeUserDetailModal();
+});
 
 function openEditUserModal(userJson) {
     const user = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;

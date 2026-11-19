@@ -1,5 +1,7 @@
 @forelse($ordersWithDiscrepancies as $po)
-    <tr data-record-row="true" class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+    <tr data-record-row="true"
+        onclick="openDiscrepancyModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier')) }})"
+        class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
         <td class="px-8 py-4 font-bold text-gray-900 dark:text-white">
             {{ $po->po_number }}
         </td>
@@ -17,11 +19,12 @@
                 - ₱{{ number_format($po->discrepancy_amount, 2) }}
             </span>
         </td>
-        <td class="px-8 py-4 text-right">
+        <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
             <button type="button" 
                     onclick="openDiscrepancyModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier')) }})"
-                    class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all shadow-xs">
-                View Details
+                    class="inline-flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                <span>View</span>
             </button>
         </td>
     </tr>

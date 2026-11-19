@@ -117,14 +117,29 @@ class CustomerReturnController extends Controller
     public function searchTransactions(Request $request)
     {
         try {
-            $q = $request->get('q');
+            $q = trim((string) $request->get('q', ''));
 
-            $query = \App\Models\Transaction::query();
+            $query = \App\Models\Transaction::whereIn('transaction_type', [0, 1])
+                ->with(['transactionItems.product', 'transactionItems.materials.product']);
 
-            if ($q) {
+            if ($q !== '') {
                 $query->where(function ($sub) use ($q) {
                     $sub->where('transaction_id', 'like', "%{$q}%")
-                        ->orWhere('customer_name', 'like', "%{$q}%");
+                        ->orWhere('customer_name', 'like', "%{$q}%")
+                        ->orWhereHas('transactionItems', function ($itemQ) use ($q) {
+                            $itemQ->where('product_name', 'like', "%{$q}%")
+                                ->orWhere('product_sku', 'like', "%{$q}%")
+                                ->orWhere('item_sku', 'like', "%{$q}%")
+                                ->orWhereHas('product', function ($pQ) use ($q) {
+                                    $pQ->where('product_sku', 'like', "%{$q}%")
+                                        ->orWhere('product_name', 'like', "%{$q}%");
+                                })
+                                ->orWhereHas('materials', function ($mQ) use ($q) {
+                                    $mQ->where('product_name', 'like', "%{$q}%")
+                                        ->orWhere('product_sku', 'like', "%{$q}%")
+                                        ->orWhere('item_sku', 'like', "%{$q}%");
+                                });
+                        });
                 });
             }
 
@@ -132,13 +147,21 @@ class CustomerReturnController extends Controller
 
             $data = $transactions->map(function ($tx) {
                 $skus = [];
-                if (method_exists($tx, 'items') && $tx->items) {
-                    foreach ($tx->items as $item) {
-                        if (isset($item->product) && isset($item->product->product_sku)) {
-                            $skus[] = $item->product->product_sku;
-                        }
-                        if (isset($item->item_sku)) {
-                            $skus[] = $item->item_sku;
+                foreach ($tx->transactionItems as $item) {
+                    if (!empty($item->product_sku)) {
+                        $skus[] = $item->product_sku;
+                    }
+                    if (!empty($item->item_sku)) {
+                        $skus[] = $item->item_sku;
+                    }
+                    if ($item->product && !empty($item->product->product_sku)) {
+                        $skus[] = $item->product->product_sku;
+                    }
+                    if ($item->materials) {
+                        foreach ($item->materials as $mat) {
+                            if (!empty($mat->product_sku)) $skus[] = $mat->product_sku;
+                            if (!empty($mat->item_sku)) $skus[] = $mat->item_sku;
+                            if ($mat->product && !empty($mat->product->product_sku)) $skus[] = $mat->product->product_sku;
                         }
                     }
                 }
@@ -151,7 +174,7 @@ class CustomerReturnController extends Controller
                     'created_at' => $tx->created_at ? $tx->created_at->format('M d, Y h:i A') : 'N/A',
                     'total_amount' => $tx->total_amount ?? 0,
                     'transaction_type' => $tx->transaction_type ?? 0,
-                    'skus' => array_values(array_unique($skus))
+                    'skus' => array_values(array_unique(array_filter($skus)))
                 ];
             });
 
@@ -162,6 +185,31 @@ class CustomerReturnController extends Controller
                 'error' => 'Backend Error: ' . $e->getMessage() . ' on line ' . $e->getLine()
             ], 500);
         }
+    }
+
+    /**
+     * Verify whether a scanned SKU exists in the store catalog (anti-theft verification).
+     */
+    public function verifySku(Request $request)
+    {
+        $rawSku = trim((string) $request->input('sku', ''));
+        if ($rawSku === '') {
+            return response()->json(['found' => false]);
+        }
+
+        $product = Product::where('product_sku', $rawSku)
+            ->orWhere('product_name', $rawSku)
+            ->first();
+
+        if ($product) {
+            return response()->json([
+                'found' => true,
+                'product_name' => $product->product_name,
+                'product_sku' => $product->product_sku,
+            ]);
+        }
+
+        return response()->json(['found' => false]);
     }
 
     public function store(Request $request, Transaction $transaction)
@@ -427,7 +475,7 @@ class CustomerReturnController extends Controller
         }
 
         $rows = $transaction->transactionItems()
-            ->with(['materials.product'])
+            ->with(['product', 'materials.product'])
             ->withSum(['customerReturnItems as returned_qty' => function ($q) {
                 $q->whereHas('customerReturn', fn ($r) => $r->where('status', 'completed'));
             }], 'quantity')

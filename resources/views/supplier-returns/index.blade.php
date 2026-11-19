@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Supplier Returns</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Track defective goods, wrong items, and refunds</p>
@@ -22,9 +22,9 @@
         <div class="mb-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-4 py-3 text-sm text-red-700 dark:text-red-300">{{ session('error') }}</div>
     @endif
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
 
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <form id="filterForm" method="GET" action="{{ route('supplier-returns.index') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
                     <div class="relative w-full sm:w-72">
@@ -64,15 +64,15 @@
         </div>
 
         <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[760px] text-sm text-left relative">
                 <thead id="returnsTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Return #</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Supplier</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Reason</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Total Amount</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Status</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Return #</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Supplier</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Reason</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Total Amount</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Status</th>
+                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($returns->total() > 0)
                     Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $returns->firstItem() }}</span>
@@ -156,12 +156,12 @@
                         <table class="w-full text-sm text-left">
                             <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs">
                                 <tr>
-                                    <th class="px-4 py-3">Product</th>
-                                    <th class="px-4 py-3">Category</th>
-                                    <th class="px-4 py-3">SKUs</th>
-                                    <th class="px-4 py-3 text-right">Qty</th>
-                                    <th class="px-4 py-3 text-right">Unit Cost</th>
-                                    <th class="px-4 py-3 text-right">Subtotal</th>
+                                    <th class="px-4 py-3 whitespace-nowrap">Product</th>
+                                    <th class="px-4 py-3 whitespace-nowrap">Category</th>
+                                    <th class="px-4 py-3 whitespace-nowrap">SKUs</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap">Qty</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap">Unit Cost</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody id="view_return_items_body" class="divide-y divide-gray-100 dark:divide-[#1e2536]"></tbody>

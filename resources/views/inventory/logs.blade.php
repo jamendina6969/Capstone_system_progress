@@ -92,7 +92,101 @@
         </div>
     </div>
 
+    <!-- STOCK LOG DETAIL MODAL -->
+    <div id="stockLogModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeStockLogModal()">
+        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl p-6 sm:p-8 text-left" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-gray-200 dark:border-[#1e2536]">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="logModalTitle">Stock Movement Details</h3>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5" id="logModalDate"></p>
+                </div>
+                <button type="button" onclick="closeStockLogModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#161B26]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Product</span>
+                    <span id="logModalProduct" class="font-bold text-gray-900 dark:text-white text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Category</span>
+                    <span id="logModalCategory" class="font-medium text-gray-800 dark:text-slate-200"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Movement Type</span>
+                    <span id="logModalType" class="font-semibold text-blue-600 dark:text-blue-400"></span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 py-2 text-center bg-gray-50 dark:bg-[#161B26] p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Previous</p>
+                        <p id="logModalPrev" class="text-base font-bold text-gray-700 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Change</p>
+                        <p id="logModalChange" class="text-base font-bold text-emerald-600 dark:text-emerald-400"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">New Qty</p>
+                        <p id="logModalNew" class="text-base font-bold text-gray-900 dark:text-white"></p>
+                    </div>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Requested By</span>
+                    <span id="logModalRequester" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Approved By</span>
+                    <span id="logModalApprover" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="py-2">
+                    <span class="text-gray-500 dark:text-slate-400 text-xs block mb-1">Notes / Reason</span>
+                    <p id="logModalNote" class="text-xs bg-gray-50 dark:bg-[#161B26] p-3 rounded-xl border border-gray-100 dark:border-[#1e2536] text-gray-700 dark:text-slate-300 italic"></p>
+                </div>
+            </div>
+            <div class="flex justify-end pt-4 border-t-2 border-gray-200 dark:border-[#1e2536] mt-4">
+                <button type="button" onclick="closeStockLogModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
 @endsection
+
+@push('scripts')
+<script>
+    function openStockLogModal(row) {
+        if (!row) return;
+        document.getElementById('logModalProduct').textContent = row.dataset.product || '—';
+        document.getElementById('logModalCategory').textContent = row.dataset.category || '—';
+        document.getElementById('logModalType').textContent = row.dataset.type || '—';
+        document.getElementById('logModalDate').textContent = row.dataset.date || '';
+        document.getElementById('logModalPrev').textContent = row.dataset.prev || '—';
+        document.getElementById('logModalChange').textContent = (row.dataset.qty > 0 ? '+' : '') + row.dataset.qty;
+        document.getElementById('logModalNew').textContent = row.dataset.new || '—';
+        document.getElementById('logModalRequester').textContent = row.dataset.requester || 'Deleted User';
+        document.getElementById('logModalApprover').textContent = row.dataset.approver || '—';
+        document.getElementById('logModalNote').textContent = row.dataset.note || 'No notes provided.';
+
+        const modal = document.getElementById('stockLogModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeStockLogModal() {
+        const modal = document.getElementById('stockLogModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeStockLogModal();
+    });
+</script>
+@endpush
 
 @push('styles')
 <style>

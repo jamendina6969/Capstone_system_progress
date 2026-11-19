@@ -27,10 +27,10 @@
         </div>
     @endif
 
-    <div class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
 
         <!-- HEADER -->
-        <div class="shrink-0 px-6 py-5 border-b border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">Restock Requests</h1>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">
@@ -44,7 +44,7 @@
         </div>
 
         <!-- FILTERS -->
-        <div class="shrink-0 px-6 py-4 border-b border-gray-100 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/30">
+        <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-gray-100 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/30">
             <form method="GET" action="{{ route('inventory.myRequests') }}" id="filterForm" class="flex flex-col xl:flex-row flex-wrap items-center gap-3">
                 <div class="relative flex-1 min-w-[200px] w-full xl:w-auto">
                     <input type="text" id="searchInput" name="search" value="{{ request('search') }}" placeholder="Search date, requester, product, status..." class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-300 dark:border-[#1e2536] pl-10 pr-4 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-400">
@@ -83,17 +83,17 @@
 
         <!-- Scrollable Table -->
         <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[760px] text-sm text-left relative">
                 <thead id="requestsTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Date</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Requested By</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Product</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Quantity</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Request Status</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Delivery Status</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Reviewed By</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right">Action</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Date</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Requested By</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Quantity</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Request Status</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Delivery Status</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Reviewed By</th>
+                        <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-6 py-4 border-t border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($requests->total() > 0)
                     Showing
@@ -172,6 +172,10 @@
                     <p id="viewNote" class="bg-gray-50 dark:bg-[#161B26] p-3 rounded-xl text-gray-700 dark:text-slate-300 border border-gray-100 dark:border-[#1e2536] italic"></p>
                 </div>
             </div>
+
+            <div class="flex items-center justify-end pt-4 mt-4 border-t border-gray-200 dark:border-[#1e2536]">
+                <button type="button" onclick="closeViewModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
+            </div>
         </div>
     </div>
 
@@ -220,8 +224,8 @@
                     <textarea name="note" rows="3" class="w-full rounded-xl bg-gray-50 dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3.5 py-2.5 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Add any details or reason for request...">{{ old('note') }}</textarea>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="closeRequestModal()" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#161B26] rounded-xl transition-colors cursor-pointer">Cancel</button>
-                    <button type="submit" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer">Submit Request</button>
+                    <button type="button" onclick="closeRequestModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
+                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Submit Request</button>
                 </div>
             </form>
         </div>
@@ -254,8 +258,8 @@
                         <input type="password" name="action_password" required autocomplete="off" placeholder="Enter manager override password" class="w-full rounded-xl bg-gray-50 dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3.5 py-2.5 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                        <button type="button" onclick="closeReceiveModal()" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#161B26] rounded-xl transition-colors cursor-pointer">Cancel</button>
-                        <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer">Confirm Receipt</button>
+                        <button type="button" onclick="closeReceiveModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
+                        <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Confirm Receipt</button>
                     </div>
                 </div>
             </form>

@@ -12,10 +12,10 @@
         </div>
     @endif
 
-    <div class="flex flex-col xl:flex-row gap-8">
+    <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 xl:gap-8">
 
         <!-- ORDER SUMMARY SECTION -->
-        <div class="flex-[2] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 flex flex-col justify-between">
+        <div class="flex-[2] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-6 lg:p-8 flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-100 dark:border-[#1e2536]">
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white">Order Summary</h2>
@@ -26,7 +26,7 @@
 
                 <!-- Items Table -->
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table class="w-full min-w-[320px] text-left text-sm">
                         <thead>
                             <tr class="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase border-b-2 border-gray-100 dark:border-[#1e2536]">
                                 <th class="pb-4">Product</th>
@@ -138,7 +138,7 @@
         </div>
 
         <!-- PAYMENT SECTION -->
-        <div class="flex-1 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8 flex flex-col justify-between h-fit">
+        <div class="flex-1 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-6 lg:p-8 flex flex-col justify-between h-fit">
             <form action="{{ route('checkout.process') }}" method="POST" class="space-y-6">
                 @csrf
                 <div>

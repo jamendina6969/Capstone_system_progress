@@ -24,19 +24,19 @@
     @endphp
 
     <!-- Top Navigation Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+    <div class="flex flex-col items-start justify-between gap-3 mb-5 sm:mb-6">
         <div class="flex items-center gap-6 flex-wrap">
             <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Point of Sale</h1>
 
             <!-- DUAL-MODE TOGGLE (Bigger) -->
             <div class="flex items-center bg-gray-100 dark:bg-[#161B26] p-1.5 rounded-full border-2 border-gray-200 dark:border-[#1e2536]">
-                <button type="button" onclick="setPosMode('retail')" id="btn-mode-retail" class="px-6 py-2 rounded-full text-sm font-bold transition-all bg-white dark:bg-[#10141D] shadow-xs text-emerald-600 dark:text-emerald-400">Retail Sale</button>
-                <button type="button" onclick="setPosMode('project')" id="btn-mode-project" class="px-6 py-2 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">Project / Service</button>
+                <button type="button" onclick="setPosMode('retail')" id="btn-mode-retail" class="px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all bg-white dark:bg-[#10141D] shadow-xs text-emerald-600 dark:text-emerald-400">Retail Sale</button>
+                <button type="button" onclick="setPosMode('project')" id="btn-mode-project" class="px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">Project / Service</button>
             </div>
 
             <div class="flex items-center gap-3">
                 <!-- Counter POS badge pill (Bigger) -->
-                <div class="inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2 rounded-full shadow-xs">
+                <div class="inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Counter POS</span>
                 </div>
@@ -47,7 +47,7 @@
                     $parkedCount = count($parkedOrders);
                 @endphp
                 <button type="button" onclick="openParkedModal()"
-                   class="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-200 dark:border-amber-900/60 px-4 py-2 rounded-full text-sm font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all cursor-pointer shadow-xs">
+                   class="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-200 dark:border-amber-900/60 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all cursor-pointer shadow-xs">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Parked Orders ({{ $parkedCount }})
                 </button>
@@ -55,13 +55,13 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-8">
+    <div class="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6 pb-24 xl:pb-0">
 
         <!-- PRODUCTS SECTION -->
-        <div class="flex-[2] flex flex-col gap-6 h-[calc(100vh-180px)] min-h-[600px]">
+        <div class="flex-[2] flex flex-col gap-4 sm:gap-5 h-auto xl:h-[calc(100vh-180px)] min-h-[500px]">
             
             <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-5 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
-                <form id="filterForm" method="GET" action="{{ route('pos') }}" class="relative w-full md:w-80">
+                <form id="filterForm" method="GET" action="{{ route('pos') }}" class="relative flex-1 min-w-[180px] w-full md:w-auto md:max-w-xs">
                     @if(request('category_id'))
                         <input type="hidden" name="category_id" value="{{ request('category_id') }}">
                     @endif
@@ -119,7 +119,7 @@
             </div>
 
             <div id="productScrollContainer" class="flex-1 overflow-y-auto custom-scrollbar pr-1 relative">
-                <div id="productGridView" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+                <div id="productGridView" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4 pb-4">
                     @include('pos.partials.product-cards', ['items' => $items, 'cart' => $cart, 'viewType' => 'grid', 'hasProjectInCart' => $hasProjectInCart])
                 </div>
                 <div id="productListView" class="hidden flex flex-col gap-2.5 pb-4">
@@ -135,13 +135,13 @@
                 </div>
             </div>
 
-            <div class="shrink-0 pt-3 pb-2 flex items-center justify-center">
+            <div class="shrink-0 pt-2 pb-2 flex items-center justify-center">
                 <div class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-full shadow-xs text-xs font-medium text-gray-500 dark:text-slate-400" id="resultsText"></div>
             </div>
         </div>
 
         <!-- ORDER SUMMARY SIDEBAR -->
-        <div class="flex-1 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-6 flex flex-col justify-between h-fit min-h-[520px]">
+        <div id="orderSummarySection" class="w-full xl:w-[420px] 2xl:w-[460px] shrink-0 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-5 flex flex-col justify-between h-fit min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-4">
             <div>
                 <div class="flex items-center justify-between mb-5 pb-4 border-b-2 border-gray-100 dark:border-[#1e2536]">
                     <h2 class="text-lg font-black text-gray-900 dark:text-white">Order Summary</h2>
@@ -162,36 +162,82 @@
                 </div>
 
                 @if (count($cart) > 0)
-                    <div class="divide-y divide-gray-100 dark:divide-[#1e2536] max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div class="divide-y divide-gray-100 dark:divide-[#1e2536] max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
                         @foreach ($cart as $id => $item)
                             <div class="py-3 flex flex-col gap-2.5 group border-b border-gray-100 dark:border-[#1e2536]">
                                 <div class="flex items-start justify-between gap-3">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between">
-                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">
                                                 {{ $item['product_name'] }}
                                                 @if(($item['type'] ?? 'product') === 'product')
-                                                    <span class="text-[10px] font-normal text-gray-500">(From Store)</span>
+                                                    <span class="text-[10px] font-normal text-gray-500">(Store)</span>
                                                 @endif
                                             </h3>
-                                            <span class="text-sm font-bold text-gray-900 dark:text-slate-100">₱{{ number_format($item['subtotal'], 2) }}</span>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-slate-100 shrink-0">₱{{ number_format($item['subtotal'], 2) }}</span>
                                         </div>
                                         
                                         {{-- CLEAN READ-ONLY LIST FOR PROJECTS --}}
                                         @if(($item['type'] ?? 'product') === 'project')
                                             <div class="flex items-center justify-between mt-1">
-                                                <p class="text-[11px] text-gray-400 dark:text-slate-400">Custom bundle</p>
-                                                <button type="button" onclick="editProject('{{ $id }}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">Edit Details</button>
+                                                <p class="text-[11px] text-gray-400 dark:text-slate-400">Custom Project & Service</p>
+                                                <button type="button" onclick="editProject('{{ $id }}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer">Edit Details</button>
                                             </div>
                                             
-                                            <div class="mt-2 pl-2 border-l-2 border-gray-300 dark:border-gray-600 space-y-1">
+                                            <div class="mt-2 pl-2 border-l-2 border-gray-300 dark:border-[#1e2536] space-y-1">
+                                                <div class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Materials</div>
                                                 @foreach($item['project_breakdown']['materials'] as $mat)
-                                                    <div class="flex justify-between items-center text-[11px] text-gray-500">
-                                                        <span>{{ $mat['qty'] }}x {{ $mat['name'] }}</span>
-                                                        <span class="capitalize font-semibold">({{ $mat['source'] }})</span>
+                                                    <div class="flex justify-between items-center text-[11px] text-gray-600 dark:text-slate-400">
+                                                        <span>{{ $mat['qty'] }}× {{ $mat['name'] }}</span>
+                                                        <span class="capitalize text-[10px] text-gray-400">({{ $mat['source'] }})</span>
                                                     </div>
                                                 @endforeach
                                             </div>
+
+                                            @php
+                                                $pb = $item['project_breakdown'] ?? [];
+                                            @endphp
+                                            @if(($pb['outsource_cost'] ?? 0) > 0 || ($pb['labor_cost'] ?? 0) > 0 || ($pb['installation_cost'] ?? 0) > 0 || ($pb['additional_cost'] ?? 0) > 0 || ($pb['freight'] ?? 0) > 0 || ($pb['markup_amount'] ?? 0) > 0)
+                                                <div class="mt-2 pl-2 border-l-2 border-emerald-300 dark:border-emerald-800/60 space-y-1 bg-emerald-50/50 dark:bg-emerald-950/20 p-2 rounded-xl text-[11px]">
+                                                    <div class="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">Costs & Fees</div>
+                                                    @if(($pb['outsource_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Outsource Materials</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['outsource_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($pb['labor_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Labor Cost</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['labor_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($pb['installation_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Installation Cost</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['installation_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($pb['additional_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Additional Costs</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['additional_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($pb['freight'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Shipping / Freight</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['freight'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($pb['markup_amount'] ?? 0) > 0)
+                                                        <div class="flex justify-between items-center text-gray-600 dark:text-slate-300">
+                                                            <span>Markup ({{ $pb['markup_type'] === 'percentage' ? $pb['markup_value'].'%' : 'Fixed' }})</span>
+                                                            <span class="font-semibold">₱{{ number_format($pb['markup_amount'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         @else
                                             <p class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5">Qty: {{ $item['quantity'] }} × ₱{{ number_format($item['selling_price'], 2) }}</p>
                                             
@@ -206,27 +252,27 @@
                                     </div>
                                     <form action="{{ route('pos.remove', $id) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1 cursor-pointer" title="Remove item">
+                                        <button type="submit" class="text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1 cursor-pointer shrink-0" title="Remove item">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </form>
                                 </div>
 
                                 @if(($item['type'] ?? 'product') !== 'project')
-                                    <!-- Per-Item Discount Form -->
-                                    <form action="{{ route('pos.item-discount', $id) }}" method="POST" class="flex flex-wrap items-center gap-1.5 pt-1 text-[11px] bg-gray-50 dark:bg-[#161B26] p-2 rounded-xl border border-gray-200 dark:border-[#1e2536]">
+                                    <!-- Per-Item Discount Form (Clean 12-col grid that fits horizontally) -->
+                                    <form action="{{ route('pos.item-discount', $id) }}" method="POST" class="grid grid-cols-12 gap-1.5 items-center pt-1 text-[11px] bg-gray-50 dark:bg-[#161B26] p-2 rounded-xl border border-gray-200 dark:border-[#1e2536]">
                                         @csrf
-                                        <select name="item_discount_type" class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-1.5 py-0.5 text-gray-600 dark:text-slate-300 text-[10px] cursor-pointer">
+                                        <select name="item_discount_type" class="col-span-4 bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-1 py-1 text-gray-600 dark:text-slate-300 text-[10px] cursor-pointer">
                                             <option value="none" {{ ($item['item_discount_type'] ?? '') == 'none' ? 'selected' : '' }}>No Disc</option>
                                             <option value="amount" {{ ($item['item_discount_type'] ?? '') == 'amount' ? 'selected' : '' }}>Disc (₱)</option>
                                             <option value="percentage" {{ ($item['item_discount_type'] ?? '') == 'percentage' ? 'selected' : '' }}>Disc (%)</option>
                                         </select>
-                                        <select name="item_discount_scope" class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-1.5 py-0.5 text-gray-600 dark:text-slate-300 text-[10px] cursor-pointer">
+                                        <select name="item_discount_scope" class="col-span-4 bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-1 py-1 text-gray-600 dark:text-slate-300 text-[10px] cursor-pointer">
                                             <option value="whole" {{ ($item['item_discount_scope'] ?? 'whole') == 'whole' ? 'selected' : '' }}>Whole Row</option>
                                             <option value="per_item" {{ ($item['item_discount_scope'] ?? '') == 'per_item' ? 'selected' : '' }}>Per Piece</option>
                                         </select>
-                                        <input type="number" step="0.01" min="0" name="item_discount_value" value="{{ $item['item_discount_value'] ?? '' }}" placeholder="Value" class="w-16 bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-2 py-0.5 text-gray-900 dark:text-slate-100 text-[10px] focus:outline-none">
-                                        <button type="submit" class="bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-semibold px-3 py-1 rounded-full transition-all text-[10px] ml-auto cursor-pointer shadow-xs">Set</button>
+                                        <input type="number" step="0.01" min="0" name="item_discount_value" value="{{ $item['item_discount_value'] ?? '' }}" placeholder="0.00" class="col-span-2 bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-md px-1.5 py-1 text-gray-900 dark:text-slate-100 text-[10px] focus:outline-none text-right">
+                                        <button type="submit" class="col-span-2 bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-semibold py-1 rounded-md transition-all text-[10px] text-center cursor-pointer shadow-xs">Set</button>
                                     </form>
                                 @endif
                             </div>
@@ -265,11 +311,14 @@
                     </div>
                     
                     <!-- Discounts -->
-                    <div class="flex justify-between items-center text-gray-600 dark:text-slate-400 relative">
-                        <button type="button" onclick="openDiscountModal()" class="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-sm flex items-center gap-1 cursor-pointer z-10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                            Discounts ({{ isset($cartDiscount) && $cartDiscount['type'] !== 'none' ? ucfirst(str_replace('_', ' ', $cartDiscount['type'])) : 'Configure' }})
-                        </button>
+                    <div class="flex justify-between items-center text-gray-600 dark:text-slate-400 py-0.5">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-medium text-gray-600 dark:text-slate-400">Discount</span>
+                            <button type="button" onclick="openDiscountModal()" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shadow-2xs">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                {{ isset($cartDiscount) && $cartDiscount['type'] !== 'none' ? ucfirst(str_replace('_', ' ', $cartDiscount['type'])) : 'Configure' }}
+                            </button>
+                        </div>
                         <span class="text-rose-600 dark:text-rose-400 font-bold">-₱{{ number_format($totalAllDiscounts, 2) }}</span>
                     </div>
 
@@ -413,7 +462,7 @@
             
             <div class="flex items-center justify-between mb-6 border-b-2 border-gray-200 dark:border-[#1e2536] pb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="projectModalTitle">Create Custom Project / Service</h3>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="projectModalTitle">Create Custom Project & Service</h3>
                     <p class="text-xs text-gray-500 mt-1">Combine materials, labor, and fees into a single billable item.</p>
                 </div>
                 <button type="button" onclick="toggleProjectModal(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold">&times;</button>
@@ -464,21 +513,25 @@
                 {{-- Fees & Markup --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-200 dark:border-[#1e2536] pt-4">
                     <div class="space-y-2.5">
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300">Labor Cost</label>
-                            <input type="number" name="labor_cost" id="labor_cost" step="0.01" placeholder="0.00" value="0.00" class="w-32 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
+                        <div class="flex justify-between items-center gap-2">
+                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">Outsource Materials</label>
+                            <input type="number" name="outsource_cost" id="outsource_cost" step="0.01" placeholder="0.00" value="0.00" class="w-28 sm:w-32 shrink-0 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300">Installation Cost</label>
-                            <input type="number" name="installation_cost" id="installation_cost" step="0.01" placeholder="0.00" value="0.00" class="w-32 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
+                        <div class="flex justify-between items-center gap-2">
+                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">Labor Cost</label>
+                            <input type="number" name="labor_cost" id="labor_cost" step="0.01" placeholder="0.00" value="0.00" class="w-28 sm:w-32 shrink-0 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300">Additional Costs</label>
-                            <input type="number" name="additional_cost" id="additional_cost" step="0.01" placeholder="0.00" value="0.00" class="w-32 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
+                        <div class="flex justify-between items-center gap-2">
+                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">Installation Cost</label>
+                            <input type="number" name="installation_cost" id="installation_cost" step="0.01" placeholder="0.00" value="0.00" class="w-28 sm:w-32 shrink-0 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300">Shipping / Freight</label>
-                            <input type="number" name="project_freight" id="project_freight" step="0.01" placeholder="0.00" value="0.00" class="w-32 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
+                        <div class="flex justify-between items-center gap-2">
+                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">Additional Costs</label>
+                            <input type="number" name="additional_cost" id="additional_cost" step="0.01" placeholder="0.00" value="0.00" class="w-28 sm:w-32 shrink-0 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
+                        </div>
+                        <div class="flex justify-between items-center gap-2">
+                            <label class="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">Shipping / Freight</label>
+                            <input type="number" name="project_freight" id="project_freight" step="0.01" placeholder="0.00" value="0.00" class="w-28 sm:w-32 shrink-0 rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#161B26] text-right px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400" oninput="calculateProjectTotal()">
                         </div>
                     </div>
 
@@ -588,7 +641,72 @@
                                         @endif
                                     </h4>
                                     @if(($item['type'] ?? 'product') === 'project')
-                                        <p class="text-xs text-gray-400 mt-1">Custom bundle</p>
+                                        @php
+                                            $ppb = $item['project_breakdown'] ?? [];
+                                            if (is_string($ppb)) {
+                                                $ppb = json_decode($ppb, true) ?? [];
+                                            }
+                                            $materialsList = $ppb['materials'] ?? [];
+                                            if (is_string($materialsList)) {
+                                                $materialsList = json_decode($materialsList, true) ?? [];
+                                            }
+                                        @endphp
+                                        <div class="mt-1">
+                                            <p class="text-xs font-semibold text-blue-600 dark:text-blue-400">Custom Project & Service</p>
+                                            @if(!empty($materialsList))
+                                                <div class="mt-2 pl-2.5 border-l-2 border-gray-300 dark:border-[#1e2536] space-y-1">
+                                                    <div class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Materials Included:</div>
+                                                    @foreach($materialsList as $mat)
+                                                        <div class="flex items-center justify-between text-xs text-gray-700 dark:text-slate-300 gap-3">
+                                                            <span>• {{ $mat['qty'] ?? 1 }}× {{ $mat['name'] ?? 'Item' }}</span>
+                                                            <span class="text-[10px] text-gray-400 dark:text-slate-500 capitalize">({{ $mat['source'] ?? 'store' }})</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            @if(($ppb['outsource_cost'] ?? 0) > 0 || ($ppb['labor_cost'] ?? 0) > 0 || ($ppb['installation_cost'] ?? 0) > 0 || ($ppb['additional_cost'] ?? 0) > 0 || ($ppb['freight'] ?? 0) > 0 || ($ppb['markup_amount'] ?? 0) > 0)
+                                                <div class="mt-2 pl-2.5 border-l-2 border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-2 rounded-xl text-xs space-y-1">
+                                                    <div class="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">Fees & Cost Breakdown:</div>
+                                                    @if(($ppb['outsource_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Outsource Materials</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['outsource_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($ppb['labor_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Labor Cost</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['labor_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($ppb['installation_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Installation Cost</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['installation_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($ppb['additional_cost'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Additional Cost</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['additional_cost'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($ppb['freight'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Shipping / Freight</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['freight'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(($ppb['markup_amount'] ?? 0) > 0)
+                                                        <div class="flex justify-between text-gray-600 dark:text-slate-300 text-[11px]">
+                                                            <span>Markup</span>
+                                                            <span class="font-semibold">₱{{ number_format($ppb['markup_amount'], 2) }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                     @else
                                         <p class="text-xs text-gray-400 mt-1">Qty: {{ $item['quantity'] }} × ₱{{ number_format((float) $item['selling_price'], 2) }}</p>
                                     @endif
@@ -622,15 +740,9 @@
                         <div class="flex justify-between text-lg font-bold"><span class="text-gray-900 dark:text-white">Total</span><span class="text-emerald-600">₱{{ number_format($parkedGrandTotal, 2) }}</span></div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row justify-between gap-3 mt-6">
+                    <div class="flex items-center justify-end gap-3 mt-6">
                         <button type="button" onclick="backToParkedSummary()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all cursor-pointer">Back to Summary</button>
-                        <div class="flex gap-2">
-                            <form action="{{ route('pos.parked.add', $index) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-blue-600/80 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all cursor-pointer">Add</button>
-                            </form>
-                            <button type="button" onclick="openRestoreConfirmModal({{ $index }})" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all cursor-pointer">Restore</button>
-                        </div>
+                        <button type="button" onclick="openRestoreConfirmModal({{ $index }})" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all cursor-pointer">Restore</button>
                     </div>
                 </div>
             @endforeach
@@ -693,28 +805,38 @@
     </div>
 
     <!-- DISCOUNT MODAL -->
-    <div id="discountModal" class="fixed inset-0 z-[70] hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-lg p-6 max-h-[90vh] overflow-y-auto custom-scrollbar" onclick="event.stopPropagation()">
+    <div id="discountModal" class="fixed inset-0 z-[70] hidden overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeDiscountModal()">
+        <div class="relative w-full max-w-lg bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto custom-scrollbar" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between mb-6 border-b-2 border-gray-200 dark:border-[#1e2536] pb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Configure Discount</h3>
-                <button type="button" onclick="closeDiscountModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold">&times;</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/50">
+                        <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Configure Discount</h3>
+                        <p class="text-xs text-gray-500 dark:text-slate-400">Apply cart-level discount or promotion</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeDiscountModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#1e2536] transition-colors cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <form method="POST" action="{{ route('pos.discount') }}" class="space-y-4">
                 @csrf
                 <input type="hidden" name="discount_type" id="selectedDiscountType" value="{{ $cartDiscount['type'] ?? 'none' }}">
                 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                    <button type="button" onclick="selectDiscountCard('none')" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'none' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">No Discount</button>
-                    <button type="button" onclick="selectDiscountCard('senior')" id="card-senior" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'senior' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">Senior</button>
-                    <button type="button" onclick="selectDiscountCard('pwd')" id="card-pwd" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'pwd' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">PWD</button>
-                    <button type="button" onclick="selectDiscountCard('employee')" id="card-employee" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'employee' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">Employee</button>
-                    <button type="button" onclick="selectDiscountCard('voucher')" id="card-voucher" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'voucher' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">Voucher</button>
-                    <button type="button" onclick="selectDiscountCard('percentage')" id="card-percentage" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'percentage' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">Custom %</button>
-                    <button type="button" onclick="selectDiscountCard('amount')" id="card-amount" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'amount' ? 'border-emerald-500 text-emerald-600' : 'border-gray-200 text-gray-600' }} rounded-xl p-3 text-center transition-all">Custom ₱</button>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                    <button type="button" onclick="selectDiscountCard('none')" id="card-none" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'none' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">No Discount</button>
+                    <button type="button" onclick="selectDiscountCard('senior')" id="card-senior" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'senior' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">Senior</button>
+                    <button type="button" onclick="selectDiscountCard('pwd')" id="card-pwd" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'pwd' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">PWD</button>
+                    <button type="button" onclick="selectDiscountCard('employee')" id="card-employee" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'employee' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">Employee</button>
+                    <button type="button" onclick="selectDiscountCard('voucher')" id="card-voucher" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'voucher' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">Voucher</button>
+                    <button type="button" onclick="selectDiscountCard('percentage')" id="card-percentage" class="discount-card border-2 {{ ($cartDiscount['type'] ?? 'none') == 'percentage' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">Custom %</button>
+                    <button type="button" onclick="selectDiscountCard('amount')" id="card-amount" class="discount-card border-2 col-span-2 sm:col-span-2 {{ ($cartDiscount['type'] ?? 'none') == 'amount' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40' : 'border-gray-200 dark:border-[#1e2536] text-gray-600 dark:text-slate-400' }} rounded-xl p-2.5 text-center text-xs font-semibold transition-all cursor-pointer">Custom ₱</button>
                 </div>
 
-                <div id="dynamicInputContainer" class="{{ ($cartDiscount['type'] ?? 'none') == 'none' ? 'hidden' : '' }} space-y-4 bg-gray-50 dark:bg-[#161B26] p-4 rounded-xl border border-gray-200 dark:border-[#1e2536]">
+                <div id="dynamicInputContainer" class="{{ ($cartDiscount['type'] ?? 'none') == 'none' ? 'hidden' : '' }} space-y-4 bg-gray-50 dark:bg-[#161B26] p-5 rounded-2xl border-2 border-gray-200 dark:border-[#1e2536]">
                     
                     <div id="fields-senior-pwd" class="discount-field-group hidden space-y-3">
                         <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-xl border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
@@ -722,17 +844,17 @@
                             Standard 20% discount will be automatically applied.
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Customer Name</label>
-                            <input type="text" name="customer_name" value="{{ $cartDiscount['customer_name'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Customer Name</label>
+                            <input type="text" name="customer_name" value="{{ $cartDiscount['customer_name'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ID Number</label>
-                                <input type="text" name="id_number" value="{{ $cartDiscount['id_number'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                                <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">ID Number</label>
+                                <input type="text" name="id_number" value="{{ $cartDiscount['id_number'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">TIN</label>
-                                <input type="text" name="tin_number" value="{{ $cartDiscount['tin_number'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                                <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">TIN</label>
+                                <input type="text" name="tin_number" value="{{ $cartDiscount['tin_number'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                             </div>
                         </div>
                     </div>
@@ -740,65 +862,91 @@
                     <div id="fields-employee" class="discount-field-group hidden space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Employee Name</label>
-                                <input type="text" name="employee_name" value="{{ $cartDiscount['employee_name'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                                <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Employee Name</label>
+                                <input type="text" name="employee_name" value="{{ $cartDiscount['employee_name'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Employee ID</label>
-                                <input type="text" name="employee_id" value="{{ $cartDiscount['employee_id'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                                <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Employee ID</label>
+                                <input type="text" name="employee_id" value="{{ $cartDiscount['employee_id'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mode</label>
-                            <select name="employee_mode" id="employeeModeSelect" onchange="toggleEmployeeMode()" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Mode</label>
+                            <select name="employee_mode" id="employeeModeSelect" onchange="toggleEmployeeMode()" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                                 <option value="percentage" {{ ($cartDiscount['mode'] ?? '') == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
                                 <option value="amount" {{ ($cartDiscount['mode'] ?? '') == 'amount' ? 'selected' : '' }}>Amount (₱)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1" id="employeeValueLabel">Value</label>
-                            <input type="number" step="0.01" min="0" name="employee_percentage" id="employeeValueInput" value="{{ $cartDiscount['value'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5" id="employeeValueLabel">Value</label>
+                            <input type="number" step="0.01" min="0" name="employee_percentage" id="employeeValueInput" value="{{ $cartDiscount['value'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                     </div>
 
                     <div id="fields-voucher" class="discount-field-group hidden space-y-3">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Voucher Code</label>
-                            <input type="text" name="voucher_code" value="{{ $cartDiscount['voucher_code'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Voucher Code</label>
+                            <input type="text" name="voucher_code" value="{{ $cartDiscount['voucher_code'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mode</label>
-                            <select name="voucher_mode" id="voucherModeSelect" onchange="toggleVoucherMode()" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Mode</label>
+                            <select name="voucher_mode" id="voucherModeSelect" onchange="toggleVoucherMode()" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                                 <option value="percentage" {{ ($cartDiscount['mode'] ?? '') == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
                                 <option value="amount" {{ ($cartDiscount['mode'] ?? '') == 'amount' ? 'selected' : '' }}>Amount (₱)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1" id="voucherValueLabel">Value</label>
-                            <input type="number" step="0.01" min="0" name="voucher_percentage" id="voucherValueInput" value="{{ $cartDiscount['value'] ?? '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5" id="voucherValueLabel">Value</label>
+                            <input type="number" step="0.01" min="0" name="voucher_percentage" id="voucherValueInput" value="{{ $cartDiscount['value'] ?? '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                     </div>
 
                     <div id="fields-percentage" class="discount-field-group hidden space-y-3">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Percentage (%)</label>
-                            <input type="number" step="0.01" min="0" max="100" name="percentage_value" value="{{ ($cartDiscount['type'] ?? '') == 'percentage' ? ($cartDiscount['value'] ?? '') : '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Percentage (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" name="percentage_value" value="{{ ($cartDiscount['type'] ?? '') == 'percentage' ? ($cartDiscount['value'] ?? '') : '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                     </div>
 
                     <div id="fields-amount" class="discount-field-group hidden space-y-3">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount (₱)</label>
-                            <input type="number" step="0.01" min="0" name="amount_value" value="{{ ($cartDiscount['type'] ?? '') == 'amount' ? ($cartDiscount['value'] ?? '') : '' }}" class="w-full rounded-xl border-gray-200 dark:border-[#1e2536] dark:bg-[#10141D] dark:text-white text-sm py-2 px-3 focus:outline-none focus:border-slate-400">
+                            <label class="block text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Amount (₱)</label>
+                            <input type="number" step="0.01" min="0" name="amount_value" value="{{ ($cartDiscount['type'] ?? '') == 'amount' ? ($cartDiscount['value'] ?? '') : '' }}" class="w-full rounded-xl border-2 border-gray-200 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-gray-900 dark:text-white text-sm py-2 px-3.5 focus:outline-none focus:border-slate-400">
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t-2 border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="closeDiscountModal()" class="border-2 border-slate-300 text-slate-700 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] text-xs font-semibold px-5 py-2.5 rounded-full hover:bg-slate-700 hover:text-white transition-colors">Cancel</button>
-                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-6 py-2.5 rounded-full transition-all shadow-xs">Apply Discount</button>
+                    <button type="button" onclick="closeDiscountModal()" class="border-2 border-slate-300 text-slate-700 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] text-xs font-semibold px-5 py-2.5 rounded-full hover:bg-slate-700 hover:text-white transition-colors cursor-pointer">Cancel</button>
+                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-6 py-2.5 rounded-full transition-all shadow-xs cursor-pointer">Apply Discount</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+
+    {{-- Mobile & Tablet Portrait Sticky Bottom Quick-Order Bar --}}
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#10141D]/95 backdrop-blur-md border-t-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 shadow-lg flex items-center justify-between gap-3 safe-area-bottom">
+        <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                {{ array_sum(array_column($cart, 'quantity')) }}
+            </span>
+            <div>
+                <div class="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-500">Cart Total</div>
+                <div class="text-base font-black text-gray-900 dark:text-white leading-tight">
+                    â‚±{{ number_format(array_sum(array_column($cart, 'subtotal')), 2) }}
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="document.getElementById('orderSummarySection')?.scrollIntoView({behavior: 'smooth'})" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 dark:bg-[#161B26] text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-[#1e2536] hover:bg-gray-200 transition-colors cursor-pointer">
+                View Cart
+            </button>
+            @if(count($cart) > 0)
+                <a href="{{ route('checkout') }}" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+                    Checkout &rarr;
+                </a>
+            @endif
         </div>
     </div>
 
@@ -1198,17 +1346,18 @@
     function selectDiscountCard(type) {
         document.getElementById('selectedDiscountType').value = type;
 
+        const activeClasses = ['border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400', 'bg-emerald-50/70', 'dark:bg-emerald-950/40'];
+        const idleClasses = ['border-gray-200', 'dark:border-[#1e2536]', 'text-gray-600', 'dark:text-slate-400'];
+
         document.querySelectorAll('.discount-card').forEach(card => {
-            card.classList.remove('border-emerald-500', 'text-emerald-600', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
-            card.classList.add('border-gray-200', 'text-gray-600');
+            card.classList.remove(...activeClasses);
+            card.classList.add(...idleClasses);
         });
 
-        if (type !== 'none') {
-            const activeCard = document.getElementById('card-' + type);
-            if (activeCard) {
-                activeCard.classList.remove('border-gray-200', 'text-gray-600');
-                activeCard.classList.add('border-emerald-500', 'text-emerald-600', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
-            }
+        const activeCard = document.getElementById('card-' + type);
+        if (activeCard) {
+            activeCard.classList.remove(...idleClasses);
+            activeCard.classList.add(...activeClasses);
         }
 
         const dynamicContainer = document.getElementById('dynamicInputContainer');
@@ -1329,7 +1478,7 @@
             document.getElementById('projectForm').action = "{{ route('pos.addProject') }}";
             document.getElementById('projectSubmitBtn').textContent = 'Add Project to Cart';
             document.getElementById('fileNameDisplay').textContent = 'Click to upload';
-            document.getElementById('projectModalTitle').textContent = 'Create Custom Project / Service';
+            document.getElementById('projectModalTitle').textContent = 'Create Custom Project & Service';
             materialRowCounter = 0;
             cartReserved = {}; // Clear reserved on close
         } else if (!isEdit && document.getElementById('projectMaterialsContainer').children.length === 0) {
@@ -1351,11 +1500,13 @@
             document.getElementById('projectForm').action = `/pos/update-project/${projectId}`;
             document.getElementById('edit_project_id').value = projectId;
             document.getElementById('projectSubmitBtn').textContent = 'Update Project';
-            document.getElementById('projectModalTitle').textContent = 'Edit Custom Project / Service';
+            document.getElementById('projectModalTitle').textContent = 'Edit Custom Project & Service';
             
             document.getElementById('project_name').value = data.name;
             document.getElementById('project_description').value = data.description || '';
             
+            const outsourceEl = document.getElementById('outsource_cost');
+            if (outsourceEl) outsourceEl.value = data.breakdown.outsource_cost ?? '0.00';
             document.getElementById('labor_cost').value = data.breakdown.labor_cost;
             document.getElementById('installation_cost').value = data.breakdown.installation_cost;
             document.getElementById('additional_cost').value = data.breakdown.additional_cost;
@@ -1625,12 +1776,13 @@
             materialsSubtotal += parseFloat(el.textContent.replace(/,/g, '')) || 0;
         });
 
+        const outsource = parseFloat(document.querySelector('input[name="outsource_cost"]')?.value) || 0;
         const labor = parseFloat(document.querySelector('input[name="labor_cost"]').value) || 0;
         const install = parseFloat(document.querySelector('input[name="installation_cost"]').value) || 0;
         const additional = parseFloat(document.querySelector('input[name="additional_cost"]').value) || 0;
         const freight = parseFloat(document.querySelector('input[name="project_freight"]').value) || 0;
         
-        const projectSubtotal = materialsSubtotal + labor + install + additional + freight;
+        const projectSubtotal = materialsSubtotal + outsource + labor + install + additional + freight;
         document.getElementById('projectSubtotalDisplay').textContent = '₱' + projectSubtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         const markupType = document.getElementById('markupType').value;

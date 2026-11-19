@@ -35,11 +35,11 @@
     @endphp
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-5 sm:mb-6 lg:mb-8">
 
         <!-- Today -->
         <a href="{{ route('sales.records', ['date_from' => now()->toDateString(), 'date_to' => now()->toDateString(), 'source' => $summarySource]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Today's Sales</span>
                 <div class="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
@@ -47,7 +47,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($summary['today'], 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($summary['today'], 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold {{ $summary['today_change'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                     <svg class="w-4 h-4 {{ $summary['today_change'] < 0 ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     <span>{{ $summary['today_change'] >= 0 ? '+' : '' }}{{ $summary['today_change'] }}% <span class="text-gray-400 dark:text-slate-500 font-normal">vs yesterday</span></span>
@@ -57,7 +57,7 @@
 
         <!-- This Week -->
         <a href="{{ route('sales.records', ['date_from' => now()->startOfWeek()->toDateString(), 'date_to' => now()->endOfWeek()->toDateString(), 'source' => $summarySource]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">This Week's Sales</span>
                 <div class="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($summary['week'], 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($summary['week'], 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold {{ $summary['week_change'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                     <svg class="w-4 h-4 {{ $summary['week_change'] < 0 ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     <span>{{ $summary['week_change'] >= 0 ? '+' : '' }}{{ $summary['week_change'] }}% <span class="text-gray-400 dark:text-slate-500 font-normal">vs last week</span></span>
@@ -75,7 +75,7 @@
 
         <!-- This Month -->
         <a href="{{ route('sales.records', ['date_from' => now()->startOfMonth()->toDateString(), 'date_to' => now()->endOfMonth()->toDateString(), 'source' => $summarySource]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">This Month's Sales</span>
                 <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -83,7 +83,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($summary['month'], 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($summary['month'], 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold {{ $summary['month_change'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                     <svg class="w-4 h-4 {{ $summary['month_change'] < 0 ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     <span>{{ $summary['month_change'] >= 0 ? '+' : '' }}{{ $summary['month_change'] }}% <span class="text-gray-400 dark:text-slate-500 font-normal">vs last month</span></span>
@@ -93,7 +93,7 @@
 
         <!-- This Year -->
         <a href="{{ route('sales.records', ['date_from' => now()->startOfYear()->toDateString(), 'date_to' => now()->endOfYear()->toDateString(), 'source' => $summarySource]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">This Year's Sales</span>
                 <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
@@ -101,7 +101,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($summary['year'], 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($summary['year'], 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold {{ $summary['year_change'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                     <svg class="w-4 h-4 {{ $summary['year_change'] < 0 ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     <span>{{ $summary['year_change'] >= 0 ? '+' : '' }}{{ $summary['year_change'] }}% <span class="text-gray-400 dark:text-slate-500 font-normal">vs last year</span></span>
@@ -111,7 +111,7 @@
 
         <!-- Overall -->
         <a href="{{ route('sales.records', ['source' => $summarySource]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Overall Sales</span>
                 <div class="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
@@ -119,17 +119,17 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2" style="font-size: 2rem;">₱{{ number_format($summary['overall'], 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($summary['overall'], 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400"><span>All-time accumulated revenue</span></div>
             </div>
         </a>
     </div>
 
     <!-- Main Container -->
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[600px]">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px]">
 
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] gap-4 shrink-0">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] gap-4 shrink-0">
             <div>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">Sales Records</h1>
                 <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">All recorded sales — from POS and imported data</p>
@@ -138,12 +138,12 @@
             <div class="flex gap-3 items-center">
                 @if(in_array(auth()->user()->role, ['admin', 'manager']))
                     @if(\App\Models\TransactionItem::whereNull('main_category_name')->orWhereNull('product_sku')->orWhereNull('item_sku')->exists())
-                        <button type="button" onclick="toggleSyncModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer">
+                        <button type="button" onclick="toggleSyncModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
                             Sync Old Records
                         </button>
                     @endif
 
-                    <button type="button" onclick="toggleImportSalesModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer self-start sm:self-auto">
+                    <button type="button" onclick="toggleImportSalesModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer self-start sm:self-auto">
                         Import Sales
                     </button>
                 @endif
@@ -151,7 +151,7 @@
         </div>
 
         <!-- Filters -->
-        <div class="px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50 shrink-0">
+        <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50 shrink-0">
             <form id="filterForm" method="GET" class="flex flex-col xl:flex-row xl:items-center gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
                     
@@ -223,17 +223,17 @@
 
         <!-- Scrollable Table -->
         <div id="tableScrollContainer" class="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+            <table class="w-full min-w-[850px] text-sm text-left relative">
                 <thead id="salesTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Date</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Transaction ID</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Main Category</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Sub-Category / Brand</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Source</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Total</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Recorded By</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Date</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Transaction ID</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Main Category</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Sub-Category / Brand</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Source</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Total</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Recorded By</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -252,7 +252,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($records->total() > 0)
                     Showing
@@ -333,8 +333,8 @@
                     </div>
                 </div>
                 <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="toggleImportSalesModal(false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Cancel</button>
-                    <button type="submit" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Upload & Import</button>
+                    <button type="button" onclick="toggleImportSalesModal(false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
+                    <button type="submit" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Upload & Import</button>
                 </div>
             </form>
         </div>
@@ -349,10 +349,10 @@
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Sync Old Records</h3>
             <p class="text-sm text-gray-500 dark:text-slate-400 mb-8">This will scan old transactions and fill in missing categories and SKUs based on current product data. Are you sure you want to proceed?</p>
             <div class="flex items-center justify-center gap-3 w-full pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                <button type="button" onclick="toggleSyncModal(false)" class="w-full inline-flex justify-center bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Cancel</button>
+                <button type="button" onclick="toggleSyncModal(false)" class="w-full inline-flex justify-center bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
                 <form action="{{ route('sales.syncRecords') }}" method="POST" class="w-full m-0">
                     @csrf
-                    <button type="submit" class="w-full inline-flex justify-center bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Yes, Sync Now</button>
+                    <button type="submit" class="w-full inline-flex justify-center bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Yes, Sync Now</button>
                 </form>
             </div>
         </div>

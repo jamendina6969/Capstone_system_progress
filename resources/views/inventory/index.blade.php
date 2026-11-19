@@ -44,10 +44,10 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Inventory Management</h1>
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px] mb-4">
 
         <!-- Filters & Header (shrink-0) -->
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Product Inventory</h2>
@@ -57,19 +57,19 @@
                     {{-- Export & Print Report Buttons --}}
                     <div class="flex items-center gap-2">
                         <a href="{{ route('inventory.export', request()->query()) }}" target="_blank"
-                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
+                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             Export CSV
                         </a>
                         <button type="button" onclick="openPrintModal()"
-                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
+                           class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             Print Report
                         </button>
                     </div>
 
                     @include('partials.viewToggle')
-                    <a href="{{ route('inventory.restockBatch') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center whitespace-nowrap">+ Restock Mode</a>
+                    <a href="{{ route('inventory.restockBatch') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center whitespace-nowrap">+ Restock Mode</a>
                 </div>
             </div>
 
@@ -150,20 +150,20 @@
         <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
             <div id="productResultsContainer" data-view="grid">
                 <div class="view-list">
-                    <table class="w-full text-sm text-left relative">
+                    <table class="w-full min-w-[1100px] text-sm text-left relative">
                         <thead id="productTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                             <tr>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Product</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Product SKU</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Category</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Cost</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Price</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Store Qty</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Warehouse Qty</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Store Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Warehouse Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Total Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product SKU</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Category</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Cost</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Price</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Store Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Warehouse Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Store Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Warehouse Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Total Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536] align-top">
@@ -172,7 +172,7 @@
                     </table>
                 </div>
 
-                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-6">
+                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-5">
                     @include('inventory.partials.cards', ['products' => $products])
                 </div>
             </div>
@@ -193,7 +193,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($products->total() > 0)
                     Showing
@@ -240,7 +240,7 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536] mt-4">
-                <button type="button" onclick="closePrintModal()" class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#161B26] rounded-xl transition-colors cursor-pointer">Close</button>
+                <button type="button" onclick="closePrintModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
             </div>
         </div>
     </div>

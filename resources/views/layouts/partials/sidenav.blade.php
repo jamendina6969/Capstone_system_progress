@@ -286,8 +286,8 @@
 
         {{-- Inventory View (warehouse_staff) --}}
         @if (auth()->user()->role === 'warehouse_staff')
-            <a href="{{ route('inventory.view') }}" title="Inventory Management"
-               class="{{ $linkBase }} {{ request()->routeIs('inventory.view') ? $linkActive : $linkIdle }}">
+            <a href="{{ route('inventory.index') }}" title="Inventory Management"
+               class="{{ $linkBase }} {{ request()->routeIs('inventory.view', 'inventory.index') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2h0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <span class="sidebar-text">Inventory Management</span>
             </a>

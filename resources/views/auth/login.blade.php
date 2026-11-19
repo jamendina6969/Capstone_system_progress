@@ -36,7 +36,7 @@
             </div>
 
             <!-- Bottom Features Grid (All 4 Features) -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-800/80 relative z-10">
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 pt-6 border-t border-slate-800/80 relative z-10">
                 <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-xs space-y-1">
                     <div class="text-sky-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
@@ -69,7 +69,7 @@
         </div>
 
         <!-- RIGHT SIDE: Clean Login Form (full screen on mobile) -->
-        <div class="w-full lg:w-1/2 min-h-screen flex flex-col justify-center items-center p-6 sm:p-8 lg:p-16 bg-white dark:bg-[#10141D]">
+        <div class="w-full lg:w-1/2 min-h-screen flex flex-col justify-center items-center p-4 sm:p-8 lg:p-16 overflow-y-auto py-8 bg-white dark:bg-[#10141D]">
             <div class="w-full max-w-md space-y-6">
 
                 {{-- Mobile-only brand header --}}
@@ -91,6 +91,18 @@
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Welcome!</h1>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Sign in to your account to continue</p>
                 </div>
+
+                @if (session('info'))
+                    <div class="rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 px-4 py-3 text-sm">
+                        {{ session('info') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="rounded-xl bg-red-50 dark:bg-rose-950/60 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-900 px-4 py-3 text-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
                 @if ($errors->any())
                     <div class="rounded-lg bg-red-100 dark:bg-rose-950/85 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-900 px-4 py-3 text-sm">

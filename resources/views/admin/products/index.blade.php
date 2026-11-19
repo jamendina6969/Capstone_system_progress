@@ -58,10 +58,10 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Product Management</h1>
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px] mb-4">
 
         <!-- Filters & Header (shrink-0) -->
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Product Inventory Catalog</h2>
@@ -192,20 +192,20 @@
                 
                 <!-- LIST VIEW -->
                 <div class="view-list">
-                    <table class="w-full text-sm text-left relative">
+                    <table class="w-full min-w-[960px] text-sm text-left relative">
                         <thead id="productTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                             <tr>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Product</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Product SKU</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Category</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Cost</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Price</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Store Qty</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Warehouse Qty</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Store Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Warehouse Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26]">Total Status</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product SKU</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Category</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Cost</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Price</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Store Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Warehouse Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Store Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Warehouse Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Total Status</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
 
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- GRID VIEW -->
-                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-6">
+                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-5">
                     @include('admin.products.partials.items', [
                         'products' => $products,
                         'categories' => $categories,
@@ -258,7 +258,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($products->total() > 0)
                     Showing
@@ -396,8 +396,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="toggleAddProductModal(false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#161B26]">Cancel</button>
-                    <button type="submit" class="bg-slate-800 text-white dark:bg-[#1E293B] text-sm font-semibold px-5 py-2 rounded-lg hover:opacity-90">Save Product</button>
+                    <button type="button" onclick="toggleAddProductModal(false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
+                    <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Save Product</button>
                 </div>
             </form>
         </div>
@@ -429,9 +429,9 @@
     }
 
     @media (min-width: 640px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
-    @media (min-width: 768px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } }
-    @media (min-width: 1024px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
-    @media (min-width: 1280px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; } }
+    @media (min-width: 768px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+    @media (min-width: 1024px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } }
+    @media (min-width: 1280px) { #productResultsContainer[data-view="grid"] #productGrid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
 
     #productResultsContainer[data-view="grid"] #productGrid .product-grid-card {
         width: 100% !important;

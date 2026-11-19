@@ -1,5 +1,7 @@
 @forelse ($products as $product)
-    <tr data-record-row="true" data-product-page="{{ $products->currentPage() }}" class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+    <tr data-record-row="true" data-product-page="{{ $products->currentPage() }}"
+        onclick="if(event.target.tagName !== 'INPUT') { const cb = this.querySelector('.row-checkbox'); if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change', { bubbles: true })); } }"
+        class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer select-none">
         <td class="px-8 py-4 align-middle">
             <input type="checkbox" name="product_ids[]" value="{{ $product->id }}"
                    class="row-checkbox rounded border-gray-300 dark:border-[#1e2536] bg-white dark:bg-[#10141D] text-blue-600 focus:ring-slate-400 w-4 h-4 cursor-pointer">

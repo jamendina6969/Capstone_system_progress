@@ -7,10 +7,10 @@
     <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-white">Welcome, {{ auth()->user()->firstname }}</h1>
 
     {{-- Top Summary Cards Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 mb-6 sm:mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-5 sm:mb-6 lg:mb-8">
         <!-- Today's Sales Card -->
         <a href="{{ route('sales.records', ['date_from' => today()->toDateString(), 'date_to' => today()->toDateString()]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 xl:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Today's Sales</span>
                 <div class="p-2.5 sm:p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">₱{{ number_format($todaySales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($todaySales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
                     <span>Daily revenue total</span>
                 </div>
@@ -27,7 +27,7 @@
 
         <!-- Overall Sales Card -->
         <a href="{{ route('sales.records') }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 xl:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Overall Sales</span>
                 <div class="p-2.5 sm:p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">₱{{ number_format($overallSales, 2) }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">₱{{ number_format($overallSales, 2) }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <span>All-time accumulated revenue</span>
                 </div>
@@ -44,7 +44,7 @@
 
         <!-- POS Orders Card -->
         <a href="{{ route('transaction.history', ['date_from' => today()->toDateString(), 'date_to' => today()->toDateString()]) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 xl:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">POS Orders</span>
                 <div class="p-2.5 sm:p-3 rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $todayTransactions }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">{{ $todayTransactions }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400">
                     <span>Completed today</span>
                 </div>
@@ -61,7 +61,7 @@
 
         <!-- Total Products Card -->
         <a href="{{ route('admin.products.index') }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 xl:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Products</span>
                 <div class="p-2.5 sm:p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $totalProducts }}</p>
+                <p class="font-black text-gray-900 dark:text-white tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">{{ $totalProducts }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400">
                     <span>Active catalog items</span>
                 </div>
@@ -78,7 +78,7 @@
 
         <!-- Restock Needed Card -->
         <a href="{{ route('inventory.index', ['status' => 'restock']) }}"
-           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
+           class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-4 sm:p-5 lg:p-6 xl:p-8 shadow-sm hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors">Restock Needed</span>
                 <div class="p-2.5 sm:p-3 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-rose-400">
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div>
-                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2 text-2xl sm:text-3xl lg:text-[2rem] break-words">{{ $restockNeededCount }}</p>
+                <p class="font-black text-red-600 dark:text-rose-400 tracking-tight mb-2 text-lg sm:text-xl md:text-lg lg:text-xl xl:text-2xl break-all">{{ $restockNeededCount }}</p>
                 <div class="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-rose-400">
                     <span>Items require attention</span>
                 </div>
@@ -249,7 +249,7 @@
                 </div>
             </form>
 
-            <div class="relative w-full h-[280px] sm:h-[360px] lg:h-[420px]">
+            <div class="relative w-full h-[240px] sm:h-[340px] lg:h-[420px]">
                 <canvas id="demandForecastChart"></canvas>
             </div>
             

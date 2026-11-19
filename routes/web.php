@@ -32,6 +32,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [UserController::class, 'login']);
 });
 
+// Logout accessible via both GET & POST (handles expired sessions gracefully)
+Route::match(['get', 'post'], '/logout', [UserController::class, 'logout'])->name('logout');
+
 // ==================== AUTHENTICATED ROUTES ====================
 
 Route::middleware('auth')->group(function () {
@@ -66,9 +69,12 @@ Route::middleware('auth')->group(function () {
     });
 
     // ==================== INVENTORY / SALES / FORECAST ====================
-    Route::middleware('role:admin,manager')->group(function () {
+    Route::middleware('role:admin,manager,warehouse_staff')->group(function () {
         Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::get('/inventory/export', [InventoryController::class, 'export'])->name('inventory.export');
+    });
+
+    Route::middleware('role:admin,manager')->group(function () {
         Route::post('/inventory/{product}/transfer', [InventoryController::class, 'transfer'])->name('inventory.transfer');
         Route::get('/inventory/logs', [InventoryController::class, 'logs'])->name('inventory.logs');
         Route::get('/inventory/approvals', [InventoryController::class, 'pendingApprovals'])->name('inventory.approvals');
@@ -148,6 +154,7 @@ Route::middleware('auth')->group(function () {
     // ==================== INVENTORY STAFF ROUTES ====================
     Route::middleware('role:admin,manager,warehouse_staff,staff')->group(function () {
         Route::get('/inventory/view', [InventoryController::class, 'index'])->name('inventory.view');
+        Route::get('/inventory/{product}/details', [InventoryController::class, 'details'])->name('inventory.details');
         Route::post('/inventory/{product}/restock', [InventoryController::class, 'restock'])->name('inventory.restock');
 
         Route::get('/inventory/my-requests', [InventoryController::class, 'myRequests'])->name('inventory.myRequests');
@@ -217,6 +224,5 @@ Route::middleware('auth')->group(function () {
     // ==================== GENERAL ROUTES ====================
     Route::get('/user-guide', [UserGuideController::class, 'index'])->name('user-guide');
     Route::get('/', [DashboardController::class, 'index'])->name('home');
-    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     Route::post('/theme', [ThemeController::class, 'update'])->name('theme.update');
 });

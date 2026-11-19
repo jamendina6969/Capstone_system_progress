@@ -81,12 +81,12 @@
         <!-- GRID VIEW ITEM -->
         <div data-record-row="true" 
              onclick="{{ $cardClickAction }}"
-             class="grid-view-item bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-5 flex flex-col justify-between shadow-sm transition-all duration-200 {{ $cardCursorClass }}">
+             class="grid-view-item bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl p-3.5 sm:p-4 lg:p-5 flex flex-col justify-between shadow-sm transition-all duration-200 {{ $cardCursorClass }}">
             
             <!-- Top Section: Image & Stock Badge -->
             <div class="flex items-start gap-4 mb-4 pointer-events-none">
                 <!-- Image Placeholder -->
-                <div class="w-28 h-28 rounded-2xl bg-[#e0f2fe] dark:bg-[#161B26] border border-transparent dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-2xl bg-[#e0f2fe] dark:bg-[#161B26] border border-transparent dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
                     @if($item->product_image)
                         <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
                     @else
@@ -106,7 +106,7 @@
                         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ $statusClass }} tracking-wide">{{ $statusText }}</span>
                         
                         <div class="flex items-baseline gap-1 mt-1">
-                            <div class="text-4xl font-black {{ $isOutOfStock ? 'text-gray-400' : 'text-gray-900 dark:text-white' }} leading-none tracking-tight">{{ $storeQty }}</div>
+                            <div class="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black {{ $isOutOfStock ? 'text-gray-400' : 'text-gray-900 dark:text-white' }} leading-none tracking-tight">{{ $storeQty }}</div>
                         </div>
                         
                         <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1.5 uppercase tracking-wide">UNIT : {{ $item->unit_of_measure ?? 'PIECE' }}</div>
@@ -128,7 +128,7 @@
                 <!-- Price -->
                 <div class="flex flex-col shrink-0 mb-0.5 pointer-events-none">
                     <span class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-wider">PRICE:</span>
-                    <span class="text-xl font-black text-gray-900 dark:text-white leading-tight">₱{{ number_format($item->selling_price, 2) }}</span>
+                    <span class="text-base sm:text-lg lg:text-base xl:text-lg font-black text-gray-900 dark:text-white leading-tight">₱{{ number_format($item->selling_price, 2) }}</span>
                 </div>
                 
                 <!-- Actions -->
@@ -136,17 +136,17 @@
                     <span class="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-wider mb-1 pointer-events-none">ENTER QTY:</span>
                     
                     @if($isOutOfStock)
-                        <div class="flex items-center w-full max-w-[150px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-100 dark:bg-[#161B26] shadow-2xs h-[38px] justify-center">
+                        <div class="flex items-center w-full max-w-[130px] sm:max-w-[145px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-100 dark:bg-[#161B26] shadow-2xs h-[38px] justify-center">
                             <span class="text-[11px] font-bold text-gray-400 uppercase">Unavailable</span>
                         </div>
                     @elseif($isProjectMode)
-                        <div class="flex items-center w-full max-w-[150px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-50 dark:bg-[#161B26] shadow-2xs h-[38px]" onclick="event.stopPropagation()">
+                        <div class="flex items-center w-full max-w-[130px] sm:max-w-[145px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-50 dark:bg-[#161B26] shadow-2xs h-[38px]" onclick="event.stopPropagation()">
                             <button type="button" onclick="event.stopPropagation(); openQuickDrop({{ $item->id }}, '{{ addslashes($item->product_name) }}', {{ $projStoreQty }}, {{ $projWhQty }})" class="flex-1 h-full text-[11px] font-bold text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors uppercase {{ ($projStoreQty + $projWhQty) <= 0 ? 'opacity-50 cursor-not-allowed' : '' }}">DROP</button>
                             <div class="w-px h-5 bg-gray-300 dark:bg-gray-600"></div>
                             <button type="button" onclick="event.stopPropagation(); openQuickAdd({{ $item->id }}, '{{ addslashes($item->product_name) }}', {{ $storeQty }}, {{ $whQty }})" class="flex-1 h-full text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors uppercase">ADD</button>
                         </div>
                     @else
-                        <div class="flex items-center w-full max-w-[150px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-50 dark:bg-[#161B26] shadow-2xs h-[38px]" onclick="event.stopPropagation()">
+                        <div class="flex items-center w-full max-w-[130px] sm:max-w-[145px] border border-gray-200 dark:border-[#1e2536] rounded-full overflow-hidden bg-gray-50 dark:bg-[#161B26] shadow-2xs h-[38px]" onclick="event.stopPropagation()">
                             <button type="button" onclick="event.stopPropagation(); updateQty('{{ $item->id }}', 'decrease', null, 'grid')" class="px-3 h-full text-[11px] font-bold text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#1e2536] transition-colors uppercase">DROP</button>
                             <input type="number" value="1" min="1" step="1" id="qty-{{ $item->id }}-grid" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); updateQty('{{ $item->id }}', 'exact', this.value, 'grid'); }" onclick="event.stopPropagation()" class="w-full text-center text-sm font-black text-gray-900 dark:text-slate-100 bg-transparent border-none focus:outline-none focus:ring-0 p-0" title="Enter quantity and press Enter">
                             <button type="button" onclick="event.stopPropagation(); updateQty('{{ $item->id }}', 'increase', null, 'grid')" class="px-3 h-full text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors uppercase">ADD</button>

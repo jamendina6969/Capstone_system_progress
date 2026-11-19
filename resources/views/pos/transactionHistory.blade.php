@@ -36,7 +36,7 @@
 <div class="flex flex-col">
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-6 shrink-0">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                 Transaction History
@@ -50,7 +50,7 @@
     <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
 
         <!-- Filters -->
-        <div class="px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50 shrink-0">
+        <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50 shrink-0">
             <form id="filterForm" method="GET" action="{{ route('transaction.history') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
 
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
@@ -138,17 +138,17 @@
         </div>
 
         <!-- Transaction Table -->
-        <div id="tableScrollContainer" class="overflow-x-auto h-[600px] overflow-y-auto custom-scrollbar relative">
-            <table class="w-full text-sm text-left relative">
+        <div id="tableScrollContainer" class="overflow-x-auto h-[480px] sm:h-[600px] overflow-y-auto custom-scrollbar relative">
+            <table class="w-full min-w-[850px] text-sm text-left relative">
                 <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Date</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Reference ID</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Entity / Description</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Source / Type</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Total Amount</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]">Recorded By</th>
-                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Date</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Reference ID</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Entity / Description</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Source / Type</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Total Amount</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Recorded By</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100 dark:divide-[#1e2536]">
@@ -166,7 +166,7 @@
         </div>
 
         <!-- Pagination Footer -->
-        <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
             <div class="whitespace-nowrap" id="resultsText">
                 @if($transactions->total() > 0)
                     Showing

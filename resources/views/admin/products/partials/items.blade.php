@@ -314,8 +314,8 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                        <button type="button" onclick="toggleEditProductModal({{ $product->id }}, false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#161B26]">Cancel</button>
-                        <button type="submit" class="bg-slate-800 text-white dark:bg-[#1E293B] text-sm font-semibold px-5 py-2 rounded-lg hover:opacity-90">Save Changes</button>
+                        <button type="button" onclick="toggleEditProductModal({{ $product->id }}, false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
+                        <button type="submit" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Save Changes</button>
                     </div>
                 </form>
             </div>
@@ -338,11 +338,11 @@
                 </p>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-[#1e2536]">
-                    <button type="button" onclick="toggleDeleteModal({{ $product->id }}, false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#161B26]">Cancel</button>
+                    <button type="button" onclick="toggleDeleteModal({{ $product->id }}, false)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Cancel</button>
                     <form action="{{ route('admin.products.destroy', $product) }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="bg-rose-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-rose-700">Delete Product</button>
+                        <button type="submit" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Delete Product</button>
                     </form>
                 </div>
             </div>

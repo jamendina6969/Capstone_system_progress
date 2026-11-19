@@ -32,7 +32,18 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                     @foreach ($products as $movement)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/30 transition-colors">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/30 transition-colors cursor-pointer"
+                            onclick="openStockLogModal(this)"
+                            data-product="{{ $movement->product->product_name ?? 'Deleted Product' }}"
+                            data-category="{{ $movement->product->category->name ?? '—' }}"
+                            data-type="{{ ucwords(str_replace('_', ' ', $first->type)) }}"
+                            data-date="{{ $first->created_at->format('M d, Y - h:i A') }}"
+                            data-prev="{{ $movement->quantity_before ?? '—' }}"
+                            data-qty="{{ $movement->quantity }}"
+                            data-new="{{ $movement->quantity_after ?? '—' }}"
+                            data-requester="{{ $first->requester_name ?? ($first->requester ? $first->requester->firstname . ' ' . $first->requester->lastname : 'Deleted User') }}"
+                            data-approver="{{ $first->approver_name ?? ($first->approver ? $first->approver->firstname . ' ' . $first->approver->lastname : '—') }}"
+                            data-note="{{ $movement->note ?: ($first->note ?: 'No notes recorded.') }}">
                             <td class="px-6 py-3.5 font-medium text-gray-900 dark:text-white">
                                 {{ $movement->product->product_name ?? 'Deleted Product' }}
                             </td>

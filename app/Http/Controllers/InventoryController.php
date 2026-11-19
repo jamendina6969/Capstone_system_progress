@@ -834,4 +834,33 @@ class InventoryController extends Controller
 
         return redirect()->route('inventory.myRequests')->with('success', 'Items marked as received. Stock has been updated successfully.');
     }
+
+    public function details(Product $product)
+    {
+        $product->loadMissing('category');
+
+        $storeQty = (int) ($product->store_quantity ?? 0);
+        $whQty = (int) ($product->warehouse_quantity ?? 0);
+        $totalQty = $storeQty + $whQty;
+        $reorder = (int) ($product->reorder_point ?? 10);
+
+        $status = $totalQty <= 0 ? 'Out of Stock' : ($totalQty <= $reorder ? 'Low Stock' : 'In Stock');
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->product_name,
+            'sku' => $product->product_sku ?? '—',
+            'description' => $product->product_description ?: 'No product description available.',
+            'category' => $product->category?->name ?? 'Uncategorized',
+            'approx_volume' => $product->approx_volume ?: '—',
+            'purchase_cost' => number_format((float) ($product->purchase_cost ?? 0), 2),
+            'selling_price' => number_format((float) ($product->selling_price ?? 0), 2),
+            'store_quantity' => $storeQty,
+            'warehouse_quantity' => $whQty,
+            'total_quantity' => $totalQty,
+            'reorder_point' => $reorder,
+            'status' => $status,
+            'image' => $product->product_image ? asset('storage/' . $product->product_image) : null,
+        ]);
+    }
 }

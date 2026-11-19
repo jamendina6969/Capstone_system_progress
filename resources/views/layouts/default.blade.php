@@ -2,7 +2,7 @@
 <html lang="en" class="{{ auth()->check() && auth()->user()->theme === 'dark' ? 'dark' : '' }} h-full bg-[#10141D]">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Hydrotech Inventory System')</title>
 
@@ -115,6 +115,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
+                    <div id="mobileBrandHeader" class="flex lg:hidden items-center gap-2">
+                        <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="h-6 w-auto">
+                        <span class="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[130px] sm:max-w-none">Hydrotech</span>
+                    </div>
                 </div>
 
                 <!-- Right Utility Actions -->
@@ -251,7 +255,7 @@
             </header>
 
             <!-- Page content background area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-4 sm:p-6 lg:p-8">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-3 sm:p-6 lg:p-8">
                 
                 @if (session('error'))
                     <div class="mb-6 rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-3 text-sm flex items-center shadow-2xs">

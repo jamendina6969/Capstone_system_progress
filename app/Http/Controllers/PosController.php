@@ -231,6 +231,7 @@ class PosController extends Controller
             'materials.*.product_id' => 'required|exists:products,id',
             'materials.*.quantity' => 'required|integer|min:1',
             'materials.*.source' => 'required|in:store,warehouse',
+            'outsource_cost' => 'nullable|numeric|min:0',
             'labor_cost' => 'nullable|numeric|min:0',
             'installation_cost' => 'nullable|numeric|min:0',
             'additional_cost' => 'nullable|numeric|min:0',
@@ -276,6 +277,7 @@ class PosController extends Controller
                 ];
             }
 
+            $outsource = (float) ($data['outsource_cost'] ?? 0);
             $labor = (float) ($data['labor_cost'] ?? 0);
             $install = (float) ($data['installation_cost'] ?? 0);
             $additional = (float) ($data['additional_cost'] ?? 0);
@@ -284,7 +286,7 @@ class PosController extends Controller
             $markupType = $data['markup_type'];
             $markupValue = (float) ($data['markup_value'] ?? 0);
 
-            $projectSubtotal = $materialsSubtotal + $labor + $install + $additional + $tax + $freight;
+            $projectSubtotal = $materialsSubtotal + $outsource + $labor + $install + $additional + $tax + $freight;
             $markupAmount = $markupType === 'percentage' ? ($projectSubtotal * ($markupValue / 100)) : $markupValue;
             $finalTotal = $projectSubtotal + $markupAmount;
 
@@ -307,6 +309,7 @@ class PosController extends Controller
                 'project_breakdown' => [
                     'materials' => $materialsBreakdown,
                     'materials_subtotal' => $materialsSubtotal,
+                    'outsource_cost' => $outsource,
                     'labor_cost' => $labor,
                     'installation_cost' => $install,
                     'additional_cost' => $additional,
@@ -492,6 +495,7 @@ class PosController extends Controller
 
             if (empty($materialsBreakdown)) throw new \RuntimeException("Project must contain valid materials.");
 
+            $outsource = (float) ($cart[$projectId]['project_breakdown']['outsource_cost'] ?? 0);
             $labor = $cart[$projectId]['project_breakdown']['labor_cost'];
             $install = $cart[$projectId]['project_breakdown']['installation_cost'];
             $additional = $cart[$projectId]['project_breakdown']['additional_cost'];
@@ -500,7 +504,7 @@ class PosController extends Controller
             $markupType = $cart[$projectId]['project_breakdown']['markup_type'];
             $markupValue = $cart[$projectId]['project_breakdown']['markup_value'];
 
-            $projectSubtotal = $materialsSubtotal + $labor + $install + $additional + $tax + $freight;
+            $projectSubtotal = $materialsSubtotal + $outsource + $labor + $install + $additional + $tax + $freight;
             $markupAmount = $markupType === 'percentage' ? ($projectSubtotal * ($markupValue / 100)) : $markupValue;
             $finalTotal = $projectSubtotal + $markupAmount;
 
@@ -534,6 +538,7 @@ class PosController extends Controller
             'materials.*.product_id' => 'required|exists:products,id',
             'materials.*.quantity' => 'required|integer|min:1',
             'materials.*.source' => 'required|in:store,warehouse',
+            'outsource_cost' => 'nullable|numeric|min:0',
             'labor_cost' => 'nullable|numeric|min:0',
             'installation_cost' => 'nullable|numeric|min:0',
             'additional_cost' => 'nullable|numeric|min:0',
@@ -576,6 +581,7 @@ class PosController extends Controller
                 ];
             }
 
+            $outsource = (float) ($data['outsource_cost'] ?? 0);
             $labor = (float) ($data['labor_cost'] ?? 0);
             $install = (float) ($data['installation_cost'] ?? 0);
             $additional = (float) ($data['additional_cost'] ?? 0);
@@ -584,7 +590,7 @@ class PosController extends Controller
             $markupType = $data['markup_type'];
             $markupValue = (float) ($data['markup_value'] ?? 0);
 
-            $projectSubtotal = $materialsSubtotal + $labor + $install + $additional + $tax + $freight;
+            $projectSubtotal = $materialsSubtotal + $outsource + $labor + $install + $additional + $tax + $freight;
             $markupAmount = $markupType === 'percentage' ? ($projectSubtotal * ($markupValue / 100)) : $markupValue;
             $finalTotal = $projectSubtotal + $markupAmount;
 
@@ -608,6 +614,7 @@ class PosController extends Controller
                 'project_breakdown' => [
                     'materials' => $materialsBreakdown,
                     'materials_subtotal' => $materialsSubtotal,
+                    'outsource_cost' => $outsource,
                     'labor_cost' => $labor,
                     'installation_cost' => $install,
                     'additional_cost' => $additional,
@@ -790,7 +797,12 @@ class PosController extends Controller
                 $currentCart[$id]['quantity'] += (int) $parkedItem['quantity'];
                 $currentCart[$id]['subtotal'] += $parkedItem['subtotal'];
             } else {
-                $currentCart[$id] = $parkedItem;
+                if (($parkedItem['type'] ?? 'product') === 'project' && isset($currentCart[$id])) {
+                    $newId = 'project_' . uniqid();
+                    $currentCart[$newId] = $parkedItem;
+                } else {
+                    $currentCart[$id] = $parkedItem;
+                }
             }
         }
 
@@ -803,7 +815,7 @@ class PosController extends Controller
         unset($parkedOrders[$index]);
         session()->put('parked_orders', array_values($parkedOrders));
 
-        return redirect()->route('pos');
+        return redirect()->route('pos')->with('success', 'Parked order items successfully added to active cart.');
     }
 
     public function deleteParkedOrder($index)

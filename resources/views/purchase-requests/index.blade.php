@@ -31,7 +31,7 @@
     </div>
 @endif
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Purchase Requests</h1>
         <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">
@@ -63,10 +63,10 @@
 <div id="ajaxAlert" class="hidden mb-6 rounded-xl px-4 py-3 text-sm font-medium"></div>
 
 <!-- Main Container -->
-<div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-220px)] mb-4">
+<div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-220px)] min-h-[500px] mb-4">
     
     <!-- Filter Section -->
-    <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+    <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
         <form id="filterForm" method="GET" action="{{ route('purchase-requests.index') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
             
             <!-- Search & Group -->
@@ -126,15 +126,15 @@
 
     <!-- Scrollable Table -->
     <div id="tableScrollContainer" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar relative">
-        <table class="w-full text-sm text-left relative">
+        <table class="w-full min-w-[850px] text-sm text-left relative">
             <thead id="prTableHead" class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <tr>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">PR Number</th>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Requested By</th>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Date</th>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Reason</th>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26]">Status</th>
-                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right">Actions</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">PR Number</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Requested By</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Date</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Reason</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Status</th>
+                    <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                 </tr>
             </thead>
 
@@ -159,7 +159,7 @@
     </div>
 
     <!-- Pagination Footer -->
-    <div class="shrink-0 px-8 py-5 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
+    <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 border-t-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-[#10141D]">
         <div class="whitespace-nowrap" id="resultsText">
             @if($requests->total() > 0)
                 Showing
@@ -264,11 +264,11 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs">
                             <tr>
-                                <th class="px-4 py-3">Product</th>
-                                <th class="px-4 py-3 text-center">Quantity</th>
-                                <th class="px-4 py-3">Notes</th>
-                                <th class="px-4 py-3">Item Status</th>
-                                <th class="px-4 py-3 text-right">Action</th>
+                                <th class="px-4 py-3 whitespace-nowrap">Product</th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap">Quantity</th>
+                                <th class="px-4 py-3 whitespace-nowrap">Notes</th>
+                                <th class="px-4 py-3 whitespace-nowrap">Item Status</th>
+                                <th class="px-4 py-3 text-right whitespace-nowrap">Action</th>
                             </tr>
                         </thead>
                         <tbody id="view_pr_items_body" class="divide-y divide-gray-100 dark:divide-[#1e2536]"></tbody>

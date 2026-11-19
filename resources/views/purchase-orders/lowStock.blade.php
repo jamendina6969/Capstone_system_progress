@@ -42,7 +42,8 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                                 @foreach($products as $product)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/30 transition-colors">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/30 transition-colors cursor-pointer"
+                                        onclick="openProductDetail({{ $product->id }})">
                                         <td class="px-8 py-4 font-medium text-gray-900 dark:text-white">
                                             {{ $product->product_name }}
                                         </td>
@@ -74,5 +75,7 @@
             <p class="text-gray-500 dark:text-slate-400 font-medium">All products are adequately stocked. No restocking needed.</p>
         </div>
     @endif
+
+    @include('partials.productDetailModal')
 
 @endsection

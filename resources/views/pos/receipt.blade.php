@@ -35,6 +35,7 @@
                     if ($hasProject && $hasProduct) $typeLabel = 'MIXED ORDER';
 
                     // Aggregators for the breakdown
+                    $projectOutsource = 0;
                     $projectLabor = 0;
                     $projectInstall = 0;
                     $projectAdd = 0;
@@ -114,6 +115,7 @@
                             @php
                                 $breakdown = $item->project_breakdown;
                                 
+                                $projectOutsource += $breakdown['outsource_cost'] ?? 0;
                                 $projectLabor += $breakdown['labor_cost'] ?? 0;
                                 $projectInstall += $breakdown['installation_cost'] ?? 0;
                                 $projectAdd += $breakdown['additional_cost'] ?? 0;
@@ -176,6 +178,13 @@
                     </div>
 
                     @if($hasProject)
+                        @if(($projectOutsource ?? 0) > 0)
+                            <div class="flex justify-between">
+                                <span>Outsource Materials:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($projectOutsource, 2) }}</span>
+                            </div>
+                        @endif
+
                         @if(($projectLabor + $projectInstall + $projectAdd) > 0)
                             <div class="flex justify-between">
                                 <span>Labor & Services:</span>
@@ -215,13 +224,16 @@
                     @endif
 
                     @php
+                        $isImported = str_starts_with($transaction->transaction_id ?? '', 'IMP-') || ($transaction->source ?? '') === 'imported';
                         $vatRate = 0.12;
                         $vatAmount = $transaction->total_amount - ($transaction->total_amount / (1 + $vatRate));
                     @endphp
+                    @if(!$isImported)
                     <div class="flex justify-between">
                         <span>Tax (12% VAT Incl.):</span>
                         <span class="font-semibold text-gray-900 dark:text-white print:text-black">₱{{ number_format($vatAmount, 2) }}</span>
                     </div>
+                    @endif
 
                     @if($projectFreight > 0)
                         <div class="flex justify-between">

@@ -42,7 +42,7 @@
         }
     @endphp
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Forecast Settings</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage Simple Moving Average (SMA) windows for accurate demand forecasting</p>
@@ -66,12 +66,12 @@
 
         <!-- Global Default -->
         <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden">
-            <div class="px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]/50">
+            <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]/50">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white">Global Default</h2>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Applies to every product unless an override is set below.</p>
             </div>
             
-            <div class="p-8">
+            <div class="p-4 sm:p-6 lg:p-8">
                 <div class="mb-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-200 dark:border-blue-900 text-sm text-blue-800 dark:text-blue-300">
                     <span class="font-bold">What it does:</span> Sets the system-wide Simple Moving Average (SMA) lookback timeframe in days used for product sales predictions.
                 </div>
@@ -84,7 +84,7 @@
                                value="{{ old('sma_window_days', $global->sma_window_days ?? 30) }}"
                                class="w-40 rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 font-semibold">
                     </div>
-                    <button type="submit" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                    <button type="submit" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                         Save Global
                     </button>
                 </form>
@@ -98,7 +98,7 @@
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Assign custom forecast periods to specific categories or individual items.</p>
             </div>
 
-            <div class="p-8">
+            <div class="p-4 sm:p-6 lg:p-8">
                 <div class="mb-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-200 dark:border-blue-900 text-sm text-blue-800 dark:text-blue-300">
                     <span class="font-bold">What it does:</span> Overrides the global default for a specific target. Useful for seasonal items or fast-moving categories.
                 </div>
@@ -223,7 +223,7 @@
                                class="w-full sm:w-32 rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 font-semibold">
                     </div>
 
-                    <button type="submit" class="w-full sm:w-auto bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                    <button type="submit" class="w-full sm:w-auto bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                         Add Override
                     </button>
                 </form>
@@ -238,7 +238,7 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
+                <table class="w-full min-w-[650px] text-sm text-left">
                     <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs border-b-2 border-gray-200 dark:border-[#1e2536]">
                         <tr>
                             <th class="px-8 py-4">Scope</th>
@@ -251,7 +251,8 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                         @forelse ($categorySettings as $setting)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer"
+                                onclick="openForecastSettingModal('Category', '{{ addslashes($setting->category->name ?? '—') }}', '{{ $setting->sma_window_days }} days', '{{ addslashes($setting->updatedBy->full_name ?? $setting->updatedBy->name ?? 'System') }}', '{{ $setting->updated_at ? $setting->updated_at->format('M d, Y h:i A') : '—' }}')">
                                 <td class="px-8 py-4">
                                     <span class="inline-block bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-blue-200 dark:border-blue-900">Category</span>
                                 </td>
@@ -259,11 +260,11 @@
                                 <td class="px-8 py-4 text-gray-600 dark:text-slate-400 font-medium">{{ $setting->sma_window_days }} days</td>
                                 <td class="px-8 py-4 text-gray-600 dark:text-slate-400 font-medium">{{ $setting->updatedBy->full_name ?? $setting->updatedBy->name ?? 'System' }}</td>
                                 <td class="px-8 py-4 text-gray-500 dark:text-slate-400 text-xs">{{ $setting->updated_at ? $setting->updated_at->format('M d, Y h:i A') : '—' }}</td>
-                                <td class="px-8 py-4 text-right">
+                                <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
                                     <form action="{{ route('forecast.settings.destroy', $setting) }}" method="POST" class="m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Remove this override?');" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                                        <button type="submit" onclick="return confirm('Remove this override?');" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                                             Remove
                                         </button>
                                     </form>
@@ -299,7 +300,8 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                         @forelse ($productSettings as $setting)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer"
+                                onclick="openForecastSettingModal('Product', '{{ addslashes($setting->product->product_name ?? '—') }} ({{ addslashes($setting->product->category->name ?? '—') }})', '{{ $setting->sma_window_days }} days', '{{ addslashes($setting->updatedBy->full_name ?? $setting->updatedBy->name ?? 'System') }}', '{{ $setting->updated_at ? $setting->updated_at->format('M d, Y h:i A') : '—' }}')">
                                 <td class="px-8 py-4">
                                     <span class="inline-block bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-purple-200 dark:border-purple-900">Product</span>
                                 </td>
@@ -313,11 +315,11 @@
                                 <td class="px-8 py-4 text-gray-600 dark:text-slate-400 font-medium">{{ $setting->sma_window_days }} days</td>
                                 <td class="px-8 py-4 text-gray-600 dark:text-slate-400 font-medium">{{ $setting->updatedBy->full_name ?? $setting->updatedBy->name ?? 'System' }}</td>
                                 <td class="px-8 py-4 text-gray-500 dark:text-slate-400 text-xs">{{ $setting->updated_at ? $setting->updated_at->format('M d, Y h:i A') : '—' }}</td>
-                                <td class="px-8 py-4 text-right">
+                                <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
                                     <form action="{{ route('forecast.settings.destroy', $setting) }}" method="POST" class="m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Remove this override?');" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
+                                        <button type="submit" onclick="return confirm('Remove this override?');" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer">
                                             Remove
                                         </button>
                                     </form>
@@ -331,6 +333,43 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- FORECAST SETTING DETAIL MODAL -->
+    <div id="forecastSettingModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4" onclick="if(event.target===this) closeForecastSettingModal()">
+        <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between px-6 py-4 border-b-2 border-gray-100 dark:border-[#1e2536] shrink-0">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="fsm-title">Forecast Override Details</h3>
+                <button type="button" onclick="closeForecastSettingModal()" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#1e2536] cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-3 overflow-y-auto custom-scrollbar">
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Override Scope</span>
+                    <span id="fsm-scope" class="font-bold text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Target</span>
+                    <span id="fsm-target" class="font-semibold text-gray-900 dark:text-white text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">SMA Window</span>
+                    <span id="fsm-window" class="font-bold text-emerald-600 dark:text-emerald-400"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Updated By</span>
+                    <span id="fsm-updated-by" class="font-medium text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100 dark:border-[#1e2536]">
+                    <span class="text-gray-500 dark:text-slate-400">Last Updated</span>
+                    <span id="fsm-updated-at" class="font-medium text-gray-600 dark:text-slate-400 text-xs"></span>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t-2 border-gray-100 dark:border-[#1e2536] flex justify-end gap-3 shrink-0">
+                <button type="button" onclick="closeForecastSettingModal()" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">Close</button>
+            </div>
+        </div>
     </div>
 
 @endsection
@@ -432,5 +471,31 @@
             productField.classList.toggle('hidden', scope !== 'product');
         });
     }
+
+    function openForecastSettingModal(scope, target, windowVal, updatedBy, updatedAt) {
+        document.getElementById('fsm-scope').textContent = scope;
+        document.getElementById('fsm-target').textContent = target;
+        document.getElementById('fsm-window').textContent = windowVal;
+        document.getElementById('fsm-updated-by').textContent = updatedBy;
+        document.getElementById('fsm-updated-at').textContent = updatedAt;
+
+        const modal = document.getElementById('forecastSettingModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeForecastSettingModal() {
+        const modal = document.getElementById('forecastSettingModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeForecastSettingModal();
+    });
 </script>
 @endpush

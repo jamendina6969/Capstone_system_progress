@@ -10,7 +10,7 @@
         @if ($errors->any())
             <div class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3 text-sm">
                 <ul class="list-disc list-inside space-y-1">
-                    @foreach ($errors->all() as$error)
+                    @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
@@ -70,7 +70,7 @@
                             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
                                 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800">
                         <option value="" disabled selected>-- Select Category --</option>
-                        @foreach ($categories as$category)
+                        @foreach ($categories as $category)
                             <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }} ({{ ucfirst($category->type) }})
                             </option>

@@ -1,5 +1,8 @@
 @forelse ($pending as $movement)
-    <tr data-record-row="true" class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+    <tr data-record-row="true"
+        data-request="{{ json_encode($movement) }}"
+        onclick="openViewModal(this.dataset.request)"
+        class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
         <td class="px-8 py-4 font-medium text-gray-900 dark:text-white">
             {{ $movement->product->product_name ?? 'Deleted Product' }}
         </td>
@@ -25,7 +28,7 @@
         <td class="px-8 py-4 text-gray-500 dark:text-slate-400">
             {{ $movement->note ?? '—' }}
         </td>
-        <td class="px-8 py-4 text-right">
+        <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
             <div class="flex justify-end gap-2 items-center">
                 @if ($movement->status === 'pending')
                     <button type="button" onclick="openApproveModal('{{ route('inventory.approve', $movement) }}')" class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Approve</button>
@@ -34,8 +37,9 @@
                     <span class="text-gray-400 dark:text-slate-600 text-xs italic mr-2">Awaiting Receipt</span>
                 @endif
 
-                <button type="button" data-request="{{ json_encode($movement) }}" onclick="openViewModal(this.dataset.request)" class="bg-gray-100 border-2 border-gray-200 text-gray-700 hover:bg-gray-200 dark:bg-[#161B26] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#1e2536] text-xs font-semibold px-3 py-2 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center justify-center" title="View Details">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                <button type="button" data-request="{{ json_encode($movement) }}" onclick="openViewModal(this.dataset.request)" class="inline-flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 cursor-pointer" title="View Details">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <span>View</span>
                 </button>
             </div>
         </td>

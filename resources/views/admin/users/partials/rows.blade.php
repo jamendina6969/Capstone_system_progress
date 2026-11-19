@@ -1,5 +1,8 @@
 @forelse ($users as $user)
-    <tr data-record-row="true" class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors">
+    <tr data-record-row="true"
+        data-user="{{ json_encode($user) }}"
+        onclick="openUserDetailModal(this.dataset.user)"
+        class="hover:bg-gray-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
         <td class="px-8 py-4 font-medium text-gray-900 dark:text-white">
             {{ $user->full_name }}
         </td>
@@ -33,7 +36,7 @@
                 </span>
             @endif
         </td>
-        <td class="px-8 py-4 text-right">
+        <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
             <div class="flex justify-end gap-2 items-center">
                 <button type="button"
                         data-user="{{ json_encode($user) }}"
