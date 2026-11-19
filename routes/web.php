@@ -49,8 +49,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/run-migrations', function() {
         try {
             \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            $output = \Illuminate\Support\Facades\Artisan::output();
-            return '<pre style="font-family: monospace; background: #10141D; color: #4ade80; padding: 20px; border-radius: 12px;">' . ($output ?: 'Nothing to migrate.') . '</pre>';
+            $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+
+            \Illuminate\Support\Facades\Artisan::call('migrate:status');
+            $statusOutput = \Illuminate\Support\Facades\Artisan::output();
+
+            return '<pre style="font-family: monospace; background: #10141D; color: #4ade80; padding: 20px; border-radius: 12px; font-size: 13px; line-height: 1.5;">' 
+                . "=== MIGRATION RUN ===\n" . ($migrateOutput ?: "Nothing to migrate.\n")
+                . "\n=== MIGRATION STATUS ===\n" . $statusOutput
+                . '</pre>';
         } catch (\Exception $e) {
             return '<pre style="font-family: monospace; background: #10141D; color: #f87171; padding: 20px; border-radius: 12px;">Migration Failed: ' . $e->getMessage() . '</pre>';
         }
