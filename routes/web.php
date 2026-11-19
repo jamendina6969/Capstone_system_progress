@@ -49,17 +49,41 @@ Route::middleware('auth')->group(function () {
     Route::get('/run-migrations', function() {
         try {
             \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+            $migrateOutput = trim(\Illuminate\Support\Facades\Artisan::output());
 
             \Illuminate\Support\Facades\Artisan::call('migrate:status');
             $statusOutput = \Illuminate\Support\Facades\Artisan::output();
 
-            return '<pre style="font-family: monospace; background: #10141D; color: #4ade80; padding: 20px; border-radius: 12px; font-size: 13px; line-height: 1.5;">' 
-                . "=== MIGRATION RUN ===\n" . ($migrateOutput ?: "Nothing to migrate.\n")
-                . "\n=== MIGRATION STATUS ===\n" . $statusOutput
+            // Direct schema verification checks
+            $categoryType = 'unknown';
+            $uniqueIndexExists = false;
+            try {
+                $col = \Illuminate\Support\Facades\DB::select("SHOW COLUMNS FROM `categories` LIKE 'type'");
+                if (!empty($col)) {
+                    $categoryType = $col[0]->Type ?? 'found';
+                }
+                $idx = \Illuminate\Support\Facades\DB::select("SHOW INDEX FROM `demand_records` WHERE Key_name = 'demand_records_product_date_source_unique'");
+                $uniqueIndexExists = !empty($idx);
+            } catch (\Exception $ex) {
+                // Ignore DB dialect differences
+            }
+
+            $schemaChecks = "1. categories.type: " . $categoryType . ($categoryType === 'varchar(50)' ? " [PASSED - 3NF Flexible]" : " [CHECK REQUIRED]") . "\n"
+                          . "2. demand_records unique index: " . ($uniqueIndexExists ? "[PASSED - Unique Compound Constraint Active]" : "[NOT DETECTED]") . "\n";
+
+            return '<pre style="font-family: monospace; background: #10141D; color: #4ade80; padding: 24px; border-radius: 12px; font-size: 13px; line-height: 1.6;">' 
+                . "========================================================\n"
+                . " HYDROTECH MIGRATION RUNNER & SCHEMA VERIFICATION\n"
+                . "========================================================\n\n"
+                . "--- STEP 1: ARTISAN MIGRATE EXECUTION ---\n"
+                . ($migrateOutput ?: "INFO: Database is already up-to-date (no pending migrations).\n")
+                . "\n--- STEP 2: SCHEMA FORMALIZATION AUDIT ---\n"
+                . $schemaChecks
+                . "\n--- STEP 3: MIGRATION HISTORY & BATCH STATUS ---\n"
+                . $statusOutput
                 . '</pre>';
         } catch (\Exception $e) {
-            return '<pre style="font-family: monospace; background: #10141D; color: #f87171; padding: 20px; border-radius: 12px;">Migration Failed: ' . $e->getMessage() . '</pre>';
+            return '<pre style="font-family: monospace; background: #10141D; color: #f87171; padding: 24px; border-radius: 12px;">Migration Failed: ' . $e->getMessage() . '</pre>';
         }
     });
 
