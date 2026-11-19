@@ -39,11 +39,21 @@ Route::match(['get', 'post'], '/logout', [UserController::class, 'logout'])->nam
 
 Route::middleware('auth')->group(function () {
 
-    // ==================== TEMPORARY CACHE CLEAR ====================
+    // ==================== TEMPORARY CACHE & MIGRATION HELPERS ====================
     Route::get('/clear-view-cache', function() {
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Cache::clear();
         return 'View and Application caches cleared successfully!';
+    });
+
+    Route::get('/run-migrations', function() {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            return '<pre style="font-family: monospace; background: #10141D; color: #4ade80; padding: 20px; border-radius: 12px;">' . ($output ?: 'Nothing to migrate.') . '</pre>';
+        } catch (\Exception $e) {
+            return '<pre style="font-family: monospace; background: #10141D; color: #f87171; padding: 20px; border-radius: 12px;">Migration Failed: ' . $e->getMessage() . '</pre>';
+        }
     });
 
     // ==================== ADMIN USERS & BACKUPS ====================
