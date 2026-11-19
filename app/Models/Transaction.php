@@ -10,6 +10,11 @@ class Transaction extends Model
 {
     use HasFactory, AuditsChanges;
 
+    // Formal Transaction Type Constants (replaces magic numbers)
+    public const TYPE_SALE = 0;
+    public const TYPE_IMPORTED = 1;
+    public const TYPE_REFUND = 2;
+
     protected $fillable = [
         'customer_return_id',   // ← NEW
         'user_id',
@@ -66,6 +71,15 @@ class Transaction extends Model
     // ← NEW (helper for blades)
     public function isRefund(): bool
     {
-        return (int) $this->transaction_type === 2;
+        return (int) $this->transaction_type === self::TYPE_REFUND;
+    }
+
+    public function getTransactionTypeNameAttribute(): string
+    {
+        return match ((int) $this->transaction_type) {
+            self::TYPE_IMPORTED => 'Imported CSV',
+            self::TYPE_REFUND => 'Customer Refund',
+            default => 'POS Retail Sale',
+        };
     }
 }

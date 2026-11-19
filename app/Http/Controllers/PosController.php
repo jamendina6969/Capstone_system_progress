@@ -1196,7 +1196,7 @@ class PosController extends Controller
                             'requested_by' => $user->id,
                             'requester_name' => $user->firstname . ' ' . $user->lastname,
                             'type' => 'Retail Sale (Offline Sync)',
-                            'status' => 'Completed',
+                            'status' => 'completed',
                             'delivery_status' => 'delivered',
                             'quantity' => $qty,
                             'quantity_before' => $product->store_quantity + $qty,

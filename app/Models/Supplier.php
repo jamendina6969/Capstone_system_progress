@@ -25,7 +25,13 @@ class Supplier extends Model
     ];
 
     // Automatically append the computed rating to JSON/Array outputs
-    protected $appends = ['average_rating'];
+    protected $appends = ['average_rating', 'full_address'];
+
+    public function getFullAddressAttribute(): string
+    {
+        $parts = array_filter([$this->street, $this->barangay, $this->city, $this->province, $this->postal_code]);
+        return !empty($parts) ? implode(', ', $parts) : ($this->address ?? 'No address specified');
+    }
 
     public function purchaseOrders()
     {
