@@ -56,6 +56,14 @@ class HydrotechLiveSync {
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             });
 
+            if (res.status === 401) {
+                const body = await res.json().catch(() => ({}));
+                if (body && body.force_logout) {
+                    window.location.href = body.redirect || '/login';
+                    return;
+                }
+            }
+
             if (res.ok) {
                 const data = await res.json();
                 if (data.timestamp) {

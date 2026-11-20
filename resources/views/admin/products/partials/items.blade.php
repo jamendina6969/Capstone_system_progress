@@ -90,6 +90,14 @@
                 <div class="flex justify-end items-center gap-2">
                     <button
                         type="button"
+                        onclick="openItemSkusModal({{ $product->id }})"
+                        class="bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-[#10141D] dark:border-blue-600/80 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-300 shadow-xs cursor-pointer"
+                    >
+                        SKUs
+                    </button>
+
+                    <button
+                        type="button"
                         onclick="toggleEditProductModal({{ $product->id }}, true)"
                         class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-300 shadow-xs cursor-pointer"
                     >
@@ -149,13 +157,17 @@
             <div class="cursor-pointer" onclick="openProductDetail({{ $product->id }})">
                 {{-- IMAGE (Matching Inventory exactly) --}}
                 <div class="w-full h-32 bg-gray-100 dark:bg-[#10141D] flex items-center justify-center text-gray-300 dark:text-slate-600">
-                    @if (!empty($product->product_image))
+                    @if ($product->image_url)
                         <img
-                            src="{{ asset('storage/' . $product->product_image) }}"
+                            src="{{ $product->image_url }}"
                             alt="{{ $product->product_name }}"
+                            onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                             class="w-full h-full object-cover"
                             loading="lazy"
                         >
+                        <svg class="hidden h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     @else
                         <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -192,6 +204,13 @@
                 </p>
 
                 <div class="flex gap-1.5 text-xs font-medium">
+                    <button
+                        type="button"
+                        onclick="openItemSkusModal({{ $product->id }})"
+                        class="flex-1 bg-white border-2 border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white dark:bg-[#10141D] dark:border-sky-600/80 dark:text-sky-400 dark:hover:bg-sky-600 dark:hover:text-white text-[10px] font-semibold px-2 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer text-center"
+                    >
+                        SKUs
+                    </button>
                     <button
                         type="button"
                         onclick="toggleEditProductModal({{ $product->id }}, true)"

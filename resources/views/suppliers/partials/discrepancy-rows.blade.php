@@ -20,12 +20,18 @@
             </span>
         </td>
         <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
-            <button type="button" 
-                    onclick="openDiscrepancyModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier')) }})"
-                    class="inline-flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 cursor-pointer">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                <span>View</span>
-            </button>
+            <div class="inline-flex items-center justify-end gap-2">
+                <a href="{{ route('supplier-returns.index', ['supplier_id' => $po->supplier_id, 'purchase_order_id' => $po->id]) }}"
+                   class="inline-flex items-center gap-1.5 bg-white dark:bg-[#10141D] border-2 border-amber-500 text-amber-700 dark:border-amber-600/80 dark:text-amber-400 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 whitespace-nowrap">
+                    File Return
+                </a>
+                <button type="button" 
+                        onclick="openDiscrepancyModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier')) }})"
+                        class="inline-flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <span>View</span>
+                </button>
+            </div>
         </td>
     </tr>
 @empty

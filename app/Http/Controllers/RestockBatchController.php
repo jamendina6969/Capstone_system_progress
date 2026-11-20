@@ -178,6 +178,7 @@ class RestockBatchController extends Controller
 
                 if (!$requiresApproval) {
                     $product->increment($column, $qty);
+                    app(\App\Services\ItemSkuService::class)->generateUnits($product, (int) $qty, $entry['location']);
                 }
             }
         });

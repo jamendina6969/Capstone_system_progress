@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductItemSku;
 use App\Models\Category;
+use App\Services\ItemSkuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -274,16 +276,31 @@ class ProductController extends Controller
         $product->category_id = $categoryId; // Safe fallback ID preventing null constraint errors
 
         if ($request->hasFile('product_image')) {
-            $product->product_image = $request
-                ->file('product_image')
-                ->store('products', 'public');
+            $file = $request->file('product_image');
+            [$imageData, $imageMime] = $this->encodeProductImage($file);
+            $product->product_image_data = $imageData;
+            $product->product_image_mime = $imageMime;
+            try {
+                $product->product_image = $file->store('products', 'public');
+            } catch (\Throwable $e) {
+                $product->product_image = 'db:' . $productSku;
+            }
         }
 
         $product->save();
 
+        // Auto-generate serialized unit item_skus for initial Store and Warehouse stock
+        $skuService = app(ItemSkuService::class);
+        if ((int) $product->store_quantity > 0) {
+            $skuService->generateUnits($product, (int) $product->store_quantity, 'store');
+        }
+        if ((int) $product->warehouse_quantity > 0) {
+            $skuService->generateUnits($product, (int) $product->warehouse_quantity, 'warehouse');
+        }
+
         return redirect()
             ->route('admin.products.index')
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Product created successfully with serialized item SKUs.');
     }
 
     public function edit(Product $product)
@@ -328,17 +345,27 @@ class ProductController extends Controller
             $categoryId = $defaultCategory ? $defaultCategory->id : null;
         }
 
+        $oldStoreQty = (int) $product->store_quantity;
+        $oldWhQty = (int) $product->warehouse_quantity;
+
         if ($request->hasFile('product_image')) {
             if (
                 $product->product_image &&
+                !str_starts_with($product->product_image, 'db:') &&
                 Storage::disk('public')->exists($product->product_image)
             ) {
                 Storage::disk('public')->delete($product->product_image);
             }
 
-            $product->product_image = $request
-                ->file('product_image')
-                ->store('products', 'public');
+            $file = $request->file('product_image');
+            [$imageData, $imageMime] = $this->encodeProductImage($file);
+            $product->product_image_data = $imageData;
+            $product->product_image_mime = $imageMime;
+            try {
+                $product->product_image = $file->store('products', 'public');
+            } catch (\Throwable $e) {
+                $product->product_image = 'db:' . $product->id;
+            }
         }
 
         $product->product_sku = $request->product_sku;
@@ -354,6 +381,17 @@ class ProductController extends Controller
 
         $product->save();
 
+        // Keep serialized unit item_skus synchronized with manual stock edits
+        $skuService = app(ItemSkuService::class);
+        $storeDelta = (int) $product->store_quantity - $oldStoreQty;
+        $whDelta = (int) $product->warehouse_quantity - $oldWhQty;
+        if ($storeDelta !== 0) {
+            $skuService->adjustLocationCount($product, 'store', $storeDelta);
+        }
+        if ($whDelta !== 0) {
+            $skuService->adjustLocationCount($product, 'warehouse', $whDelta);
+        }
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product updated successfully.');
@@ -363,6 +401,7 @@ class ProductController extends Controller
     {
         if (
             $product->product_image &&
+            !str_starts_with($product->product_image, 'db:') &&
             Storage::disk('public')->exists($product->product_image)
         ) {
             Storage::disk('public')->delete($product->product_image);
@@ -373,5 +412,137 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    /**
+     * Serve persistent DB-backed product image (Wasmer-proof, never disappears on redeploy).
+     */
+    public function serveImage(Product $product)
+    {
+        if (!empty($product->product_image_data)) {
+            $binary = base64_decode($product->product_image_data, true);
+            if ($binary !== false) {
+                $mime = $product->product_image_mime ?: 'image/jpeg';
+                return response($binary, 200)
+                    ->header('Content-Type', $mime)
+                    ->header('Cache-Control', 'public, max-age=86400');
+            }
+        }
+
+        if (
+            $product->product_image &&
+            !str_starts_with($product->product_image, 'db:') &&
+            Storage::disk('public')->exists($product->product_image)
+        ) {
+            return response()->file(Storage::disk('public')->path($product->product_image), [
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        abort(404);
+    }
+
+    /**
+     * JSON endpoint for the "View Item SKUs" inspector modal.
+     */
+    public function itemSkus(Request $request, Product $product)
+    {
+        $status = $request->input('status');
+        $location = $request->input('location');
+        $search = trim((string) $request->input('search', ''));
+
+        $query = ProductItemSku::with(['purchaseOrder:id,po_number', 'transaction:id,transaction_id', 'supplierReturn:id,return_number'])
+            ->where('product_id', $product->id);
+
+        if ($status && in_array($status, ['in_stock', 'sold', 'returned_defective', 'returned_to_supplier'], true)) {
+            $query->where('status', $status);
+        }
+        if ($location && in_array($location, ['store', 'warehouse'], true)) {
+            $query->where('location', $location);
+        }
+        if ($search !== '') {
+            $query->where('item_sku', 'like', "%{$search}%");
+        }
+
+        $skus = $query->orderBy('id')->limit(200)->get();
+
+        $counts = [
+            'store_in_stock' => ProductItemSku::where('product_id', $product->id)->where('location', 'store')->where('status', 'in_stock')->count(),
+            'warehouse_in_stock' => ProductItemSku::where('product_id', $product->id)->where('location', 'warehouse')->where('status', 'in_stock')->count(),
+            'sold' => ProductItemSku::where('product_id', $product->id)->where('status', 'sold')->count(),
+            'returned_defective' => ProductItemSku::where('product_id', $product->id)->where('status', 'returned_defective')->count(),
+            'returned_to_supplier' => ProductItemSku::where('product_id', $product->id)->where('status', 'returned_to_supplier')->count(),
+        ];
+
+        return response()->json([
+            'product' => [
+                'id' => $product->id,
+                'product_name' => $product->product_name,
+                'product_sku' => $product->product_sku,
+                'store_quantity' => (int) $product->store_quantity,
+                'warehouse_quantity' => (int) $product->warehouse_quantity,
+            ],
+            'counts' => $counts,
+            'skus' => $skus->map(fn ($u) => [
+                'id' => $u->id,
+                'item_sku' => $u->item_sku,
+                'location' => $u->location,
+                'status' => $u->status,
+                'po_number' => $u->purchaseOrder?->po_number,
+                'transaction_id' => $u->transaction?->transaction_id,
+                'supplier_return_number' => $u->supplierReturn?->return_number,
+                'updated_at' => $u->updated_at?->format('M d, Y h:i A'),
+            ]),
+        ]);
+    }
+
+    /**
+     * Resize & compress uploaded product image to max 400x400px JPEG for lightweight DB persistence.
+     */
+    private function encodeProductImage($file): array
+    {
+        $realPath = $file->getRealPath();
+        $rawMime = $file->getMimeType() ?: 'image/jpeg';
+
+        if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
+            try {
+                $rawBytes = file_get_contents($realPath);
+                $src = @imagecreatefromstring($rawBytes);
+                if ($src !== false) {
+                    $origW = imagesx($src);
+                    $origH = imagesy($src);
+                    $maxDim = 400;
+
+                    if ($origW > $maxDim || $origH > $maxDim) {
+                        $scale = min($maxDim / $origW, $maxDim / $origH);
+                        $newW = max(1, (int) round($origW * $scale));
+                        $newH = max(1, (int) round($origH * $scale));
+                    } else {
+                        $newW = $origW;
+                        $newH = $origH;
+                    }
+
+                    $dst = imagecreatetruecolor($newW, $newH);
+                    $white = imagecolorallocate($dst, 255, 255, 255);
+                    imagefill($dst, 0, 0, $white);
+                    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+
+                    ob_start();
+                    imagejpeg($dst, null, 80);
+                    $compressed = ob_get_clean();
+
+                    imagedestroy($src);
+                    imagedestroy($dst);
+
+                    if ($compressed !== false && strlen($compressed) > 0) {
+                        return [base64_encode($compressed), 'image/jpeg'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fall back to raw file bytes below
+            }
+        }
+
+        return [base64_encode(file_get_contents($realPath)), $rawMime];
     }
 }

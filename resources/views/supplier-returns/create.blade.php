@@ -35,7 +35,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Reason</label>
                     <select name="reason" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm cursor-pointer">
@@ -43,6 +43,14 @@
                         <option value="wrong_item">Wrong Item Received</option>
                         <option value="overstock">Overstock</option>
                         <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Source Location</label>
+                    <select name="source_location" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm cursor-pointer">
+                        <option value="warehouse" selected>Warehouse Stock</option>
+                        <option value="defective_returns">Defective Customer Returns</option>
+                        <option value="store">Store Shelf</option>
                     </select>
                 </div>
                 <div>

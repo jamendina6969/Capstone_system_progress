@@ -17,9 +17,10 @@
             </div>
         @endif
 
-        @if ($product->product_image)
+        @if ($product->image_url)
             <div class="mb-4">
-                <img src="{{ Storage::url($product->product_image) }}" alt="{{ $product->product_name }}"
+                <img src="{{ $product->image_url }}" alt="{{ $product->product_name }}"
+                     onerror="this.parentElement.classList.add('hidden')"
                      class="w-32 h-32 object-cover rounded-lg border border-gray-200">
             </div>
         @endif

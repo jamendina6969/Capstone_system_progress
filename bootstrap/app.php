@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\BlockEmojis;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'password.changed' => EnsurePasswordChanged::class,
+            'user.active' => EnsureUserIsActive::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

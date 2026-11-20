@@ -478,8 +478,10 @@
         document.getElementById('modal_product_description').textContent = product.product_description || product.description || 'No description provided.';
         
         const imgEl = document.getElementById('modal_view_image');
-        if (product.product_image || product.image_path) {
-            imgEl.src = '/storage/' + (product.product_image || product.image_path);
+        const imgUrl = product.image_url || ((product.product_image || product.image_path) ? ('/products/' + product.id + '/image') : null);
+        if (imgUrl) {
+            imgEl.onerror = function () { this.classList.add('hidden'); };
+            imgEl.src = imgUrl;
             imgEl.classList.remove('hidden');
         } else {
             imgEl.classList.add('hidden');

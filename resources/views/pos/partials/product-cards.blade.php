@@ -88,8 +88,8 @@
             <div class="flex items-start gap-4 mb-4 pointer-events-none">
                 <!-- Image Placeholder -->
                 <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-2xl bg-[#e0f2fe] dark:bg-[#161B26] border border-transparent dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
-                    @if($item->product_image)
-                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}"
+                    @if($item->image_url)
+                        <img src="{{ $item->image_url }}" alt="{{ $item->product_name }}"
                              onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                              class="w-full h-full object-cover">
                         <svg class="hidden w-10 h-10 text-sky-200 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
@@ -173,8 +173,8 @@
             <!-- Left Section: Image & Info -->
             <div class="flex items-center gap-3 flex-1 min-w-0 pointer-events-none">
                 <div class="w-11 h-11 rounded-lg bg-gray-100 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
-                    @if($item->product_image)
-                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}"
+                    @if($item->image_url)
+                        <img src="{{ $item->image_url }}" alt="{{ $item->product_name }}"
                              onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                              class="w-full h-full object-cover">
                         <svg class="hidden w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>

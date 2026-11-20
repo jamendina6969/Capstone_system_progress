@@ -1047,9 +1047,18 @@ class PosController extends Controller
                             $qty = (int) $mat['qty'];
                             $unitPrice = (float) $mat['price'];
 
-                            // Expand each unit into its own individual record so it gets a unique item_sku and max 1 tracking
+                            // Allocate real serialized unit SKUs from product_item_skus (FIFO)
+                            $allocatedSkus = app(\App\Services\ItemSkuService::class)->allocateForSale(
+                                $product,
+                                $qty,
+                                $mat['source'] ?? 'store',
+                                $transaction->id,
+                                $projectItem->id
+                            );
+
+                            // Expand each unit into its own individual record with its exact serialized item_sku
                             for ($i = 0; $i < $qty; $i++) {
-                                $matItemSku = $product->item_sku ?: $product->product_sku . '-' . strtoupper(substr(uniqid(), -5));
+                                $matItemSku = $allocatedSkus[$i] ?? ($product->product_sku . '-' . strtoupper(substr(uniqid(), -5)));
 
                                 TransactionItemMaterial::create([
                                     'transaction_item_id' => $projectItem->id,
@@ -1102,17 +1111,13 @@ class PosController extends Controller
 
                         $lineSubtotal = max(0, ($unitPrice * $totalQuantity) - $itemDiscountAmount);
 
-                        $itemSku = $item['item_sku'] ?? null;
-                        if (empty($itemSku)) {
-                            $itemSku = $product->item_sku ?: $product->product_sku . '-' . strtoupper(substr(uniqid(), -5));
-                        }
-
-                        TransactionItem::create([
+                        $skuService = app(\App\Services\ItemSkuService::class);
+                        $txItem = TransactionItem::create([
                             'transaction_id' => $transaction->id,
                             'item_type' => 'product',
                             'product_id' => $product->id,
                             'product_sku' => $product->product_sku,
-                            'item_sku' => $itemSku,
+                            'item_sku' => $item['item_sku'] ?? ($product->product_sku . '-PENDING'),
                             'product_name' => $product->product_name,
                             'selling_price' => $unitPrice,
                             'quantity' => $totalQuantity,
@@ -1120,6 +1125,17 @@ class PosController extends Controller
                             'item_discount_type' => ($discType !== 'none' && $discVal > 0) ? $discType : null,
                             'item_discount_value' => $discVal,
                             'item_discount_scope' => ($discType !== 'none' && $discVal > 0) ? $discScope : null,
+                        ]);
+
+                        $allocatedSkus = $skuService->allocateForSale(
+                            $product,
+                            $totalQuantity,
+                            'store',
+                            $transaction->id,
+                            $txItem->id
+                        );
+                        $txItem->update([
+                            'item_sku' => $skuService->formatAssignedSkuLabel($allocatedSkus, $product),
                         ]);
 
                         SalesRecord::create([
@@ -1235,21 +1251,21 @@ class PosController extends Controller
                             'approved_at' => now(),
                         ]);
 
-                        $itemSku = !empty($product->item_sku)
-                            ? $product->item_sku
-                            : ($product->product_sku . '-' . strtoupper(substr(uniqid(), -5)));
-
-                        TransactionItem::create([
+                        $skuService = app(\App\Services\ItemSkuService::class);
+                        $txItem = TransactionItem::create([
                             'transaction_id' => $transaction->id,
                             'item_type' => 'product',
                             'product_id' => $product->id,
                             'product_sku' => $product->product_sku,
-                            'item_sku' => $itemSku,
+                            'item_sku' => $product->product_sku . '-PENDING',
                             'product_name' => $product->product_name,
                             'selling_price' => $unitPrice,
                             'quantity' => $qty,
                             'subtotal' => $lineSubtotal,
                         ]);
+
+                        $allocatedSkus = $skuService->allocateForSale($product, $qty, 'store', $transaction->id, $txItem->id);
+                        $txItem->update(['item_sku' => $skuService->formatAssignedSkuLabel($allocatedSkus, $product)]);
 
                         $saleRecord = SalesRecord::create([
                             'product_id' => $product->id,

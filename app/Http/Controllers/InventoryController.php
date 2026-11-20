@@ -308,6 +308,7 @@ class InventoryController extends Controller
                     $quantityBefore = (int) $lockedProduct->store_quantity;
                     $lockedProduct->decrement('warehouse_quantity', $quantity);
                     $lockedProduct->increment('store_quantity', $quantity);
+                    app(\App\Services\ItemSkuService::class)->transferUnits($lockedProduct, $quantity, 'warehouse', 'store');
                     $lockedProduct->refresh();
                     $quantityAfter = (int) $lockedProduct->store_quantity;
                     $type = 'transfer_to_store';
@@ -319,6 +320,7 @@ class InventoryController extends Controller
                     $quantityBefore = (int) $lockedProduct->warehouse_quantity;
                     $lockedProduct->decrement('store_quantity', $quantity);
                     $lockedProduct->increment('warehouse_quantity', $quantity);
+                    app(\App\Services\ItemSkuService::class)->transferUnits($lockedProduct, $quantity, 'store', 'warehouse');
                     $lockedProduct->refresh();
                     $quantityAfter = (int) $lockedProduct->warehouse_quantity;
                     $type = 'transfer_to_warehouse';
@@ -504,6 +506,7 @@ class InventoryController extends Controller
                     }
                     $product->decrement('warehouse_quantity', $lockedMovement->quantity);
                     $product->increment('store_quantity', $lockedMovement->quantity);
+                    app(\App\Services\ItemSkuService::class)->transferUnits($product, (int) $lockedMovement->quantity, 'warehouse', 'store');
                     $product->refresh();
                     $lockedMovement->quantity_after = $product->store_quantity;
                     $lockedMovement->status = 'approved';
@@ -514,6 +517,7 @@ class InventoryController extends Controller
                     }
                     $product->decrement('store_quantity', $lockedMovement->quantity);
                     $product->increment('warehouse_quantity', $lockedMovement->quantity);
+                    app(\App\Services\ItemSkuService::class)->transferUnits($product, (int) $lockedMovement->quantity, 'store', 'warehouse');
                     $product->refresh();
                     $lockedMovement->quantity_after = $product->warehouse_quantity;
                     $lockedMovement->status = 'approved';
@@ -607,6 +611,7 @@ class InventoryController extends Controller
                         $afterStore = $beforeStore;
                         if (!$isStaff) {
                             $product->increment('store_quantity', $storeAdd);
+                            app(\App\Services\ItemSkuService::class)->generateUnits($product, (int) $storeAdd, 'store');
                             $afterStore += $storeAdd;
                         }
                         StockMovement::create([
@@ -623,6 +628,7 @@ class InventoryController extends Controller
                         $afterWarehouse = $beforeWarehouse;
                         if (!$isStaff) {
                             $product->increment('warehouse_quantity', $warehouseAdd);
+                            app(\App\Services\ItemSkuService::class)->generateUnits($product, (int) $warehouseAdd, 'warehouse');
                             $afterWarehouse += $warehouseAdd;
                         }
                         StockMovement::create([
@@ -842,11 +848,13 @@ class InventoryController extends Controller
                 if ($lockedMovement->type === 'restock_store') {
                     $quantityBefore = (int) $product->store_quantity;
                     $product->increment('store_quantity', $lockedMovement->quantity);
+                    app(\App\Services\ItemSkuService::class)->generateUnits($product, (int) $lockedMovement->quantity, 'store');
                     $lockedMovement->quantity_before = $quantityBefore;
                     $lockedMovement->quantity_after = $quantityBefore + (int) $lockedMovement->quantity;
                 } else {
                     $quantityBefore = (int) $product->warehouse_quantity;
                     $product->increment('warehouse_quantity', $lockedMovement->quantity);
+                    app(\App\Services\ItemSkuService::class)->generateUnits($product, (int) $lockedMovement->quantity, 'warehouse');
                     $lockedMovement->quantity_before = $quantityBefore;
                     $lockedMovement->quantity_after = $quantityBefore + (int) $lockedMovement->quantity;
                 }

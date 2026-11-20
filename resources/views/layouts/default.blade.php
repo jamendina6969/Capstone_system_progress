@@ -378,6 +378,7 @@
         });
     </script>
 
+    @include('partials.item-skus-modal')
     @include('partials.global-input-guards')
     <script>
         if ('serviceWorker' in navigator) {

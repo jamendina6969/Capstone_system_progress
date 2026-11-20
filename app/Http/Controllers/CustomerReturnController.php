@@ -123,9 +123,17 @@ class CustomerReturnController extends Controller
                 ->with(['transactionItems.product', 'transactionItems.materials.product']);
 
             if ($q !== '') {
-                $query->where(function ($sub) use ($q) {
+                $matchedUnitTxIds = \App\Models\ProductItemSku::where('item_sku', 'like', "%{$q}%")
+                    ->whereNotNull('transaction_id')
+                    ->limit(50)
+                    ->pluck('transaction_id')
+                    ->unique()
+                    ->all();
+
+                $query->where(function ($sub) use ($q, $matchedUnitTxIds) {
                     $sub->where('transaction_id', 'like', "%{$q}%")
                         ->orWhere('customer_name', 'like', "%{$q}%")
+                        ->when(!empty($matchedUnitTxIds), fn ($txQ) => $txQ->orWhereIn('id', $matchedUnitTxIds))
                         ->orWhereHas('transactionItems', function ($itemQ) use ($q) {
                             $itemQ->where('product_name', 'like', "%{$q}%")
                                 ->orWhere('product_sku', 'like', "%{$q}%")
@@ -197,6 +205,27 @@ class CustomerReturnController extends Controller
             return response()->json(['found' => false]);
         }
 
+        // 1. First check exact serialized unit in product_item_skus (single source of truth)
+        $unit = \App\Models\ProductItemSku::with(['product', 'transaction', 'purchaseOrder.supplier'])
+            ->where('item_sku', $rawSku)
+            ->first();
+
+        if ($unit && $unit->product) {
+            return response()->json([
+                'found'            => true,
+                'serialized'       => true,
+                'item_sku'         => $unit->item_sku,
+                'unit_status'      => $unit->status,
+                'already_returned' => in_array($unit->status, ['returned_defective', 'returned_to_supplier'], true),
+                'product_name'     => $unit->product->product_name,
+                'product_sku'      => $unit->product->product_sku,
+                'transaction_id'   => $unit->transaction?->transaction_id,
+                'po_number'        => $unit->purchaseOrder?->po_number,
+                'supplier_name'    => $unit->purchaseOrder?->supplier?->name,
+            ]);
+        }
+
+        // 2. Fallback to product master SKU or product name for legacy records
         $product = Product::where('product_sku', $rawSku)
             ->orWhere('product_name', $rawSku)
             ->first();
@@ -204,6 +233,7 @@ class CustomerReturnController extends Controller
         if ($product) {
             return response()->json([
                 'found' => true,
+                'serialized' => false,
                 'product_name' => $product->product_name,
                 'product_sku' => $product->product_sku,
             ]);
@@ -400,11 +430,21 @@ class CustomerReturnController extends Controller
                             'source'             => null,
                         ]);
 
-                        if ($line['restock']) {
-                            $item->loadMissing('materials');
-                            foreach ($item->materials as $mat) {
+                        $item->loadMissing('materials');
+                        foreach ($item->materials as $mat) {
+                            if ($line['restock']) {
                                 $restockValue += $this->returnToStock(
                                     (int) $mat->product_id, (int) $mat->quantity, $mat->source ?? 'store', $return, $refundTx, $user
+                                );
+                            }
+                            if ($mat->product_id) {
+                                app(\App\Services\ItemSkuService::class)->processCustomerReturn(
+                                    (int) $mat->product_id,
+                                    (int) $mat->quantity,
+                                    $line['restock'] ? 'good' : 'defective',
+                                    (int) $transaction->id,
+                                    null,
+                                    (int) $item->id
                                 );
                             }
                         }
@@ -426,6 +466,17 @@ class CustomerReturnController extends Controller
                                     (int) $mat['product_id'], (int) $mat['qty'], $mat['source'], $return, $refundTx, $user
                                 );
                             }
+
+                            if (!empty($mat['product_id'])) {
+                                app(\App\Services\ItemSkuService::class)->processCustomerReturn(
+                                    (int) $mat['product_id'],
+                                    (int) $mat['qty'],
+                                    $line['restock'] ? 'good' : 'defective',
+                                    (int) $transaction->id,
+                                    null,
+                                    (int) $item->id
+                                );
+                            }
                         }
                     } else {
                         CustomerReturnItem::create([
@@ -442,6 +493,18 @@ class CustomerReturnController extends Controller
                         if ($line['restock']) {
                             $restockValue += $this->returnToStock(
                                 $item->product_id, $line['qty'], 'store', $return, $refundTx, $user
+                            );
+                        }
+
+                        // Sync serialized unit SKUs: good -> store (in_stock), defective -> warehouse (returned_defective)
+                        if ($item->product_id) {
+                            app(\App\Services\ItemSkuService::class)->processCustomerReturn(
+                                (int) $item->product_id,
+                                (int) $line['qty'],
+                                $line['restock'] ? 'good' : 'defective',
+                                (int) $transaction->id,
+                                null,
+                                (int) $item->id
                             );
                         }
                     }
@@ -546,7 +609,28 @@ class CustomerReturnController extends Controller
             $customerReturn = CustomerReturn::whereKey($customerReturn->id)->lockForUpdate()->firstOrFail();
 
             foreach ($customerReturn->items as $line) {
-                if (! $line->restock) continue;
+                if (! $line->restock) {
+                    // Restore defective returned unit SKUs back to sold status on void
+                    if ($line->product_id) {
+                        $defectiveIds = \App\Models\ProductItemSku::where('product_id', $line->product_id)
+                            ->where('transaction_id', $customerReturn->transaction_id)
+                            ->where('status', \App\Models\ProductItemSku::STATUS_RETURNED_DEFECTIVE)
+                            ->orderByDesc('id')
+                            ->limit((int) $line->quantity)
+                            ->lockForUpdate()
+                            ->pluck('id')
+                            ->all();
+
+                        if (!empty($defectiveIds)) {
+                            \App\Models\ProductItemSku::whereIn('id', $defectiveIds)->update([
+                                'status'     => \App\Models\ProductItemSku::STATUS_SOLD,
+                                'location'   => $line->source ?? 'store',
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                    continue;
+                }
 
                 $source = $line->source ?? 'store';
                 $col    = $source === 'warehouse' ? 'warehouse_quantity' : 'store_quantity';
@@ -556,6 +640,25 @@ class CustomerReturnController extends Controller
 
                 $before = (int) $product->{$col};
                 $product->decrement($col, $line->quantity);
+
+                // Re-mark restocked unit SKUs as sold again when voiding the return
+                $restockedIds = \App\Models\ProductItemSku::where('product_id', $product->id)
+                    ->where('location', $source)
+                    ->where('status', \App\Models\ProductItemSku::STATUS_IN_STOCK)
+                    ->orderByDesc('updated_at')
+                    ->limit((int) $line->quantity)
+                    ->lockForUpdate()
+                    ->pluck('id')
+                    ->all();
+
+                if (!empty($restockedIds)) {
+                    \App\Models\ProductItemSku::whereIn('id', $restockedIds)->update([
+                        'status'              => \App\Models\ProductItemSku::STATUS_SOLD,
+                        'transaction_id'      => $customerReturn->transaction_id,
+                        'transaction_item_id' => $line->transaction_item_id,
+                        'updated_at'          => now(),
+                    ]);
+                }
 
                 StockMovement::create([
                     'batch_id'        => $customerReturn->return_number . '-VOID',

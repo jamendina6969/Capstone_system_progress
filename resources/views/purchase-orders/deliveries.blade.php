@@ -59,8 +59,23 @@
             </div>
             <div class="divide-y divide-gray-100 dark:divide-[#1e2536]">
                 @forelse($recent as $po)
-                    <div class="px-6 lg:px-8 py-3 flex items-center justify-between text-sm">
-                        <span class="font-semibold text-gray-900 dark:text-white">{{ $po->po_number }} <span class="font-normal text-gray-500 dark:text-slate-400">— {{ $po->supplier->name ?? '—' }}</span></span>
+                    @php
+                        $isWarehouse = auth()->user()->role === 'warehouse_staff';
+                        $hasShortage = (float) ($po->discrepancy_amount ?? 0) > 0;
+                    @endphp
+                    <div class="px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                        <div class="flex items-center gap-2.5 flex-wrap">
+                            <span class="font-semibold text-gray-900 dark:text-white">{{ $po->po_number }} <span class="font-normal text-gray-500 dark:text-slate-400">— {{ $po->supplier->name ?? '—' }}</span></span>
+                            @if($hasShortage)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900">
+                                    {{ $isWarehouse ? 'Discrepancy Logged' : 'Shortage: -₱' . number_format($po->discrepancy_amount, 2) }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900">
+                                    Complete
+                                </span>
+                            @endif
+                        </div>
                         <span class="text-gray-500 dark:text-slate-400">{{ $po->received_quantity }} units • {{ optional($po->received_at)->format('M d, Y h:i A') }}</span>
                     </div>
                 @empty

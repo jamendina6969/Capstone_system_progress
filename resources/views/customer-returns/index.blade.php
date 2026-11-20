@@ -1014,14 +1014,28 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.ok) {
                 const data = await response.json();
                 if (data.found) {
-                    banner.className = 'mb-3 px-4 py-3 rounded-2xl border-2 text-xs font-medium flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300';
-                    banner.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">Store Item · Wrong Receipt</span>
-                            <span><strong>${escapeHtml(data.product_name)}</strong> (<span class="font-mono">${escapeHtml(data.product_sku)}</span>) belongs to this store, but is <strong>NOT in this transaction</strong>.</span>
-                        </div>
-                        <button type="button" onclick="clearSkuCrosscheck()" class="underline font-semibold shrink-0 cursor-pointer">Clear</button>
-                    `;
+                    const poMeta = data.po_number ? ` · PO <strong class="font-mono">${escapeHtml(data.po_number)}</strong>${data.supplier_name ? ' (' + escapeHtml(data.supplier_name) + ')' : ''}` : '';
+                    const txMeta = data.transaction_id ? ` · Receipt <strong class="font-mono">${escapeHtml(data.transaction_id)}</strong>` : '';
+
+                    if (data.serialized && data.already_returned) {
+                        banner.className = 'mb-3 px-4 py-3 rounded-2xl border-2 text-xs font-medium flex items-center justify-between gap-3 bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300';
+                        banner.innerHTML = `
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold uppercase">Already Returned</span>
+                                <span>Unit <strong class="font-mono">${escapeHtml(data.item_sku)}</strong> (<strong>${escapeHtml(data.product_name)}</strong>) has status <strong>${escapeHtml(String(data.unit_status || '').replace(/_/g, ' ').toUpperCase())}</strong>${poMeta}.</span>
+                            </div>
+                            <button type="button" onclick="clearSkuCrosscheck()" class="underline font-semibold shrink-0 cursor-pointer">Clear</button>
+                        `;
+                    } else {
+                        banner.className = 'mb-3 px-4 py-3 rounded-2xl border-2 text-xs font-medium flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300';
+                        banner.innerHTML = `
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">${data.serialized ? 'Serialized Unit · Wrong Receipt' : 'Store Item · Wrong Receipt'}</span>
+                                <span><strong>${escapeHtml(data.product_name)}</strong> (<span class="font-mono">${escapeHtml(data.item_sku || data.product_sku)}</span>) belongs to this store, but is <strong>NOT in this transaction</strong>${txMeta}${poMeta}.</span>
+                            </div>
+                            <button type="button" onclick="clearSkuCrosscheck()" class="underline font-semibold shrink-0 cursor-pointer">Clear</button>
+                        `;
+                    }
                     banner.classList.remove('hidden');
                     return;
                 }

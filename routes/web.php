@@ -42,7 +42,11 @@ Route::match(['get', 'post'], '/logout', [UserController::class, 'logout'])->nam
 
 // ==================== AUTHENTICATED ROUTES ====================
 
-Route::middleware(['auth', 'password.changed'])->group(function () {
+Route::middleware(['auth', 'user.active', 'password.changed'])->group(function () {
+
+    // Persistent DB-backed product image & unit SKU inspector endpoints
+    Route::get('/products/{product}/image', [ProductController::class, 'serveImage'])->name('products.image');
+    Route::get('/products/{product}/item-skus', [ProductController::class, 'itemSkus'])->name('products.itemSkus');
 
     // ==================== FIRST-LOGIN FORCED PASSWORD CHANGE ====================
     Route::get('/change-password', [UserController::class, 'showForcePasswordChange'])->name('password.force.edit');

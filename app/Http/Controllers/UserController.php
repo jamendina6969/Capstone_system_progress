@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -354,6 +355,15 @@ class UserController extends Controller
 
             $user->save();
 
+            // Force logout immediately if account was deactivated
+            if (!$targetActive) {
+                try {
+                    DB::table('sessions')->where('user_id', $user->id)->delete();
+                } catch (\Throwable $e) {
+                    Log::warning('Session purge skipped: ' . $e->getMessage());
+                }
+            }
+
             try {
                 $authUser = Auth::user();
                 $newValues = $user->only(['firstname', 'lastname', 'suffix', 'username', 'email', 'role', 'is_active']);
@@ -420,6 +430,11 @@ class UserController extends Controller
             $authUser = Auth::user();
             $actorName = $authUser->firstname . ' ' . $authUser->lastname;
             $actorRole = $authUser->role;
+
+            // Purge any active sessions for the user before deletion
+            try {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            } catch (\Throwable $e) {}
 
             // Attempt to delete the user
             $user->delete();

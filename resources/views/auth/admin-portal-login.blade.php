@@ -35,7 +35,7 @@
                         Restricted System Administration
                     </span>
                     <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-                        Dedicated authentication gateway for System Administrator accounts. All sign-in attempts are rate-limited and recorded in the security audit trail.
+                        Dedicated authentication gateway for System Administrator accounts. All sign-in attempts are rate-limited and recorded in the security audit log.
                     </p>
                 </div>
             </div>

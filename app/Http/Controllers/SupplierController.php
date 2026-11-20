@@ -53,11 +53,17 @@ class SupplierController extends Controller
 
     public function discrepancyReport(Request $request)
     {
+        $receivedStatuses = ['received', 'completed'];
+
         $query = PurchaseOrder::with(['supplier', 'items.product.category.parent', 'items.product.category'])
-            ->where('status', 'completed')
+            ->whereIn('status', $receivedStatuses)
             ->whereHas('items', function ($q) {
                 $q->whereColumn('quantity', '>', 'received_quantity');
             });
+
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', (int) $request->supplier_id);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -89,15 +95,15 @@ class SupplierController extends Controller
 
         $ordersWithDiscrepancies = $query->orderBy('received_at', 'desc')->paginate(20)->withQueryString();
 
-        // Calculate metrics
-        $totalOrders = PurchaseOrder::where('status', 'completed')->count();
-        $totalDiscrepancies = PurchaseOrder::where('status', 'completed')
+        // Calculate metrics across all received/completed POs
+        $totalOrders = PurchaseOrder::whereIn('status', $receivedStatuses)->count();
+        $totalDiscrepancies = PurchaseOrder::whereIn('status', $receivedStatuses)
             ->whereHas('items', function ($q) {
                 $q->whereColumn('quantity', '>', 'received_quantity');
             })->count();
 
         // Calculate total lost value across all discrepancies
-        $totalLost = PurchaseOrder::where('status', 'completed')
+        $totalLost = PurchaseOrder::whereIn('status', $receivedStatuses)
             ->whereHas('items', function ($q) {
                 $q->whereColumn('quantity', '>', 'received_quantity');
             })->with('items')->get()->sum(function ($po) {
@@ -267,7 +273,7 @@ class SupplierController extends Controller
 
         if ($request->filled('transaction_type')) {
             $transactionType = $request->input('transaction_type');
-            if (in_array($transactionType, ['purchase', 'payment', 'shortage'], true)) {
+            if (in_array($transactionType, ['purchase', 'payment', 'shortage', 'return_credit'], true)) {
                 $query->where('transaction_type', $transactionType);
             }
         }

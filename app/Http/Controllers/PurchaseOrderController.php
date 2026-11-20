@@ -294,6 +294,14 @@ class PurchaseOrderController extends Controller
                         $product->save();
                         $afterQty = $beforeQty + $receivedQty;
 
+                        // Generate serialized unit item_skus tagged with this PO for end-to-end supplier traceability
+                        app(\App\Services\ItemSkuService::class)->generateUnits(
+                            $product,
+                            $receivedQty,
+                            $destination === 'store' ? 'store' : 'warehouse',
+                            $po->id
+                        );
+
                         StockMovement::create([
                             'batch_id' => 'GRN-' . $po->po_number,
                             'product_id' => $item->product_id,

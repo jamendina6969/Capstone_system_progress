@@ -10,6 +10,7 @@
             '' => 'All Transactions',
             'purchase' => 'Purchases',
             'payment' => 'Payments',
+            'return_credit' => 'Return Credits',
             'shortage' => 'Shortage Adjustments',
         ];
 
@@ -321,6 +322,15 @@
                                         Purchase
                                     </span>
 
+                                @elseif($ledger->transaction_type === 'return_credit')
+
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-100 text-teal-700 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900/50">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                        </svg>
+                                        Return Credit
+                                    </span>
+
                                 @elseif($ledger->transaction_type === 'shortage')
 
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50">
@@ -423,13 +433,17 @@
                             <!-- Amount -->
                             <td class="px-8 py-5 text-right whitespace-nowrap">
 
-                                <span class="text-sm font-bold {{ $ledger->transaction_type === 'shortage' ? 'text-amber-700 dark:text-amber-400' : '' }}">
-                                    ₱{{ number_format($ledger->amount, 2) }}
+                                <span class="text-sm font-bold {{ $ledger->transaction_type === 'shortage' ? 'text-amber-700 dark:text-amber-400' : ($ledger->transaction_type === 'return_credit' ? 'text-teal-700 dark:text-teal-400' : '') }}">
+                                    {{ $ledger->transaction_type === 'return_credit' ? '- ' : '' }}₱{{ number_format($ledger->amount, 2) }}
                                 </span>
 
                                 @if($ledger->transaction_type === 'payment')
                                     <p class="text-[10px] uppercase tracking-wider font-semibold text-orange-600 dark:text-orange-400 mt-1">
                                         Net Paid: ₱{{ number_format($ledger->amount - $ledger->change_amount, 2) }}
+                                    </p>
+                                @elseif($ledger->transaction_type === 'return_credit')
+                                    <p class="text-[10px] uppercase tracking-wider font-semibold text-teal-600 dark:text-teal-400 mt-1">
+                                        Deducted from balance
                                     </p>
                                 @elseif($ledger->transaction_type === 'shortage')
                                     <p class="text-[10px] uppercase tracking-wider font-semibold text-amber-600 dark:text-amber-400 mt-1">
@@ -440,6 +454,8 @@
                                 <p class="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-slate-500 mt-1">
                                     @if($ledger->transaction_type === 'purchase')
                                         Purchase Recorded
+                                    @elseif($ledger->transaction_type === 'return_credit')
+                                        Return Credit Applied
                                     @elseif($ledger->transaction_type === 'shortage')
                                         Shortage Recorded
                                     @else

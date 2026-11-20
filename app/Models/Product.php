@@ -20,11 +20,22 @@ class Product extends Model
         'reorder_point',
         'approx_volume',
         'storage_volume_cbm',
-        'product_image', 
+        'product_image',
+        'product_image_data',
+        'product_image_mime',
         'store_quantity',
         'warehouse_quantity',
         'total_quantity',
         // <--- ADDED to support EoqService
+    ];
+
+    // Keep JSON responses lightweight — never serialize raw base64 image blobs into POS/Inventory lists
+    protected $hidden = [
+        'product_image_data',
+    ];
+
+    protected $appends = [
+        'image_url',
     ];
 
     protected static function booted()
@@ -32,6 +43,25 @@ class Product extends Model
         static::saving(function ($product) {
             $product->total_quantity = (int) ($product->store_quantity ?? 0) + (int) ($product->warehouse_quantity ?? 0);
         });
+    }
+
+    public function itemSkus()
+    {
+        return $this->hasMany(ProductItemSku::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!empty($this->product_image_data)) {
+            $v = $this->updated_at ? $this->updated_at->timestamp : $this->id;
+            return route('products.image', ['product' => $this->id, 'v' => $v]);
+        }
+
+        if (!empty($this->product_image)) {
+            return asset('storage/' . $this->product_image);
+        }
+
+        return null;
     }
 
     public function category()

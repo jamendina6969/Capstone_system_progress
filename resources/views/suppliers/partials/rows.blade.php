@@ -10,6 +10,21 @@
         <td class="px-8 py-4 font-medium text-gray-900 dark:text-white">
             {{ $supplier->name }}
             <p class="text-xs text-gray-500 mt-0.5 truncate max-w-[200px]">{{ $supplier->address }}</p>
+            <div class="flex flex-wrap items-center gap-1.5 mt-1.5" onclick="event.stopPropagation()">
+                @php
+                    $acc = $supplier->delivery_accuracy;
+                    $discCount = $supplier->discrepancy_count;
+                @endphp
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $acc >= 90 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900' : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900' }}">
+                    {{ $acc }}% Accuracy
+                </span>
+                @if($discCount > 0)
+                    <a href="{{ route('suppliers.discrepancy', ['supplier_id' => $supplier->id]) }}"
+                       class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-600 hover:text-white dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900 transition-colors">
+                        {{ $discCount }} {{ Str::plural('Discrepancy', $discCount) }}
+                    </a>
+                @endif
+            </div>
         </td>
 
         <td class="px-8 py-4 text-gray-600 dark:text-slate-400">

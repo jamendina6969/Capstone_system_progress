@@ -12,7 +12,7 @@ class SupplierReturn extends Model
 
     protected $fillable = [
         'return_number', 'supplier_id', 'purchase_order_id', 'user_id',
-        'reason', 'notes', 'total_amount', 'status'
+        'reason', 'source_location', 'notes', 'total_amount', 'status'
     ];
 
     public function supplier() { return $this->belongsTo(Supplier::class); }

@@ -24,8 +24,13 @@ class Supplier extends Model
         'status',
     ];
 
-    // Automatically append the computed rating to JSON/Array outputs
-    protected $appends = ['average_rating', 'full_address'];
+    // Automatically append computed metrics to JSON/Array outputs
+    protected $appends = ['average_rating', 'full_address', 'discrepancy_count', 'delivery_accuracy'];
+
+    public function supplierReturns()
+    {
+        return $this->hasMany(SupplierReturn::class);
+    }
 
     public function getFullAddressAttribute(): string
     {
@@ -77,12 +82,41 @@ class Supplier extends Model
             })
             ->sum(DB::raw('amount - COALESCE(change_amount, 0)'));
 
+        $returnCredits = $this->ledgers()
+            ->where('transaction_type', 'return_credit')
+            ->sum('amount');
+
         return round(
             (float) $purchases
             - (float) $legacyShortages
-            - (float) $payments,
+            - (float) $payments
+            - (float) $returnCredits,
             2
         );
+    }
+
+    public function getDiscrepancyCountAttribute(): int
+    {
+        return $this->purchaseOrders()
+            ->whereIn('status', ['received', 'completed'])
+            ->whereHas('items', function ($q) {
+                $q->whereColumn('quantity', '>', 'received_quantity');
+            })
+            ->count();
+    }
+
+    public function getDeliveryAccuracyAttribute(): ?float
+    {
+        $totalReceivedPos = $this->purchaseOrders()
+            ->whereIn('status', ['received', 'completed'])
+            ->count();
+
+        if ($totalReceivedPos === 0) {
+            return null;
+        }
+
+        $cleanPos = max(0, $totalReceivedPos - $this->discrepancy_count);
+        return round(($cleanPos / $totalReceivedPos) * 100, 1);
     }
 
     public function getAverageRatingAttribute()
