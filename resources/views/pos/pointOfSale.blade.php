@@ -36,9 +36,9 @@
 
             <div class="flex items-center gap-3">
                 <!-- Counter POS badge pill (Bigger) -->
-                <div class="inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Counter POS</span>
+                <div id="posConnectionPill" class="inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs">
+                    <span data-conn-dot class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span data-conn-label class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Counter POS</span>
                 </div>
 
                 <!-- Parked Orders Button (Bigger) -->
@@ -62,7 +62,7 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
             </span>
-            <span><strong>Offline Mode Active:</strong> Internet connection interrupted. You can continue ringing up retail sales. Transactions are safely stored locally and will automatically synchronize when connection is restored.</span>
+            <span id="offlineStatusMessage"><strong>Offline Mode Active:</strong> Internet connection interrupted. You can continue ringing up retail sales. Transactions are safely stored locally and will automatically synchronize when connection is restored.</span>
         </div>
         <div class="flex items-center gap-2">
             <span id="offlineQueueBadge" class="bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 px-3 py-1 rounded-full text-xs font-bold">0 Offline Sales Pending</span>
@@ -170,12 +170,13 @@
                                 </button>
                             </form>
                         @endif
-                        <span class="text-sm font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-[#161B26] px-4 py-2 rounded-full border border-gray-200 dark:border-[#1e2536]">
+                        <span id="posCartCountBadge" class="text-sm font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-[#161B26] px-4 py-2 rounded-full border border-gray-200 dark:border-[#1e2536]">
                             {{ array_sum(array_column($cart, 'quantity')) }} {{ array_sum(array_column($cart, 'quantity')) === 1 ? 'item' : 'items' }}
                         </span>
                     </div>
                 </div>
 
+                <div id="posCartItemsWrapper">
                 @if (count($cart) > 0)
                     <div class="divide-y divide-gray-100 dark:divide-[#1e2536] max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
                         @foreach ($cart as $id => $item)
@@ -298,6 +299,7 @@
                         Your cart is empty. Use Drop/Add buttons or type a quantity on product cards to add items.
                     </div>
                 @endif
+                </div>
             </div>
 
             <!-- Cart Footer Totals & Discounts Integration -->
@@ -322,7 +324,7 @@
                     <!-- Subtotal -->
                     <div class="flex justify-between text-gray-600 dark:text-slate-400 font-medium">
                         <span>Subtotal</span>
-                        <span>₱{{ number_format($subtotal, 2) }}</span>
+                        <span id="posSubtotalValue">₱{{ number_format($subtotal, 2) }}</span>
                     </div>
                     
                     <!-- Discounts -->
@@ -334,7 +336,7 @@
                                 {{ isset($cartDiscount) && $cartDiscount['type'] !== 'none' ? ucfirst(str_replace('_', ' ', $cartDiscount['type'])) : 'Configure' }}
                             </button>
                         </div>
-                        <span class="text-rose-600 dark:text-rose-400 font-bold">-₱{{ number_format($totalAllDiscounts, 2) }}</span>
+                        <span id="posDiscountValue" class="text-rose-600 dark:text-rose-400 font-bold">-₱{{ number_format($totalAllDiscounts, 2) }}</span>
                     </div>
 
                     @if(count($discountedItemsList) > 0 || (isset($cartDiscount) && $cartDiscount['type'] !== 'none'))
@@ -367,16 +369,17 @@
                     <!-- Tax (12% VAT) -->
                     <div class="flex justify-between text-gray-600 dark:text-slate-400 font-medium pt-1">
                         <span>Tax (12% VAT)</span>
-                        <span>₱{{ number_format($vatAmount, 2) }}</span>
+                        <span id="posVatValue">₱{{ number_format($vatAmount, 2) }}</span>
                     </div>
 
                     <!-- Final Total Amount (Uses Grand Total) -->
                     <div class="flex justify-between items-center text-lg font-black text-gray-900 dark:text-white pt-3 border-t-2 border-gray-100 dark:border-[#1e2536] mt-1">
                         <span>Total Amount</span>
-                        <span class="text-xl">₱{{ number_format($grandTotal, 2) }}</span>
+                        <span id="posGrandTotalValue" class="text-xl">₱{{ number_format($grandTotal, 2) }}</span>
                     </div>
                 </div>
 
+                <div id="posCartActionRow">
                 @if(count($cart) > 0)
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="openClearModal()" class="w-1/3 text-center bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white font-bold py-3 px-2 rounded-full transition-all text-sm cursor-pointer shadow-xs">
@@ -391,6 +394,7 @@
                         Proceed to Checkout
                     </button>
                 @endif
+                </div>
             </div>
         </div>
     </div>
@@ -774,7 +778,7 @@
             <p class="text-sm text-gray-500 dark:text-slate-400 mb-6">This will remove all items and release the reserved stock.</p>
             <div class="flex items-center gap-3">
                 <button type="button" onclick="closeClearModal()" class="w-full border-2 border-slate-300 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-full hover:bg-slate-700 hover:text-white transition-colors">Cancel</button>
-                <form action="{{ route('pos.clear') }}" method="POST" class="w-full">
+                <form action="{{ route('pos.clear') }}" method="POST" onsubmit="return handleClearCartSubmit(event)" class="w-full">
                     @csrf
                     <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-md transition-colors">Yes, Clear</button>
                 </form>
@@ -1144,6 +1148,181 @@
     // =====================================================
     // OFFLINE POS LOGIC & WORKFLOWS
     // =====================================================
+    function fmtPeso(num) {
+        return '₱' + (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapePosHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function recalculateAndRenderOfflineCart() {
+        const cart = window.currentPosCart || {};
+        const items = Object.values(cart);
+        let subtotal = 0;
+        let totalQty = 0;
+
+        items.forEach(item => {
+            const qty = parseInt(item.quantity, 10) || 0;
+            const price = parseFloat(item.selling_price) || 0;
+            item.subtotal = Math.round(qty * price * 100) / 100;
+            subtotal += item.subtotal;
+            totalQty += qty;
+        });
+
+        subtotal = Math.round(subtotal * 100) / 100;
+        const vatAmount = Math.round(subtotal * 0.12 * 100) / 100;
+        const grandTotal = Math.round((subtotal + vatAmount) * 100) / 100;
+
+        window.currentPosSubtotal = subtotal;
+        window.currentPosVatAmount = vatAmount;
+        window.currentPosGrandTotal = grandTotal;
+
+        if (window.PosOffline) {
+            window.PosOffline.saveOfflineCart(cart);
+        }
+
+        // Update badge count
+        const countBadge = document.getElementById('posCartCountBadge');
+        if (countBadge) {
+            countBadge.textContent = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+        }
+
+        // Render cart item rows
+        const wrapper = document.getElementById('posCartItemsWrapper');
+        if (wrapper) {
+            if (items.length === 0) {
+                wrapper.innerHTML = `<div class="py-16 text-center text-gray-400 dark:text-slate-500 font-medium text-sm">Your cart is empty. Use Drop/Add buttons or type a quantity on product cards to add items.</div>`;
+            } else {
+                const rowsHtml = items.map(item => `
+                    <div class="py-3 flex flex-col gap-2 group border-b border-gray-100 dark:border-[#1e2536]">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                        ${escapePosHtml(item.product_name)}
+                                        <span class="text-[10px] font-normal text-amber-600 dark:text-amber-400">(Offline)</span>
+                                    </h3>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-slate-100 shrink-0">${fmtPeso(item.subtotal)}</span>
+                                </div>
+                                <p class="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5">Qty: ${item.quantity} × ${fmtPeso(item.selling_price)}</p>
+                            </div>
+                            <button type="button" onclick="removeOfflineCartItem('${item.id}')" class="text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1 cursor-pointer shrink-0" title="Remove item">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                wrapper.innerHTML = `<div class="divide-y divide-gray-100 dark:divide-[#1e2536] max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">${rowsHtml}</div>`;
+            }
+        }
+
+        // Update summary totals
+        const subEl = document.getElementById('posSubtotalValue');
+        const discEl = document.getElementById('posDiscountValue');
+        const vatEl = document.getElementById('posVatValue');
+        const totalEl = document.getElementById('posGrandTotalValue');
+        if (subEl) subEl.textContent = fmtPeso(subtotal);
+        if (discEl) discEl.textContent = '-₱0.00';
+        if (vatEl) vatEl.textContent = fmtPeso(vatAmount);
+        if (totalEl) totalEl.textContent = fmtPeso(grandTotal);
+
+        // Update Clear / Proceed to Checkout action row
+        const actionRow = document.getElementById('posCartActionRow');
+        if (actionRow) {
+            if (items.length > 0) {
+                actionRow.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="openClearModal()" class="w-1/3 text-center bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white font-bold py-3 px-2 rounded-full transition-all text-sm cursor-pointer shadow-xs">Clear</button>
+                        <a href="{{ route('checkout') }}" onclick="return handlePosCheckout(event)" class="w-2/3 text-center bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white font-bold py-3 px-3 rounded-full transition-all text-sm shadow-xs cursor-pointer">Proceed to Checkout</a>
+                    </div>
+                `;
+            } else {
+                actionRow.innerHTML = `<button disabled class="w-full text-center bg-gray-100 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] text-gray-400 dark:text-slate-600 font-bold py-3 rounded-full cursor-not-allowed text-sm">Proceed to Checkout</button>`;
+            }
+        }
+
+        // Refresh visible stock numbers on product cards using cached catalog
+        if (window.PosOffline && window.HydrotechLiveSync) {
+            window.HydrotechLiveSync.applyStockUpdates(Object.values(window.PosOffline.getCatalog()));
+        }
+    }
+
+    function handleOfflineUpdateQty(productId, actionType, exactVal = null, view = 'grid') {
+        if (!window.PosOffline) {
+            alert('Offline engine is not ready.');
+            return;
+        }
+
+        const product = window.PosOffline.getProduct(productId);
+        if (!product) {
+            alert('This product is not cached for offline use yet.');
+            return;
+        }
+
+        if (!window.currentPosCart || Array.isArray(window.currentPosCart)) {
+            window.currentPosCart = {};
+        }
+
+        const key = String(productId);
+        const existing = window.currentPosCart[key];
+        const currentQty = existing ? (parseInt(existing.quantity, 10) || 0) : 0;
+        const maxAvailable = parseInt(product.store_quantity, 10) || 0;
+
+        let newQty = currentQty;
+        if (actionType === 'exact') {
+            const parsed = Number.parseInt(exactVal, 10);
+            newQty = Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+        } else {
+            const qtyInput = document.getElementById(`qty-${productId}-${view}`);
+            const step = qtyInput ? (Number.parseInt(qtyInput.value, 10) || 1) : 1;
+            const delta = Math.max(1, step);
+            newQty = actionType === 'decrease' ? Math.max(0, currentQty - delta) : currentQty + delta;
+        }
+
+        if (newQty > maxAvailable) {
+            alert(`Only ${maxAvailable} unit(s) of ${product.product_name} available in Store shelf stock.`);
+            newQty = maxAvailable;
+        }
+
+        if (newQty <= 0) {
+            delete window.currentPosCart[key];
+        } else {
+            window.currentPosCart[key] = {
+                id: product.id,
+                type: 'product',
+                product_name: product.product_name,
+                product_sku: product.product_sku || '',
+                selling_price: parseFloat(product.selling_price) || 0,
+                quantity: newQty,
+                subtotal: Math.round(newQty * (parseFloat(product.selling_price) || 0) * 100) / 100,
+                item_discount_type: 'none',
+                item_discount_value: 0,
+                item_discount_amount: 0,
+            };
+        }
+
+        recalculateAndRenderOfflineCart();
+    }
+
+    function removeOfflineCartItem(productId) {
+        if (!window.currentPosCart) return;
+        delete window.currentPosCart[String(productId)];
+        recalculateAndRenderOfflineCart();
+    }
+
+    function handleClearCartSubmit(event) {
+        if (!navigator.onLine) {
+            event.preventDefault();
+            window.currentPosCart = {};
+            if (window.PosOffline) window.PosOffline.clearOfflineCart();
+            recalculateAndRenderOfflineCart();
+            closeClearModal();
+            return false;
+        }
+        return true;
+    }
+
     function handlePosCheckout(event) {
         if (!navigator.onLine) {
             event.preventDefault();
@@ -1157,16 +1336,27 @@
         const modal = document.getElementById('offlineCheckoutModal');
         if (!modal) return;
 
-        const cartKeys = Object.keys(window.currentPosCart || {});
-        if (cartKeys.length === 0) {
+        const items = Object.values(window.currentPosCart || {});
+        if (items.length === 0) {
             alert('Your cart is empty.');
             return;
         }
 
+        const totalQty = items.reduce((sum, it) => sum + (parseInt(it.quantity, 10) || 0), 0);
+        const itemCountEl = document.getElementById('offlineModalItemCount');
+        const subEl = document.getElementById('offlineModalSubtotal');
+        const vatEl = document.getElementById('offlineModalVat');
+        const grandEl = document.getElementById('offlineModalGrandTotal');
+
+        if (itemCountEl) itemCountEl.textContent = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+        if (subEl) subEl.textContent = fmtPeso(window.currentPosSubtotal);
+        if (vatEl) vatEl.textContent = fmtPeso(window.currentPosVatAmount);
+        if (grandEl) grandEl.textContent = fmtPeso(window.currentPosGrandTotal);
+
         const input = document.getElementById('offlineAmountPaid');
         if (input) {
-            input.value = window.currentPosGrandTotal.toFixed(2);
-            input.min = window.currentPosGrandTotal;
+            input.value = (window.currentPosGrandTotal || 0).toFixed(2);
+            input.min = window.currentPosGrandTotal || 0;
         }
 
         updateOfflineChange();
@@ -1263,8 +1453,13 @@
 
     function closeOfflineReceiptModal() {
         document.getElementById('offlineReceiptModal')?.classList.add('hidden');
-        // Reset or clear cart locally
-        window.location.reload();
+        // Never reload while offline (reloading without internet shows browser error page)
+        if (navigator.onLine) {
+            window.location.reload();
+        } else {
+            window.currentPosCart = {};
+            recalculateAndRenderOfflineCart();
+        }
     }
 
     function printOfflineReceipt() {
@@ -1291,9 +1486,21 @@
     let currentPosMode = 'retail';
 
     window.addEventListener('DOMContentLoaded', () => {
-        // Cache catalog for offline POS mode
+        // Cache complete retail catalog for offline POS mode
         if (window.PosOffline) {
-            window.PosOffline.cacheCatalog(@json($items->items()));
+            window.PosOffline.cacheCatalog(@json($offlineCatalog ?? $items->items()));
+
+            // If page was loaded from Service Worker while offline, restore local cart & cached stock
+            if (!navigator.onLine) {
+                const savedOfflineCart = window.PosOffline.getOfflineCart();
+                if (savedOfflineCart && Object.keys(savedOfflineCart).length > 0) {
+                    window.currentPosCart = savedOfflineCart;
+                }
+                recalculateAndRenderOfflineCart();
+            } else if (window.PosOffline.getQueueCount() > 0 && window.HydrotechLiveSync) {
+                // Reflect unsynced offline deductions until sync finishes
+                window.HydrotechLiveSync.applyStockUpdates(Object.values(window.PosOffline.getCatalog()));
+            }
         }
 
         const hasProject = {{ $hasProjectInCart ? 'true' : 'false' }};
@@ -1554,6 +1761,12 @@
     function updateQty(productId, actionType, exactVal = null, view = 'grid') {
         if (currentPosMode === 'project') {
             openProjectWarningModal();
+            return;
+        }
+
+        // Full Offline Mode: update cart & stock locally in browser without submitting a network form
+        if (!navigator.onLine) {
+            handleOfflineUpdateQty(productId, actionType, exactVal, view);
             return;
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\BlockEmojis;
+use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,8 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            BlockEmojis::class,
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'password.changed' => EnsurePasswordChanged::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

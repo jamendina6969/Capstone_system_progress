@@ -1,0 +1,18 @@
+{
+  "name": "Hydrotech Predictive POS & Inventory",
+  "short_name": "Hydrotech POS",
+  "description": "Steven Hydrotech Exponent Predictive Inventory & Offline-Ready Point of Sale System",
+  "start_url": "/pos",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10141D",
+  "theme_color": "#10141D",
+  "icons": [
+    {
+      "src": "/images/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

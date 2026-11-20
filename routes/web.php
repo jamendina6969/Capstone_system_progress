@@ -30,6 +30,11 @@ use App\Http\Controllers\BackupController;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [UserController::class, 'showLogin'])->name('login');
     Route::post('/login', [UserController::class, 'login']);
+
+    // Dedicated Secret System Administrator Portal (configurable slug via ADMIN_PORTAL_SLUG)
+    $adminPortalSlug = trim((string) config('app.admin_portal_slug', 'sys-portal-hydrotech'), '/');
+    Route::get('/' . $adminPortalSlug, [UserController::class, 'showAdminLogin'])->name('admin.portal.login');
+    Route::post('/' . $adminPortalSlug, [UserController::class, 'adminLogin'])->name('admin.portal.authenticate');
 });
 
 // Logout accessible via both GET & POST (handles expired sessions gracefully)
@@ -37,7 +42,11 @@ Route::match(['get', 'post'], '/logout', [UserController::class, 'logout'])->nam
 
 // ==================== AUTHENTICATED ROUTES ====================
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'password.changed'])->group(function () {
+
+    // ==================== FIRST-LOGIN FORCED PASSWORD CHANGE ====================
+    Route::get('/change-password', [UserController::class, 'showForcePasswordChange'])->name('password.force.edit');
+    Route::post('/change-password', [UserController::class, 'updateForcePasswordChange'])->name('password.force.update');
 
     // ==================== TEMPORARY CACHE & MIGRATION HELPERS ====================
     Route::get('/clear-view-cache', function() {

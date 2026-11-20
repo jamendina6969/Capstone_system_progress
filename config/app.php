@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Secret System Administrator Portal Slug
+    |--------------------------------------------------------------------------
+    |
+    | Configurable hidden URL slug for the dedicated System Administrator
+    | login portal. Accessed via secret keyboard shortcut on the login page.
+    |
+    */
+
+    'admin_portal_slug' => env('ADMIN_PORTAL_SLUG', 'sys-portal-hydrotech'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

@@ -32,7 +32,8 @@
         $whQty = max(0, $item->warehouse_quantity - $reservedWhQty);
         $totalQty = $storeQty + $whQty;
         
-        $isOutOfStock = ($totalQty <= 0);
+        // Retail Mode sells strictly from Store shelf stock; Project Mode can draw from Store or Warehouse
+        $isOutOfStock = $isProjectMode ? ($totalQty <= 0) : ($storeQty <= 0);
         
         $remainingStock = $storeQty;
         $reorderPoint = $item->reorder_point ?? 10;
@@ -88,7 +89,10 @@
                 <!-- Image Placeholder -->
                 <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-2xl bg-[#e0f2fe] dark:bg-[#161B26] border border-transparent dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
                     @if($item->product_image)
-                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}"
+                             onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+                             class="w-full h-full object-cover">
+                        <svg class="hidden w-10 h-10 text-sky-200 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     @else
                         <svg class="w-10 h-10 text-sky-200 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     @endif
@@ -103,13 +107,16 @@
                         </span>
                     @else
                         <!-- Retail Mode: Show Big Number UI -->
-                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ $statusClass }} tracking-wide">{{ $statusText }}</span>
+                        <span data-pos-status-id="{{ $item->id }}" class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ $statusClass }} tracking-wide">{{ $statusText }}</span>
                         
                         <div class="flex items-baseline gap-1 mt-1">
                             <div data-pos-stock-id="{{ $item->id }}" class="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black {{ $isOutOfStock ? 'text-gray-400' : 'text-gray-900 dark:text-white' }} leading-none tracking-tight">{{ $storeQty }}</div>
                         </div>
                         
                         <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1.5 uppercase tracking-wide">UNIT : {{ $item->unit_of_measure ?? 'PIECE' }}</div>
+                        @if($storeQty <= 0 && $whQty > 0)
+                            <div class="text-[9px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 uppercase tracking-wide">WH: {{ $whQty }} (Restock needed)</div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -167,7 +174,10 @@
             <div class="flex items-center gap-3 flex-1 min-w-0 pointer-events-none">
                 <div class="w-11 h-11 rounded-lg bg-gray-100 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] flex items-center justify-center overflow-hidden shrink-0">
                     @if($item->product_image)
-                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="{{ $item->product_name }}"
+                             onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+                             class="w-full h-full object-cover">
+                        <svg class="hidden w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     @else
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     @endif
@@ -192,7 +202,7 @@
                             St: {{ $storeQty }} | WH: {{ $whQty }}
                         </span>
                     @else
-                        <span class="text-[10px] font-bold px-2 py-1 rounded-full border {{ $statusClass }} tracking-wide">
+                        <span data-pos-list-status-id="{{ $item->id }}" class="text-[10px] font-bold px-2 py-1 rounded-full border {{ $statusClass }} tracking-wide">
                             {{ $statusText }} ({{ $storeQty }})
                         </span>
                     @endif

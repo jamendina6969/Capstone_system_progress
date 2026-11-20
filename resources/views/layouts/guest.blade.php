@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="{{ auth()->check() && auth()->user()->theme === 'dark' ? 'dark' : '' }} h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
 <body class="h-full m-0 p-0 bg-white dark:bg-[#10141D] antialiased"
       style="background-image: url('{{ asset('images/bg_design.svg') }}'); background-size: cover; background-position: center;">
     @yield('content')
+    @include('partials.global-input-guards')
     @stack('scripts')
 </body>
 </html>

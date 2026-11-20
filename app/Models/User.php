@@ -22,6 +22,7 @@ class User extends Authenticatable
         'suffix',
         'role',
         'is_active',
+        'must_change_password',
         'theme',
     ];
 
@@ -31,13 +32,23 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = [
+        'has_action_password',
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
+    }
+
+    public function getHasActionPasswordAttribute(): bool
+    {
+        return !empty($this->action_password);
     }
 
     public function getFullNameAttribute()

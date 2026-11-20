@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\SalesRecord;
+use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionItemMaterial; // <--- ADDED
+use App\Services\DemandService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -157,10 +159,20 @@ class PosController extends Controller
             ]);
         }
 
+        $offlineCatalog = Product::select([
+            'id',
+            'product_name',
+            'product_sku',
+            'selling_price',
+            'store_quantity',
+            'reorder_point',
+        ])->get();
+
         return view('pos.pointOfSale', compact(
             'items', 'categories', 'cart', 'rawSubtotal', 'subtotal', 
             'totalItemDiscounts', 'discountAmount', 'total', 'cartDiscount', 
-            'completedTransaction', 'hasProjectInCart', 'vatAmount', 'grandTotal'
+            'completedTransaction', 'hasProjectInCart', 'vatAmount', 'grandTotal',
+            'offlineCatalog'
         ));
     }
 
@@ -1142,25 +1154,33 @@ class PosController extends Controller
         }
 
         $user = Auth::user();
+        $demandService = app(DemandService::class);
         $syncedCount = 0;
+        $syncedInvoices = [];
         $errors = [];
 
         foreach ($orders as $index => $orderData) {
+            $transactionId = (string) ($orderData['invoice_number'] ?? ('OFFLINE-' . now()->format('YmdHis') . '-' . uniqid()));
             try {
-                DB::transaction(function () use ($orderData, $user, &$syncedCount) {
+                DB::transaction(function () use ($orderData, $user, $demandService, $transactionId, &$syncedCount, &$syncedInvoices) {
                     $items = $orderData['items'] ?? [];
-                    if (empty($items)) return;
+                    if (empty($items) || !is_array($items)) {
+                        return;
+                    }
 
-                    $grandTotal = (float) ($orderData['total_amount'] ?? 0);
-                    $amountPaid = (float) ($orderData['amount_paid'] ?? $grandTotal);
-                    $change = max(0, $amountPaid - $grandTotal);
-                    $transactionId = $orderData['invoice_number'] ?? ('OFFLINE-' . now()->format('YmdHis') . '-' . uniqid());
-
-                    // Check if already synced previously
+                    // Idempotency guard: if this offline invoice was already synced, mark it done without duplicating
                     if (Transaction::where('transaction_id', $transactionId)->exists()) {
+                        $syncedInvoices[] = $transactionId;
                         $syncedCount++;
                         return;
                     }
+
+                    $grandTotal = (float) ($orderData['total_amount'] ?? 0);
+                    $amountPaid = (float) ($orderData['amount_paid'] ?? $grandTotal);
+                    $change = max(0, round($amountPaid - $grandTotal, 2));
+                    $recordDate = !empty($orderData['created_at'])
+                        ? \Illuminate\Support\Carbon::parse($orderData['created_at'])->toDateString()
+                        : now()->toDateString();
 
                     $transaction = Transaction::create([
                         'user_id' => $user->id,
@@ -1172,77 +1192,90 @@ class PosController extends Controller
                         'amount_change' => $change,
                         'cart_discount_type' => $orderData['cart_discount_type'] ?? 'none',
                         'cart_discount_value' => (float) ($orderData['cart_discount_value'] ?? 0),
-                        'customer_name' => $orderData['customer_name'] ?? 'Offline Customer',
+                        'customer_name' => $orderData['customer_name'] ?? 'Walk-in Customer (Offline)',
                     ]);
 
                     foreach ($items as $item) {
                         $productId = $item['id'] ?? null;
-                        if (!$productId) continue;
+                        if (!$productId) {
+                            continue;
+                        }
 
                         $product = Product::whereKey($productId)->lockForUpdate()->first();
-                        if (!$product) continue;
+                        if (!$product) {
+                            continue;
+                        }
 
                         $qty = max(1, (int) ($item['quantity'] ?? 1));
                         $unitPrice = (float) ($item['selling_price'] ?? $product->selling_price);
-                        $lineSubtotal = round($unitPrice * $qty, 2);
+                        $lineSubtotal = isset($item['subtotal'])
+                            ? (float) $item['subtotal']
+                            : round($unitPrice * $qty, 2);
 
-                        // Deduct stock safely (min 0)
-                        $deductedStoreQty = max(0, $product->store_quantity - $qty);
-                        $product->store_quantity = $deductedStoreQty;
+                        // Deduct store stock safely (minimum 0)
+                        $beforeQty = (int) $product->store_quantity;
+                        $afterQty = max(0, $beforeQty - $qty);
+                        $product->store_quantity = $afterQty;
                         $product->save();
 
                         StockMovement::create([
+                            'batch_id' => $transactionId,
                             'product_id' => $product->id,
                             'requested_by' => $user->id,
                             'requester_name' => $user->firstname . ' ' . $user->lastname,
-                            'type' => 'Retail Sale (Offline Sync)',
-                            'status' => 'completed',
+                            'approved_by' => $user->id,
+                            'approver_name' => $user->firstname . ' ' . $user->lastname,
+                            'type' => 'sale_offline',
+                            'status' => 'approved',
                             'delivery_status' => 'delivered',
                             'quantity' => $qty,
-                            'quantity_before' => $product->store_quantity + $qty,
-                            'quantity_after' => $product->store_quantity,
+                            'quantity_before' => $beforeQty,
+                            'quantity_after' => $afterQty,
                             'note' => 'Synced from offline cashier queue (' . $transactionId . ')',
+                            'approved_at' => now(),
                         ]);
 
-                        DemandRecord::create([
-                            'product_id' => $product->id,
-                            'transaction_id' => $transaction->id,
-                            'demand_date' => now()->toDateString(),
-                            'quantity_demanded' => $qty,
-                        ]);
+                        $itemSku = !empty($product->item_sku)
+                            ? $product->item_sku
+                            : ($product->product_sku . '-' . strtoupper(substr(uniqid(), -5)));
 
                         TransactionItem::create([
                             'transaction_id' => $transaction->id,
                             'item_type' => 'product',
                             'product_id' => $product->id,
                             'product_sku' => $product->product_sku,
-                            'item_sku' => $product->product_sku . '-' . strtoupper(substr(uniqid(), -5)),
+                            'item_sku' => $itemSku,
                             'product_name' => $product->product_name,
                             'selling_price' => $unitPrice,
                             'quantity' => $qty,
                             'subtotal' => $lineSubtotal,
                         ]);
 
-                        SalesRecord::create([
+                        $saleRecord = SalesRecord::create([
                             'product_id' => $product->id,
                             'transaction_id' => $transaction->id,
-                            'record_date' => now()->toDateString(),
+                            'record_date' => $recordDate,
                             'quantity' => $qty,
-                            'source' => 'pos_offline',
+                            'source' => 'pos',
                         ]);
+
+                        $demandService->refreshForSale($saleRecord);
                     }
 
+                    $syncedInvoices[] = $transactionId;
                     $syncedCount++;
                 });
-            } catch (\Exception $e) {
-                $errors[] = "Order #{$index}: " . $e->getMessage();
+            } catch (\Throwable $e) {
+                report($e);
+                $errors[] = "Order {$transactionId}: " . $e->getMessage();
             }
         }
 
         return response()->json([
-            'success' => true,
+            'success' => count($syncedInvoices) > 0,
             'synced_count' => $syncedCount,
-            'errors' => $errors
-        ]);
+            'synced_invoices' => $syncedInvoices,
+            'errors' => $errors,
+        ], count($syncedInvoices) > 0 ? 200 : 422);
     }
 }

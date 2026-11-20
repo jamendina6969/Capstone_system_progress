@@ -122,7 +122,7 @@
                             Email address or Username
                         </label>
                         <input type="text" name="loginname" id="loginname" value="{{ old('loginname') }}" required
-                               placeholder="admin@stevenhydrotech.com"
+                               placeholder="staff@stevenhydrotech.com"
                                class="w-full rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3.5 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500
                                       focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
@@ -179,5 +179,68 @@
             passwordInput.type = isHidden ? 'text' : 'password';
         });
     }
+
+    // Secret Admin Portal Trigger: Ctrl + Shift + S + A
+    // Supports holding S & A together or pressing S then A while holding Ctrl + Shift.
+    (function () {
+        const portalUrl = @json(route('admin.portal.login'));
+        const heldKeys = new Set();
+        let sArmedUntil = 0;
+
+        window.addEventListener('keydown', function (e) {
+            const code = e.code || '';
+            const key = (e.key || '').toLowerCase();
+            const isS = code === 'KeyS' || key === 's';
+            const isA = code === 'KeyA' || key === 'a';
+
+            if (!e.ctrlKey || !e.shiftKey || e.altKey || e.metaKey) {
+                heldKeys.clear();
+                sArmedUntil = 0;
+                return;
+            }
+
+            if (isS) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.add('s');
+                sArmedUntil = Date.now() + 1500;
+            }
+
+            if (isA && (heldKeys.has('s') || Date.now() <= sArmedUntil)) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.clear();
+                sArmedUntil = 0;
+                window.location.href = portalUrl;
+            } else if (isA) {
+                heldKeys.add('a');
+            }
+
+            // Also trigger if A was held first and S is pressed immediately
+            if (isS && heldKeys.has('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.clear();
+                sArmedUntil = 0;
+                window.location.href = portalUrl;
+            }
+        }, true);
+
+        window.addEventListener('keyup', function (e) {
+            const code = e.code || '';
+            const key = (e.key || '').toLowerCase();
+            if (code === 'KeyS' || key === 's') heldKeys.delete('s');
+            if (code === 'KeyA' || key === 'a') heldKeys.delete('a');
+            if (!e.ctrlKey || !e.shiftKey) {
+                heldKeys.clear();
+                sArmedUntil = 0;
+            }
+        }, true);
+
+        window.addEventListener('blur', function () {
+            heldKeys.clear();
+            sArmedUntil = 0;
+        });
+    })();
 </script>
 @endpush
