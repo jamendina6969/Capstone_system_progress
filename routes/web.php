@@ -179,7 +179,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/receipt/{id}', [TransactionController::class, 'showReceipt'])->name('receipt');
         Route::get('/transactions/payment/{id}/receipt', [TransactionController::class, 'showPaymentReceipt'])->name('transaction.payment.receipt');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transaction.history');
+    });
 
+    // Enterprise-wide sales analytics: management only (cashiers use their own shift receipts)
+    Route::middleware('role:admin,manager')->group(function () {
         Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.records');
     });
 
@@ -208,6 +211,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/inventory/restock-mode', [RestockBatchController::class, 'store'])->name('inventory.restockBatch.store');
     });
 
+    // ==================== INWARD GOODS RECEIVING (GRN) ====================
+    // Warehouse staff physically verify supplier deliveries; PO creation/pricing stays manager-only.
+    Route::middleware('role:admin,manager,warehouse_staff')->prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+        Route::get('/deliveries', [PurchaseOrderController::class, 'deliveries'])->name('deliveries');
+        Route::get('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receiveForm'])->name('receiveForm');
+        Route::patch('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('receive');
+    });
+
     // ==================== SUPPLIERS & PURCHASE ORDERS ====================
     Route::middleware('role:admin,manager')->group(function () {
         Route::prefix('suppliers')->name('suppliers.')->group(function () {
@@ -230,9 +241,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/export', [PurchaseOrderController::class, 'export'])->name('export');
             Route::get('/import/template', [PurchaseOrderController::class, 'importTemplate'])->name('import.template');
             Route::post('/import', [PurchaseOrderController::class, 'import'])->name('import');
-
-            Route::get('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receiveForm'])->name('receiveForm');
-            Route::patch('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('receive');
 
             Route::get('/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'downloadPdf'])->name('pdf');
         });

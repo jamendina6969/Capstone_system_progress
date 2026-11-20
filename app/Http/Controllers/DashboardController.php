@@ -23,6 +23,10 @@ class DashboardController extends Controller
             return redirect()->route('pos');
         }
 
+        if ($user->role === 'warehouse_staff') {
+            return redirect()->route('inventory.index');
+        }
+
         $data = $this->sharedMetrics();
 
         if (in_array($user->role, ['admin', 'manager'])) {

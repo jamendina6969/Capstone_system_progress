@@ -191,6 +191,28 @@ class PurchaseOrderController extends Controller
         }
     }
 
+    private function receiveReturnRoute(): string
+    {
+        return auth()->user()->role === 'warehouse_staff'
+            ? 'purchase-orders.deliveries'
+            : 'purchase-orders.index';
+    }
+
+    public function deliveries()
+    {
+        $pending = PurchaseOrder::with(['supplier', 'items.product'])
+            ->where('status', 'pending')
+            ->orderBy('created_at')
+            ->get();
+
+        $recent = PurchaseOrder::with('supplier')
+            ->where('status', 'received')
+            ->orderByDesc('received_at')
+            ->limit(10)
+            ->get();
+
+        return view('purchase-orders.deliveries', compact('pending', 'recent'));
+    }
     public function receiveForm(PurchaseOrder $purchaseOrder)
     {
         $purchaseOrder->load('supplier', 'items.product');
@@ -200,17 +222,17 @@ class PurchaseOrderController extends Controller
     public function receive(Request $request, PurchaseOrder $purchaseOrder)
     {
         if ($purchaseOrder->status === 'received') {
-            return redirect()->route('purchase-orders.index')->with('error', 'This Purchase Order has already been received.');
+            return redirect()->route($this->receiveReturnRoute())->with('error', 'This Purchase Order has already been received.');
         }
 
         if ($purchaseOrder->status !== 'pending') {
-            return redirect()->route('purchase-orders.index')->with('error', 'Only pending Purchase Orders can be received.');
+            return redirect()->route($this->receiveReturnRoute())->with('error', 'Only pending Purchase Orders can be received.');
         }
 
         $purchaseOrder->load('items.product');
 
         if ($purchaseOrder->items->isEmpty()) {
-            return redirect()->route('purchase-orders.index')->with('error', 'This Purchase Order has no items.');
+            return redirect()->route($this->receiveReturnRoute())->with('error', 'This Purchase Order has no items.');
         }
 
         $rules = [
@@ -328,13 +350,13 @@ class PurchaseOrderController extends Controller
                 $po->save();
             });
 
-            return redirect()->route('purchase-orders.index')->with('success', 'Goods Received Note recorded successfully.');
+            return redirect()->route($this->receiveReturnRoute())->with('success', 'Goods Received Note recorded successfully.');
 
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
             report($e);
-            return redirect()->route('purchase-orders.index')->with('error', 'Error receiving Purchase Order: ' . $e->getMessage());
+            return redirect()->route($this->receiveReturnRoute())->with('error', 'Error receiving Purchase Order: ' . $e->getMessage());
         }
     }
 

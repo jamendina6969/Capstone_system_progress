@@ -111,7 +111,7 @@
                     </a>
 
                     {{-- Return button — only for actual sales (type 0 or 1) --}}
-                    @if(in_array((int) $item->transaction_type, [0, 1], true))
+                    @if(in_array((int) $item->transaction_type, [0, 1], true) && auth()->user()->role !== 'staff')
                         <button type="button"
                             data-action="{{ route('transactions.return', $item->id) }}"
                             data-items-url="{{ route('transactions.return.items', $item->id) }}"

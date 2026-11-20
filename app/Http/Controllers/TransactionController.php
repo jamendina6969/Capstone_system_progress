@@ -62,6 +62,12 @@ class TransactionController extends Controller
             $salesQuery->whereRaw('1 = 0');
         }
 
+        // ── CASHIER SCOPE: own POS receipts only, never supplier payments ──
+        if (auth()->user()->role === 'staff') {
+            $salesQuery->where('user_id', auth()->id())->where('transaction_type', 0);
+            $paymentsQuery->whereRaw('1 = 0');
+        }
+
         // ── CATEGORY FILTER ─────────────────────────────────
         if ($request->filled('category_id')) {
             $categoryIds = $this->getCategoryAndDescendantIds(
@@ -196,11 +202,19 @@ class TransactionController extends Controller
             'customerReturn.items',
         ])->findOrFail($id);
 
+        // Cashiers may only view/reprint receipts they issued themselves.
+        if (auth()->user()->role === 'staff' && (int) $transaction->user_id !== (int) auth()->id()) {
+            abort(403, 'You can only view receipts issued from your own counter.');
+        }
+
         return view('pos.receipt', compact('transaction'));
     }
 
     public function showPaymentReceipt($id)
     {
+        // Supplier payment vouchers are confidential accounts-payable data.
+        abort_unless(in_array(auth()->user()->role, ['admin', 'manager'], true), 403, 'Unauthorized action.');
+
         $ledger = SupplierLedger::with([
             'supplier',
             'purchaseOrder'

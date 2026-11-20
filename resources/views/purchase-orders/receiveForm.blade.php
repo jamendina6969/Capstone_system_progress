@@ -3,6 +3,7 @@
 @section('title', 'Receive Purchase Order')
 
 @section('content')
+    @php $isWarehouse = auth()->user()->role === 'warehouse_staff'; $backRoute = $isWarehouse ? 'purchase-orders.deliveries' : 'purchase-orders.index'; @endphp
 
     <div class="max-w-4xl mx-auto bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-8">
         
@@ -13,7 +14,7 @@
                     PO #{{ $purchaseOrder->po_number }} — {{ $purchaseOrder->supplier->name }}
                 </p>
             </div>
-            <a href="{{ route('purchase-orders.index') }}" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer">&times;</a>
+            <a href="{{ route($backRoute) }}" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer">&times;</a>
         </div>
 
         <form method="POST" action="{{ route('purchase-orders.receive', $purchaseOrder) }}" class="space-y-6">
@@ -29,7 +30,7 @@
                     <div class="border-2 border-gray-200 dark:border-[#1e2536] rounded-xl p-4 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
                         <div class="sm:col-span-2">
                             <p class="font-bold text-gray-900 dark:text-white">{{ $item->product->product_name ?? 'Deleted Product' }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Unit Cost: ₱{{ number_format($item->unit_cost, 2) }}</p>
+                            @unless($isWarehouse)<p class="text-xs text-gray-500 mt-0.5">Unit Cost: ₱{{ number_format($item->unit_cost, 2) }}</p>@endunless
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ordered Qty</label>
@@ -39,6 +40,13 @@
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Received Qty</label>
                             <input type="number" name="received_quantities[{{ $item->id }}]" value="{{ $item->quantity }}" min="0" max="{{ $item->quantity }}" required
                                    class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
+                        </div>
+                        <div class="sm:col-span-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Put Away To</label>
+                            <select name="destinations[{{ $item->id }}]" required class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
+                                <option value="warehouse" selected>Warehouse (Backroom)</option>
+                                <option value="store">Store Shelf</option>
+                            </select>
                         </div>
                     </div>
                 @endforeach
@@ -52,7 +60,7 @@
             </div>
 
             <div class="flex justify-end gap-3 pt-4 border-t-2 border-gray-200 dark:border-[#1e2536]">
-                <a href="{{ route('purchase-orders.index') }}" 
+                <a href="{{ route($backRoute) }}" 
                    class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs">
                     Cancel
                 </a>

@@ -29,6 +29,7 @@
         'refund' => 'Refund',
         'payment' => 'Payment',
     ];
+    if (auth()->user()->role === 'staff') { $sourceOptions = ['' => 'All Receipts']; }
     $currentSource = request('source', '');
     $selectedSourceLabel = $sourceOptions[$currentSource] ?? 'All Sources';
 @endphp
@@ -42,7 +43,7 @@
                 Transaction History
             </h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                All system transactions — POS Sales, Imported Sales, Refunds, and Supplier Payments
+                {{ auth()->user()->role === 'staff' ? 'Your own counter receipts — view and reprint official receipts issued on your shift' : 'All system transactions — POS Sales, Imported Sales, Refunds, and Supplier Payments' }}
             </p>
         </div>
     </div>
