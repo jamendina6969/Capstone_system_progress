@@ -55,18 +55,26 @@
         </div>
     </div>
 
-    <!-- Offline Status Banner -->
-    <div id="offlineStatusBanner" class="hidden mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-semibold shadow-xs transition-all">
-        <div class="flex items-center gap-3">
-            <span class="relative flex h-3 w-3">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-            </span>
-            <span id="offlineStatusMessage"><strong>Offline Mode Active:</strong> Internet connection interrupted. You can continue ringing up retail sales. Transactions are safely stored locally and will automatically synchronize when connection is restored.</span>
+    <!-- Offline Status Banner (Official Hydrotech Card UI) -->
+    <div id="offlineStatusBanner" class="hidden mb-5 px-5 py-3.5 rounded-3xl bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all">
+        <div class="flex items-center gap-3.5 min-w-0">
+            <div id="offlineStatusIconWrap" class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border-2 border-amber-200 dark:border-amber-900/70 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 000-7.07m-4.243 4.243a1 1 0 111.414-1.414M3 3l18 18"/></svg>
+            </div>
+            <div class="min-w-0">
+                <p id="offlineStatusTitle" class="text-sm font-bold text-gray-900 dark:text-white leading-tight">Offline Mode Active</p>
+                <p id="offlineStatusMessage" class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 leading-snug">Internet connection interrupted. Retail sales are safely stored locally and will auto-sync once reconnected.</p>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <span id="offlineQueueBadge" class="bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 px-3 py-1 rounded-full text-xs font-bold">0 Offline Sales Pending</span>
-            <button type="button" onclick="if(window.PosOffline) window.PosOffline.manualSync()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer">Sync Now</button>
+        <div class="flex items-center gap-2.5 shrink-0">
+            <span id="offlineQueueBadge" class="inline-flex items-center bg-gray-50 dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] text-gray-700 dark:text-slate-300 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">
+                0 Offline Sales Pending
+            </span>
+            <button type="button" onclick="if(window.PosOffline) window.PosOffline.manualSync()"
+                    class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all duration-300 ease-in-out shadow-xs cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Sync Now
+            </button>
         </div>
     </div>
 

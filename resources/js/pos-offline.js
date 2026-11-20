@@ -43,7 +43,9 @@ class HydrotechPosOffline {
 
     updateNetworkStatus(isOnline) {
         const banner = document.getElementById('offlineStatusBanner');
+        const bannerTitle = document.getElementById('offlineStatusTitle');
         const bannerText = document.getElementById('offlineStatusMessage');
+        const iconWrap = document.getElementById('offlineStatusIconWrap');
         const queueCount = this.getQueueCount();
 
         if (banner) {
@@ -54,27 +56,41 @@ class HydrotechPosOffline {
             }
         }
 
-        if (bannerText) {
+        if (bannerTitle && bannerText) {
             if (!isOnline) {
-                bannerText.innerHTML = '<strong>Offline Mode Active:</strong> Internet connection interrupted. You can continue adding items and completing retail sales. Transactions are saved locally and will automatically sync when connection returns.';
+                bannerTitle.textContent = 'Offline Mode Active';
+                bannerText.textContent = 'Internet connection interrupted. Retail sales are safely stored locally and will auto-sync once reconnected.';
+                if (iconWrap) {
+                    iconWrap.className = 'w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border-2 border-amber-200 dark:border-amber-900/70 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0';
+                }
             } else if (queueCount > 0) {
-                bannerText.innerHTML = '<strong>Connection Restored:</strong> You have queued offline sales ready to synchronize to the server database.';
+                bannerTitle.textContent = 'Connection Restored — Ready to Sync';
+                bannerText.textContent = 'Queued offline retail sales are ready to synchronize with the server database.';
+                if (iconWrap) {
+                    iconWrap.className = 'w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-200 dark:border-emerald-900/70 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0';
+                }
             }
         }
 
-        // Flip top POS status pill between Counter POS (green) and Offline POS (amber)
+        // Match official Counter POS / Parked Orders pill geometry (border-2, px-3 sm:px-4, py-1.5 sm:py-2, text-sm)
         const pill = document.getElementById('posConnectionPill');
         if (pill) {
             const dot = pill.querySelector('[data-conn-dot]');
             const label = pill.querySelector('[data-conn-label]');
             if (isOnline) {
-                pill.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300';
-                if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-                if (label) label.textContent = 'Counter POS';
+                pill.className = 'inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs';
+                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+                if (label) {
+                    label.className = 'text-sm font-bold text-emerald-700 dark:text-emerald-400';
+                    label.textContent = 'Counter POS';
+                }
             } else {
-                pill.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300';
-                if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
-                if (label) label.textContent = 'Offline POS';
+                pill.className = 'inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-amber-200 dark:border-amber-900/60 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs';
+                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse';
+                if (label) {
+                    label.className = 'text-sm font-bold text-amber-700 dark:text-amber-400';
+                    label.textContent = 'Offline POS';
+                }
             }
         }
 
@@ -313,11 +329,13 @@ class HydrotechPosOffline {
 
     showSyncNotification(count) {
         const notif = document.createElement('div');
-        notif.className = 'fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold border-2 border-emerald-400';
+        notif.className = 'fixed bottom-6 right-6 z-50 bg-white dark:bg-[#10141D] text-gray-900 dark:text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold border-2 border-emerald-500/80 dark:border-emerald-600/80';
         notif.innerHTML = `
-            <svg class="w-5 h-5 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
+            <span class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </span>
             <span>Synced ${count} offline ${count === 1 ? 'sale' : 'sales'} to server database!</span>
         `;
         document.body.appendChild(notif);
