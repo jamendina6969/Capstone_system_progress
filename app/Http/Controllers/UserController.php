@@ -181,7 +181,7 @@ class UserController extends Controller
                         $user->only(['firstname', 'lastname', 'suffix', 'username', 'email', 'role', 'is_active', 'must_change_password']),
                         ['has_action_password' => !empty($user->action_password)]
                     ),
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                 ]);
             } catch (\Exception $e) {
@@ -378,18 +378,56 @@ class UserController extends Controller
                     $newValues['action_password_cleared'] = true;
                 }
 
-                AuditLog::create([
-                    'user_id' => $authUser->id,
-                    'actor_name' => $authUser->firstname . ' ' . $authUser->lastname,
-                    'actor_role' => $authUser->role,
-                    'event' => 'updated',
-                    'auditable_type' => User::class,
-                    'auditable_id' => $user->id,
-                    'old_values' => $oldValues,
-                    'new_values' => $newValues,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                ]);
+                $statusChangedEvent = null;
+                if (($oldValues['is_active'] ?? true) && !$targetActive) {
+                    $statusChangedEvent = 'account_deactivated';
+                } elseif (!($oldValues['is_active'] ?? false) && $targetActive) {
+                    $statusChangedEvent = 'account_reactivated';
+                }
+
+                if ($statusChangedEvent) {
+                    AuditLog::create([
+                        'user_id' => $authUser->id,
+                        'actor_name' => $authUser->full_name,
+                        'actor_role' => $authUser->role,
+                        'event' => $statusChangedEvent,
+                        'auditable_type' => User::class,
+                        'auditable_id' => $user->id,
+                        'old_values' => ['is_active' => (bool) ($oldValues['is_active'] ?? false)],
+                        'new_values' => ['is_active' => (bool) $targetActive, 'target_user' => $user->full_name],
+                        'ip_address' => \App\Support\ClientContext::ip($request),
+                        'user_agent' => $request->userAgent(),
+                    ]);
+
+                    if ($statusChangedEvent === 'account_deactivated') {
+                        app(\App\Services\NotificationService::class)->notifyRoles(['admin'], [
+                            'type' => 'account_deactivated',
+                            'category' => 'security',
+                            'severity' => 'warning',
+                            'title' => 'User Account Deactivated',
+                            'message' => "{$authUser->full_name} deactivated {$user->full_name} ({$user->role}) and terminated active sessions.",
+                            'action_url' => route('admin.users.index'),
+                        ], $authUser->id);
+                    }
+                } elseif ($passwordChanged || $actionPasswordChanged || $actionPasswordCleared) {
+                    AuditLog::create([
+                        'user_id' => $authUser->id,
+                        'actor_name' => $authUser->full_name,
+                        'actor_role' => $authUser->role,
+                        'event' => 'password_changed',
+                        'auditable_type' => User::class,
+                        'auditable_id' => $user->id,
+                        'old_values' => null,
+                        'new_values' => array_filter([
+                            'target_user' => $user->full_name,
+                            'password_reset_by_admin' => $passwordChanged ?: null,
+                            'action_password_changed' => $actionPasswordChanged ?: null,
+                            'action_password_cleared' => $actionPasswordCleared ?: null,
+                        ]),
+                        'ip_address' => \App\Support\ClientContext::ip($request),
+                        'user_agent' => $request->userAgent(),
+                    ]);
+                }
             } catch (\Exception $e) {
                 Log::error('Audit Log Failed: ' . $e->getMessage());
             }
@@ -449,7 +487,7 @@ class UserController extends Controller
                     'auditable_type' => User::class,
                     'auditable_id' => $user->id,
                     'old_values' => $oldValues,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                 ]);
             } catch (\Exception $e) {
@@ -533,7 +571,7 @@ class UserController extends Controller
                 'auditable_type' => User::class,
                 'auditable_id' => $user->id,
                 'new_values' => ['first_login_password_change' => true],
-                'ip_address' => $request->ip(),
+                'ip_address' => \App\Support\ClientContext::ip($request),
                 'user_agent' => $request->userAgent(),
             ]);
         } catch (\Exception $e) {
@@ -557,7 +595,7 @@ class UserController extends Controller
                     'event' => 'logout',
                     'auditable_type' => User::class,
                     'auditable_id' => $user->id,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                 ]);
             } catch (\Exception $e) {
@@ -599,7 +637,7 @@ class UserController extends Controller
                     'event' => 'admin_login_blocked_public',
                     'auditable_type' => User::class,
                     'auditable_id' => $user->id,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                     'new_values' => [
                         'attempted_identifier' => $loginIdentifier,
@@ -630,7 +668,7 @@ class UserController extends Controller
                     'event' => 'login',
                     'auditable_type' => User::class,
                     'auditable_id' => $user->id,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                     'new_values' => [
                         'email' => $user->email,
@@ -671,7 +709,7 @@ class UserController extends Controller
         ]);
 
         $loginIdentifier = strtolower(trim($data['loginname']));
-        $throttleKey = 'admin-portal-login:' . $request->ip();
+        $throttleKey = 'admin-portal-login:' . \App\Support\ClientContext::ip($request);
         $maxAttempts = 5;
         $decaySeconds = 900; // 15 minutes
 
@@ -687,7 +725,7 @@ class UserController extends Controller
                     'event' => 'admin_portal_rate_limited',
                     'auditable_type' => User::class,
                     'auditable_id' => 0,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                     'new_values' => [
                         'attempted_identifier' => $loginIdentifier,
@@ -719,7 +757,7 @@ class UserController extends Controller
                     'event' => 'admin_portal_failed',
                     'auditable_type' => User::class,
                     'auditable_id' => $user?->id ?? 0,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                     'new_values' => [
                         'attempted_identifier' => $loginIdentifier,
@@ -747,7 +785,7 @@ class UserController extends Controller
                     'event' => 'admin_portal_failed',
                     'auditable_type' => User::class,
                     'auditable_id' => $user->id,
-                    'ip_address' => $request->ip(),
+                    'ip_address' => \App\Support\ClientContext::ip($request),
                     'user_agent' => $request->userAgent(),
                     'new_values' => [
                         'attempted_identifier' => $loginIdentifier,
@@ -780,7 +818,7 @@ class UserController extends Controller
                 'event' => 'admin_portal_login',
                 'auditable_type' => User::class,
                 'auditable_id' => $user->id,
-                'ip_address' => $request->ip(),
+                'ip_address' => \App\Support\ClientContext::ip($request),
                 'user_agent' => $request->userAgent(),
                 'new_values' => [
                     'email' => $user->email,

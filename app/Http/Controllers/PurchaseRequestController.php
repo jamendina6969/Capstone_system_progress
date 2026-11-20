@@ -116,6 +116,15 @@ class PurchaseRequestController extends Controller
 
             DB::commit();
 
+            app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                'type' => 'pr_submitted',
+                'category' => 'orders',
+                'severity' => 'info',
+                'title' => "New Purchase Request {$pr->pr_number}",
+                'message' => "{$user->full_name} submitted {$pr->pr_number} for review.",
+                'action_url' => route('purchase-requests.index'),
+            ], $user->id);
+
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Purchase Request submitted successfully.'], 201);
             }
@@ -147,6 +156,17 @@ class PurchaseRequestController extends Controller
             $purchaseRequest->items()->where('status', 'pending')->update(['status' => 'approved']);
         });
 
+        if ($purchaseRequest->user_id && (int) $purchaseRequest->user_id !== (int) Auth::id()) {
+            app(\App\Services\NotificationService::class)->notifyUser((int) $purchaseRequest->user_id, [
+                'type' => 'pr_approved',
+                'category' => 'orders',
+                'severity' => 'success',
+                'title' => "Purchase Request {$purchaseRequest->pr_number} Approved",
+                'message' => Auth::user()->full_name . " approved your purchase request {$purchaseRequest->pr_number}.",
+                'action_url' => route('purchase-requests.index'),
+            ]);
+        }
+
         return back()->with('success', 'Purchase Request approved.');
     }
 
@@ -169,6 +189,17 @@ class PurchaseRequestController extends Controller
                 'rejection_reason' => $request->manager_notes ?? 'Request fully rejected'
             ]);
         });
+
+        if ($purchaseRequest->user_id && (int) $purchaseRequest->user_id !== (int) Auth::id()) {
+            app(\App\Services\NotificationService::class)->notifyUser((int) $purchaseRequest->user_id, [
+                'type' => 'pr_rejected',
+                'category' => 'orders',
+                'severity' => 'danger',
+                'title' => "Purchase Request {$purchaseRequest->pr_number} Rejected",
+                'message' => Auth::user()->full_name . " rejected {$purchaseRequest->pr_number}" . ($request->manager_notes ? ": {$request->manager_notes}" : '.'),
+                'action_url' => route('purchase-requests.index'),
+            ]);
+        }
 
         return back()->with('success', 'Purchase Request rejected.');
     }

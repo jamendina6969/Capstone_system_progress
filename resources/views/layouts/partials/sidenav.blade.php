@@ -12,19 +12,12 @@
     ];
     $userSubtitle = $friendlySubtitles[$resolvedRole] ?? 'Authorized User';
 
-    $sidebarNotifData = \Illuminate\Support\Facades\Cache::remember('topbar_notifications_' . auth()->id(), 300, function () {
-        if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
-            return ['prCount' => 0, 'approvalCount' => 0, 'recentPRs' => collect(), 'recentApprovals' => collect()];
-        }
-        return [
-            'prCount' => \App\Models\PurchaseRequest::where('status', 'pending')->count(),
-            'approvalCount' => \App\Models\StockMovement::where('status', 'pending')->count(),
-            'recentPRs' => \App\Models\PurchaseRequest::with('user')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
-            'recentApprovals' => \App\Models\StockMovement::with('product', 'requester')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
-        ];
-    });
-    $prCount = $sidebarNotifData['prCount'] ?? 0;
-    $pendingCount = $sidebarNotifData['approvalCount'] ?? 0;
+    $liveQueues = app(\App\Services\NotificationService::class)->getLiveQueuesForUser(auth()->user());
+    $sidebarBadges = $liveQueues['badges'] ?? [];
+    $prCount = $sidebarBadges['prCount'] ?? 0;
+    $pendingCount = $sidebarBadges['approvalCount'] ?? 0;
+    $incomingDeliveriesCount = $sidebarBadges['incomingDeliveriesCount'] ?? 0;
+    $readyToReceiveCount = $sidebarBadges['readyToReceiveCount'] ?? 0;
 @endphp
 
 <aside id="sidebar" class="relative bg-white text-gray-700 border-r border-gray-200 dark:bg-[#10141D] dark:text-slate-100 dark:border-[#1e2536] flex flex-col flex-shrink-0 z-25">
@@ -299,6 +292,9 @@
                class="{{ $linkBase }} {{ request()->routeIs('purchase-orders.deliveries', 'purchase-orders.receiveForm') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 <span class="sidebar-text">Incoming Deliveries</span>
+                @if ($incomingDeliveriesCount > 0)
+                    <span data-live-badge="incomingDeliveriesCount" class="badge-count ml-auto bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $incomingDeliveriesCount }}</span>
+                @endif
             </a>
         @endif
         {{-- Restock Requests (staff & warehouse_staff) --}}
@@ -307,6 +303,9 @@
                class="{{ $linkBase }} {{ request()->routeIs('inventory.myRequests') ? $linkActive : $linkIdle }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="sidebar-text">Restock Requests</span>
+                @if ($readyToReceiveCount > 0)
+                    <span data-live-badge="readyToReceiveCount" class="badge-count ml-auto bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $readyToReceiveCount }}</span>
+                @endif
             </a>
         @endif
 

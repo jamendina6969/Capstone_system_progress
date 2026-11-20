@@ -80,6 +80,31 @@ class BackupController extends Controller
             // Clean up temp DB file
             File::delete($tempDbFile);
 
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $actor = \Illuminate\Support\Facades\Auth::user();
+                \App\Models\AuditLog::create([
+                    'user_id'        => $actor->id,
+                    'actor_name'     => $actor->full_name,
+                    'actor_role'     => $actor->role,
+                    'event'          => 'backup_created',
+                    'auditable_type' => null,
+                    'auditable_id'   => null,
+                    'old_values'     => null,
+                    'new_values'     => ['filename' => $filename],
+                    'ip_address'     => \App\Support\ClientContext::ip(),
+                    'user_agent'     => request()->userAgent(),
+                ]);
+
+                app(\App\Services\NotificationService::class)->notifyRoles(['admin'], [
+                    'type'       => 'backup_created',
+                    'category'   => 'system',
+                    'severity'   => 'success',
+                    'title'      => 'System Backup Created',
+                    'message'    => "{$actor->full_name} created backup archive {$filename}.",
+                    'action_url' => route('admin.backups.index'),
+                ], $actor->id);
+            }
+
             return back()->with('success', "Backup created successfully: {$filename}");
 
         } catch (Exception $e) {
@@ -171,6 +196,31 @@ class BackupController extends Controller
 
             // 7. Turn off maintenance mode
             Artisan::call('up');
+
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $actor = \Illuminate\Support\Facades\Auth::user();
+                \App\Models\AuditLog::create([
+                    'user_id'        => $actor->id,
+                    'actor_name'     => $actor->full_name,
+                    'actor_role'     => $actor->role,
+                    'event'          => 'backup_restored',
+                    'auditable_type' => null,
+                    'auditable_id'   => null,
+                    'old_values'     => null,
+                    'new_values'     => ['restored_file' => $safeFilename],
+                    'ip_address'     => \App\Support\ClientContext::ip($request),
+                    'user_agent'     => $request->userAgent(),
+                ]);
+
+                app(\App\Services\NotificationService::class)->notifyRoles(['admin'], [
+                    'type'       => 'backup_restored',
+                    'category'   => 'system',
+                    'severity'   => 'danger',
+                    'title'      => 'System Backup Restored',
+                    'message'    => "{$actor->full_name} restored the database from {$safeFilename}.",
+                    'action_url' => route('admin.backups.index'),
+                ], $actor->id);
+            }
 
             return back()->with('success', 'System restored successfully from backup.');
 

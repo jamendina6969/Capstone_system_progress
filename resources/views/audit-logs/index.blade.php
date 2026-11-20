@@ -4,13 +4,18 @@
 
 @section('content')
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Audit Logs</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                Track and audit all critical system operations and user activities.
+                Track and audit all critical system operations, security events, and user activities.
             </p>
         </div>
+        <a href="{{ route('audit-logs.export', request()->query()) }}"
+           class="inline-flex items-center gap-2 self-start sm:self-auto bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] text-xs font-semibold px-4 py-2.5 rounded-full transition-all shadow-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+        </a>
     </div>
 
     <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden mb-8">
@@ -18,10 +23,10 @@
         <!-- Filters -->
         <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
             <form id="filterForm" method="GET" action="{{ route('audit-logs.index') }}"
-                class="flex flex-col xl:flex-row xl:items-center gap-4">
+                class="flex flex-col gap-3">
 
-                <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
-                    <div class="relative w-full sm:w-72">
+                <div class="flex flex-col xl:flex-row xl:items-center gap-3">
+                    <div class="relative flex-1 min-w-[220px]">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -31,42 +36,56 @@
 
                         <input type="text" id="searchInput" name="search"
                             value="{{ request('search') }}"
-                            placeholder="Search logs by user, action, or model..."
+                            placeholder="Search user, action, target, or IP..."
                             autocomplete="off"
                             class="w-full rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] pl-10 pr-4 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-slate-400">
                     </div>
-                </div>
 
-                <div class="flex flex-col sm:flex-row items-center gap-3">
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <select name="event" id="eventFilter"
-                            onchange="this.form.submit()"
-                            class="w-full sm:w-48 rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3.5 py-2 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <select name="module" onchange="this.form.submit()"
+                            class="rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
+                            <option value="">All Modules</option>
+                            <option value="security" {{ request('module') === 'security' ? 'selected' : '' }}>Security &amp; Auth</option>
+                            <option value="users" {{ request('module') === 'users' ? 'selected' : '' }}>User Management</option>
+                            <option value="catalog" {{ request('module') === 'catalog' ? 'selected' : '' }}>Catalog &amp; Products</option>
+                            <option value="inventory" {{ request('module') === 'inventory' ? 'selected' : '' }}>Inventory &amp; Forecasting</option>
+                            <option value="pos" {{ request('module') === 'pos' ? 'selected' : '' }}>POS &amp; Customer Returns</option>
+                            <option value="procurement" {{ request('module') === 'procurement' ? 'selected' : '' }}>Suppliers &amp; POs</option>
+                            <option value="system" {{ request('module') === 'system' ? 'selected' : '' }}>System &amp; Backups</option>
+                        </select>
 
+                        <select name="role" onchange="this.form.submit()"
+                            class="rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
+                            <option value="">All Roles</option>
+                            <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>Manager</option>
+                            <option value="warehouse_staff" {{ request('role') === 'warehouse_staff' ? 'selected' : '' }}>Warehouse</option>
+                            <option value="staff" {{ request('role') === 'staff' ? 'selected' : '' }}>Cashier</option>
+                        </select>
+
+                        <select name="event" id="eventFilter" onchange="this.form.submit()"
+                            class="rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
                             <option value="">All Actions</option>
-
-                            <option value="created" {{ request('event') == 'created' ? 'selected' : '' }}>Created</option>
-                            <option value="updated" {{ request('event') == 'updated' ? 'selected' : '' }}>Updated</option>
-                            <option value="deleted" {{ request('event') == 'deleted' ? 'selected' : '' }}>Deleted</option>
-                            <option value="login" {{ request('event') == 'login' ? 'selected' : '' }}>Login</option>
-                            <option value="logout" {{ request('event') == 'logout' ? 'selected' : '' }}>Logout</option>
-
                             @foreach($events as $event)
-                                @if(!in_array($event, ['created', 'updated', 'deleted', 'login', 'logout']))
-                                    <option value="{{ $event }}" {{ request('event') == $event ? 'selected' : '' }}>
-                                        {{ ucfirst($event) }}
-                                    </option>
-                                @endif
+                                <option value="{{ $event }}" {{ request('event') == $event ? 'selected' : '' }}>
+                                    {{ \App\Http\Controllers\AuditLogController::formatEventLabel($event) }}
+                                </option>
                             @endforeach
                         </select>
-                    </div>
 
-                    @if(request()->anyFilled(['search', 'event']))
-                        <a href="{{ route('audit-logs.index') }}"
-                            class="text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536] px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap border border-gray-300 dark:border-[#1e2536] bg-white dark:bg-[#161B26]">
-                            Clear Filters
-                        </a>
-                    @endif
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" onchange="this.form.submit()" title="From date"
+                            class="rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
+
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" onchange="this.form.submit()" title="To date"
+                            class="rounded-xl bg-white dark:bg-[#161B26] border border-gray-300 dark:border-[#1e2536] px-3 py-2 text-xs text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400">
+
+                        @if(request()->anyFilled(['search', 'event', 'role', 'module', 'date_from', 'date_to']))
+                            <a href="{{ route('audit-logs.index') }}"
+                                class="text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1e2536] px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap border border-gray-300 dark:border-[#1e2536] bg-white dark:bg-[#161B26]">
+                                Clear
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>
@@ -76,15 +95,15 @@
             class="overflow-x-auto custom-scrollbar relative"
             style="height: 600px; max-height: 600px; overflow-y: scroll;">
 
-            <table class="w-full min-w-[760px] text-sm text-left relative">
+            <table class="w-full min-w-[920px] text-sm text-left relative">
                 <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-600 dark:text-slate-400 uppercase text-xs sticky top-0 z-10 shadow-sm border-b-2 border-gray-200 dark:border-[#1e2536]">
                     <tr>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">User</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Action</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Target Model</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">IP Address</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Timestamp</th>
-                        <th class="px-8 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">User &amp; Role</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Action</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Target &amp; Summary</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">IP &amp; Device</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Timestamp</th>
+                        <th class="px-6 py-4 bg-gray-50 dark:bg-[#161B26] text-right whitespace-nowrap">Actions</th>
                     </tr>
                 </thead>
 
@@ -531,24 +550,20 @@
             const data = res.data;
 
             document.getElementById('modalDescription').innerText = data.description ?? '';
-            document.getElementById('modalUser').innerText = data.user ?? 'System / Guest';
-            
-            const ev = (data.event || '').toUpperCase();
-            let evBadge = '';
-            if (ev.includes('CREATE') || ev.includes('ADD') || ev.includes('RESTORE')) {
-                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60">${ev}</span>`;
-            } else if (ev.includes('DELETE') || ev.includes('REMOVE') || ev.includes('DESTROY')) {
-                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-800/60">${ev}</span>`;
-            } else if (ev.includes('UPDATE') || ev.includes('EDIT') || ev.includes('CHANGE')) {
-                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800/60">${ev}</span>`;
-            } else {
-                evBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-400 dark:border-purple-800/60">${ev}</span>`;
-            }
-            document.getElementById('modalEventBadge').innerHTML = evBadge;
+            document.getElementById('modalUser').innerText = (data.user ?? 'System / Guest') + (data.role ? ` (${data.role})` : '');
+
+            const escapeVal = (s) => {
+                const d = document.createElement('div');
+                d.textContent = s == null ? '—' : String(s);
+                return d.innerHTML;
+            };
+
+            const badgeCls = data.event_badge_class || 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-400 dark:border-purple-800/60';
+            document.getElementById('modalEventBadge').innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase border ${badgeCls}">${escapeVal(data.event || '')}</span>`;
 
             document.getElementById('modalTarget').innerText = data.target_model ?? '—';
             document.getElementById('modalIp').innerText = data.ip_address ?? '—';
-            document.getElementById('modalContext').innerText = data.direction_context ?? '—';
+            document.getElementById('modalContext').innerText = (data.direction_context ?? '—') + (data.device ? ` · ${data.device}` : '');
             document.getElementById('modalTimestamp').innerText = data.timestamp ?? '—';
 
             const changesTable = document.getElementById('modalChangesTable');
@@ -565,13 +580,13 @@
 
                     const oldCell = document.createElement('td');
                     oldCell.className = 'px-5 py-3.5 align-middle';
-                    const oldVal = change.old ?? 'None';
-                    oldCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono ${oldVal === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-rose-50 text-rose-700 border border-rose-200 line-through dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60'} break-all">${oldVal}</span>`;
+                    const oldRaw = change.old ?? '—';
+                    oldCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono ${oldRaw === '—' || oldRaw === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-rose-50 text-rose-700 border border-rose-200 line-through dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60'} break-all">${escapeVal(oldRaw)}</span>`;
 
                     const newCell = document.createElement('td');
                     newCell.className = 'px-5 py-3.5 align-middle';
-                    const newVal = change.new ?? 'None';
-                    newCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${newVal === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60'} break-all">${newVal}</span>`;
+                    const newRaw = change.new ?? '—';
+                    newCell.innerHTML = `<span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${newRaw === '—' || newRaw === 'None' ? 'text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#10141D]' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60'} break-all">${escapeVal(newRaw)}</span>`;
 
                     row.appendChild(fieldCell);
                     row.appendChild(oldCell);

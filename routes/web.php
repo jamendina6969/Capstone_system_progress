@@ -24,6 +24,8 @@ use App\Http\Controllers\CustomerReturnController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AccountSettingsController;
 
 // ==================== GUEST ROUTES ====================
 
@@ -47,6 +49,26 @@ Route::middleware(['auth', 'user.active', 'password.changed'])->group(function (
     // Persistent DB-backed product image & unit SKU inspector endpoints
     Route::get('/products/{product}/image', [ProductController::class, 'serveImage'])->name('products.image');
     Route::get('/products/{product}/item-skus', [ProductController::class, 'itemSkus'])->name('products.itemSkus');
+
+    // ==================== ROLE-BASED NOTIFICATIONS (ALL AUTHENTICATED ROLES) ====================
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/poll', [NotificationController::class, 'poll'])->name('poll');
+        Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('readAll');
+        Route::match(['get', 'post'], '/{notification}/read', [NotificationController::class, 'markRead'])->name('read');
+    });
+
+    // ==================== ACCOUNT SETTINGS & SELF-SERVICE SECURITY (ALL ROLES) ====================
+    Route::prefix('account')->name('account.')->group(function () {
+        Route::get('/settings', [AccountSettingsController::class, 'index'])->name('settings');
+        Route::get('/avatar/{user}', [AccountSettingsController::class, 'serveAvatar'])->name('avatar');
+        Route::put('/profile', [AccountSettingsController::class, 'updateProfile'])->name('profile.update');
+        Route::put('/password', [AccountSettingsController::class, 'updatePassword'])->name('password.update');
+        Route::put('/action-password', [AccountSettingsController::class, 'updateActionPassword'])->name('actionPassword.update');
+        Route::put('/preferences', [AccountSettingsController::class, 'updatePreferences'])->name('preferences.update');
+        Route::delete('/sessions/others', [AccountSettingsController::class, 'revokeOtherSessions'])->name('sessions.revokeOthers');
+        Route::delete('/sessions/{sessionId}', [AccountSettingsController::class, 'revokeSession'])->name('sessions.revoke');
+    });
 
     // ==================== FIRST-LOGIN FORCED PASSWORD CHANGE ====================
     Route::get('/change-password', [UserController::class, 'showForcePasswordChange'])->name('password.force.edit');
@@ -119,6 +141,7 @@ Route::middleware(['auth', 'user.active', 'password.changed'])->group(function (
         Route::delete('/forecast/settings/{forecastSetting}', [ForecastSettingController::class, 'destroyOverride'])->name('forecast.settings.destroy');
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/audit-logs/export', [AuditLogController::class, 'exportCsv'])->name('audit-logs.export');
         Route::get('/audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
     });
 

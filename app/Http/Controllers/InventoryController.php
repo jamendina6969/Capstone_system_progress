@@ -530,6 +530,17 @@ class InventoryController extends Controller
                 $lockedMovement->approver_name = $user->firstname . ' ' . $user->lastname;
                 $lockedMovement->approved_at = now();
                 $lockedMovement->save();
+
+                if ($lockedMovement->requested_by && (int) $lockedMovement->requested_by !== (int) $user->id) {
+                    app(\App\Services\NotificationService::class)->notifyUser((int) $lockedMovement->requested_by, [
+                        'type'       => 'restock_approved',
+                        'category'   => 'inventory',
+                        'severity'   => 'success',
+                        'title'      => 'Restock Request Approved',
+                        'message'    => "{$user->full_name} approved your request for {$lockedMovement->quantity} × {$product->product_name}.",
+                        'action_url' => route('inventory.myRequests'),
+                    ]);
+                }
             });
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
@@ -560,6 +571,18 @@ class InventoryController extends Controller
                 $lockedMovement->approved_at = now();
                 $lockedMovement->note = $validated['rejection_reason'];
                 $lockedMovement->save();
+
+                if ($lockedMovement->requested_by && (int) $lockedMovement->requested_by !== (int) $user->id) {
+                    $prodName = $lockedMovement->product?->product_name ?? 'item';
+                    app(\App\Services\NotificationService::class)->notifyUser((int) $lockedMovement->requested_by, [
+                        'type'       => 'restock_rejected',
+                        'category'   => 'inventory',
+                        'severity'   => 'danger',
+                        'title'      => 'Restock Request Rejected',
+                        'message'    => "{$user->full_name} rejected your request for {$prodName}: {$validated['rejection_reason']}",
+                        'action_url' => route('inventory.myRequests'),
+                    ]);
+                }
             });
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
@@ -797,6 +820,17 @@ class InventoryController extends Controller
         } catch (\Throwable $exception) {
             report($exception);
             return back()->withErrors(['quantity' => 'Could not create the request. ' . $exception->getMessage()])->withInput();
+        }
+
+        if ($isStaff) {
+            app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                'type'       => 'restock_requested',
+                'category'   => 'inventory',
+                'severity'   => 'info',
+                'title'      => 'New Restock Request #' . $movement->id,
+                'message'    => "{$user->full_name} requested {$movement->quantity} unit(s) of " . ($movement->product?->product_name ?? 'product') . '.',
+                'action_url' => route('inventory.approvals'),
+            ], $user->id);
         }
 
         $message = $isStaff

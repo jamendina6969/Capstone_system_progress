@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\AuditsChanges;
 
 class PurchaseRequestItem extends Model
 {
-    use HasFactory, AuditsChanges;
+    use HasFactory;
 
     protected $fillable = [
         'purchase_request_id', 

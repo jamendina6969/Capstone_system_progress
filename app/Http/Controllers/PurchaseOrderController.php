@@ -181,6 +181,15 @@ class PurchaseOrderController extends Controller
                     $pr->status = 'converted';
                     $pr->save();
                 }
+
+                app(\App\Services\NotificationService::class)->notifyRoles(['warehouse_staff'], [
+                    'type' => 'po_incoming',
+                    'category' => 'orders',
+                    'severity' => 'info',
+                    'title' => "New Incoming Delivery {$po->po_number}",
+                    'message' => "Purchase Order {$po->po_number} has been created and is awaiting physical GRN receiving.",
+                    'action_url' => route('purchase-orders.deliveries'),
+                ], $user->id);
             });
 
             return redirect()->route('purchase-orders.index')->with('success', 'Purchase Order created successfully.');
@@ -356,6 +365,44 @@ class PurchaseOrderController extends Controller
                 $po->grn_notes = $validated['grn_notes'] ?? null;
                 $po->received_at = now();
                 $po->save();
+
+                \App\Models\AuditLog::create([
+                    'user_id'        => $user->id,
+                    'actor_name'     => $user->full_name,
+                    'actor_role'     => $user->role,
+                    'event'          => 'po_received',
+                    'auditable_type' => PurchaseOrder::class,
+                    'auditable_id'   => $po->id,
+                    'old_values'     => ['status' => 'pending'],
+                    'new_values'     => [
+                        'po_number'          => $po->po_number,
+                        'received_quantity'  => $totalReceivedQuantity,
+                        'discrepancy_amount' => $totalDiscrepancy,
+                        'grn_notes'          => $po->grn_notes,
+                    ],
+                    'ip_address'     => \App\Support\ClientContext::ip(),
+                    'user_agent'     => request()->userAgent(),
+                ]);
+
+                if ($totalDiscrepancy > 0) {
+                    app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                        'type'       => 'po_shortage',
+                        'category'   => 'orders',
+                        'severity'   => 'danger',
+                        'title'      => "Delivery Shortage on {$po->po_number}",
+                        'message'    => "{$user->full_name} received {$po->po_number} with ₱" . number_format($totalDiscrepancy, 2) . " shortage. Logged to Discrepancy Report.",
+                        'action_url' => route('suppliers.discrepancy', ['supplier_id' => $po->supplier_id]),
+                    ], $user->id);
+                } else {
+                    app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                        'type'       => 'po_received',
+                        'category'   => 'orders',
+                        'severity'   => 'success',
+                        'title'      => "Delivery Received: {$po->po_number}",
+                        'message'    => "{$user->full_name} received {$totalReceivedQuantity} unit(s) for {$po->po_number} with no discrepancies.",
+                        'action_url' => route('purchase-orders.index'),
+                    ], $user->id);
+                }
             });
 
             return redirect()->route($this->receiveReturnRoute())->with('success', 'Goods Received Note recorded successfully.');

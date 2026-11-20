@@ -698,6 +698,32 @@ class CustomerReturnController extends Controller
                 'voided_by' => $user->id,
                 'notes'     => trim(($customerReturn->notes ?? '') . "\nVOID: " . $request->void_reason),
             ]);
+
+            \App\Models\AuditLog::create([
+                'user_id'        => $user->id,
+                'actor_name'     => $user->full_name,
+                'actor_role'     => $user->role,
+                'event'          => 'customer_return_voided',
+                'auditable_type' => CustomerReturn::class,
+                'auditable_id'   => $customerReturn->id,
+                'old_values'     => ['status' => 'completed'],
+                'new_values'     => [
+                    'return_number' => $customerReturn->return_number,
+                    'refund_amount' => (float) $customerReturn->refund_amount,
+                    'void_reason'   => $request->void_reason,
+                ],
+                'ip_address'     => \App\Support\ClientContext::ip($request),
+                'user_agent'     => $request->userAgent(),
+            ]);
+
+            app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                'type'       => 'customer_return_voided',
+                'category'   => 'returns',
+                'severity'   => 'warning',
+                'title'      => "Customer Return Voided: {$customerReturn->return_number}",
+                'message'    => "{$user->full_name} voided return {$customerReturn->return_number} (Reason: {$request->void_reason}).",
+                'action_url' => route('customer.returns.index'),
+            ], $user->id);
         });
 
         return back()->with('success', "Return {$customerReturn->return_number} voided.");

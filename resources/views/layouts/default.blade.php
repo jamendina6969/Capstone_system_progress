@@ -130,91 +130,114 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     </button>
 
-                    <!-- Notification Bell & Dropdown -->
+                    <!-- Role-Based Hybrid Notification Bell & Dropdown -->
                     <div class="relative">
                         @php
-                            // PERFORMANCE FIX: Cache the full payload for 5 minutes
-                            // Using the exact same cache key as the sidenav
-                            $notifData = \Illuminate\Support\Facades\Cache::remember('topbar_notifications_' . auth()->id(), 300, function () {
-                                if (!in_array(auth()->user()->role, ['admin', 'manager'])) {
-                                    return ['prCount' => 0, 'approvalCount' => 0, 'recentPRs' => collect(), 'recentApprovals' => collect()];
-                                }
-                                
-                                return [
-                                    'prCount' => \App\Models\PurchaseRequest::where('status', 'pending')->count(),
-                                    'approvalCount' => \App\Models\StockMovement::where('status', 'pending')->count(),
-                                    'recentPRs' => \App\Models\PurchaseRequest::with('user')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
-                                    'recentApprovals' => \App\Models\StockMovement::with('product', 'requester')->where('status', 'pending')->orderBy('created_at', 'desc')->take(3)->get(),
-                                ];
-                            });
-
-                            $pendingPRCount = $notifData['prCount'] ?? 0;
-                            $pendingApprovalCount = $notifData['approvalCount'] ?? 0;
-                            $totalNotifications = $pendingPRCount + $pendingApprovalCount;
+                            $notifPayload = app(\App\Services\NotificationService::class)->getDropdownPayload(auth()->user(), 8);
+                            $totalNotifications = $notifPayload['total_count'] ?? 0;
+                            $unreadInboxCount = $notifPayload['unread_inbox_count'] ?? 0;
+                            $notifQueues = $notifPayload['queues'] ?? [];
+                            $notifInbox = $notifPayload['inbox'] ?? collect();
                         @endphp
 
-                        <button id="notificationBtn" class="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer">
+                        <button id="notificationBtn" type="button" title="Notifications"
+                                class="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                            @if($totalNotifications > 0)
-                                <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
-                                    {{ $totalNotifications }}
-                                </span>
-                            @else
-                                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
-                            @endif
+                            <span id="notifBadgeCount"
+                                  class="{{ $totalNotifications > 0 ? '' : 'hidden' }} absolute top-1 right-1 min-w-[18px] h-[18px] bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+                                {{ $totalNotifications > 99 ? '99+' : $totalNotifications }}
+                            </span>
                         </button>
 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#10141D] border border-slate-200 dark:border-[#1e2536] rounded-xl shadow-xl py-2 z-50">
-                            <div class="px-4 py-2 border-b border-slate-100 dark:border-[#1e2536] flex items-center justify-between">
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Notifications</span>
-                                @if($totalNotifications > 0)
-                                    <span class="text-[10px] bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-2 py-0.5 rounded-full font-semibold">{{ $totalNotifications }} New</span>
-                                @else
-                                    <span class="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">0 New</span>
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#10141D] border-2 border-slate-200 dark:border-[#1e2536] rounded-2xl shadow-xl overflow-hidden z-50">
+                            <div class="px-4 py-3 border-b border-slate-100 dark:border-[#1e2536] flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-[#161B26]/60">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Notifications</span>
+                                    <span id="notifHeaderPill" class="text-[10px] {{ $totalNotifications > 0 ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-slate-100 text-slate-600 dark:bg-[#1e2536] dark:text-slate-400' }} px-2 py-0.5 rounded-full font-bold">
+                                        {{ $totalNotifications }} Active
+                                    </span>
+                                </div>
+                                @if($unreadInboxCount > 0)
+                                    <form method="POST" action="{{ route('notifications.readAll') }}" class="m-0">
+                                        @csrf
+                                        <button type="submit" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                            Mark all read
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
-                            
-                            <div class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-[#1e2536]">
-                                {{-- Pending Purchase Requests --}}
-                                @if($pendingPRCount > 0 && in_array(auth()->user()->role, ['admin', 'manager']))
-                                    @foreach($notifData['recentPRs'] ?? collect() as $pr)
-                                        <a href="{{ route('purchase-requests.index', ['id' => $pr->id]) }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
+
+                            <div id="notifDropdownBody" class="max-h-96 overflow-y-auto divide-y divide-slate-100 dark:divide-[#1e2536]">
+                                {{-- Live Action Queues --}}
+                                @if(count($notifQueues) > 0)
+                                    <div class="px-4 py-1.5 bg-slate-50/80 dark:bg-[#161B26]/40 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                        Action Required
+                                    </div>
+                                    @foreach($notifQueues as $qItem)
+                                        @php
+                                            $dotColor = match($qItem['severity'] ?? 'info') {
+                                                'danger'  => 'bg-rose-500',
+                                                'warning' => 'bg-amber-500',
+                                                'success' => 'bg-emerald-500',
+                                                default   => 'bg-blue-500',
+                                            };
+                                        @endphp
+                                        <a href="{{ $qItem['url'] }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors">
                                             <div class="flex items-center gap-2">
-                                                <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
-                                                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">New Purchase Request</p>
+                                                <span class="w-2 h-2 rounded-full shrink-0 {{ $dotColor }}"></span>
+                                                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $qItem['title'] }}</p>
                                             </div>
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4">
-                                                {{ $pr->user ? ($pr->user->full_name ?? $pr->user->firstname . ' ' . $pr->user->lastname) : 'Deleted User' }} 
-                                                submitted {{ $pr->pr_number }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400 mt-1 pl-4">{{ $pr->created_at->diffForHumans() }}</p>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4 leading-snug">{{ $qItem['message'] }}</p>
                                         </a>
                                     @endforeach
                                 @endif
 
-                                {{-- Pending Inventory Approvals --}}
-                                @if($pendingApprovalCount > 0 && in_array(auth()->user()->role, ['admin', 'manager']))
-                                    @foreach($notifData['recentApprovals'] ?? collect() as $movement)
-                                        <a href="{{ route('inventory.approvals', ['id' => $movement->id]) }}" class="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 transition-colors cursor-pointer">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Pending Approval</p>
+                                {{-- Personal Persistent Event Inbox --}}
+                                @if($notifInbox->count() > 0)
+                                    <div class="px-4 py-1.5 bg-slate-50/80 dark:bg-[#161B26]/40 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                        Recent Alerts
+                                    </div>
+                                    @foreach($notifInbox as $item)
+                                        @php
+                                            $isUnread = is_null($item->read_at);
+                                            $dotColor = match($item->severity) {
+                                                'danger'  => 'bg-rose-500',
+                                                'warning' => 'bg-amber-500',
+                                                'success' => 'bg-emerald-500',
+                                                default   => 'bg-blue-500',
+                                            };
+                                        @endphp
+                                        <a href="{{ route('notifications.read', $item) }}"
+                                           class="block px-4 py-3 transition-colors {{ $isUnread ? 'bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30' : 'hover:bg-slate-50 dark:hover:bg-[#1e2536]/40 opacity-80' }}">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="w-2 h-2 rounded-full shrink-0 {{ $isUnread ? $dotColor : 'bg-slate-300 dark:bg-slate-600' }}"></span>
+                                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $item->title }}</p>
+                                                </div>
+                                                @if($isUnread)
+                                                    <span class="shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">New</span>
+                                                @endif
                                             </div>
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4">
-                                                {{ $movement->requester_name ?? ($movement->requester ? $movement->requester->firstname . ' ' . $movement->requester->lastname : 'Deleted User') }} 
-                                                requested restock of {{ $movement->product->product_name ?? 'Item' }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400 mt-1 pl-4">{{ $movement->created_at->diffForHumans() }}</p>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4 leading-snug">{{ $item->message }}</p>
+                                            <p class="text-[10px] text-slate-400 mt-1 pl-4">{{ $item->created_at?->diffForHumans() }}</p>
                                         </a>
                                     @endforeach
                                 @endif
 
-                                {{-- Empty State --}}
-                                @if($totalNotifications == 0)
-                                    <div class="px-4 py-6 text-center text-xs text-slate-400">
-                                        No pending notifications
+                                @if(count($notifQueues) === 0 && $notifInbox->count() === 0)
+                                    <div class="px-4 py-8 text-center text-xs text-slate-400 dark:text-slate-500">
+                                        You're all caught up — no pending notifications.
                                     </div>
                                 @endif
+                            </div>
+
+                            <div class="px-4 py-2.5 border-t border-slate-100 dark:border-[#1e2536] bg-slate-50/70 dark:bg-[#161B26]/60 flex items-center justify-between">
+                                <a href="{{ route('notifications.index') }}" class="text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                    View all notifications →
+                                </a>
+                                <a href="{{ route('account.settings', ['tab' => 'preferences']) }}" class="text-[11px] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                                    Preferences
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -222,34 +245,85 @@
                     <div class="h-5 w-px bg-slate-200 dark:bg-[#1e2536] mx-1"></div>
 
                     @php
-                        $resolvedRole = Auth::user()->email === 'admin@example.com' ? 'admin' : Auth::user()->role;
+                        $authUser = Auth::user();
+                        $resolvedRole = $authUser->email === 'admin@example.com' ? 'admin' : $authUser->role;
                         $roleWords = explode('_', $resolvedRole);
-                        $roleAcronym = count($roleWords) > 1 
+                        $roleAcronym = count($roleWords) > 1
                             ? strtoupper(substr($roleWords[0], 0, 1) . substr($roleWords[1], 0, 1))
                             : strtoupper(substr($resolvedRole, 0, 2));
+                        $friendlySubtitles = [
+                            'admin' => 'System Administrator',
+                            'manager' => 'Operations Manager',
+                            'warehouse_staff' => 'Inventory Specialist',
+                            'staff' => 'Cashier / POS Operator',
+                        ];
+                        $roleBadgeBg = [
+                            'admin' => 'bg-blue-600',
+                            'manager' => 'bg-indigo-600',
+                            'warehouse_staff' => 'bg-amber-600',
+                            'staff' => 'bg-emerald-600',
+                        ][$resolvedRole] ?? 'bg-blue-600';
                     @endphp
 
-                    <!-- User Info & Role Adaptation for Light/Dark Mode -->
-                    <div class="flex items-center space-x-3">
-                        <div class="text-right hidden sm:block">
-                            <span class="block text-xs font-semibold text-slate-800 dark:text-slate-100">{{ Auth::user()->name }}</span>
-                            <span class="block text-[10px] text-slate-900 dark:text-white font-bold uppercase tracking-wider">
-                                {{ ucwords(str_replace('_', ' ', $resolvedRole)) }}
-                            </span>
-                            <span class="block text-[9px] text-slate-400 dark:text-slate-500 font-medium">
-                                @php
-                                    $friendlySubtitles = [
-                                        'admin' => 'System Administrator',
-                                        'manager' => 'Operations Manager',
-                                        'warehouse_staff' => 'Inventory Specialist',
-                                        'staff' => 'System Operator'
-                                    ];
-                                    echo $friendlySubtitles[$resolvedRole] ?? 'Authorized User';
-                                @endphp
-                            </span>
-                        </div>
-                        <div class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs border-2 border-slate-200 dark:border-[#1e2536]">
-                            {{ $roleAcronym }}
+                    <!-- Interactive User Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profileMenuBtn" type="button"
+                                class="flex items-center space-x-3 p-1 pr-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 transition-colors cursor-pointer text-left">
+                            <div class="text-right hidden sm:block">
+                                <span class="block text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">{{ $authUser->full_name }}</span>
+                                <span class="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold leading-tight mt-0.5">
+                                    {{ $friendlySubtitles[$resolvedRole] ?? ucwords(str_replace('_', ' ', $resolvedRole)) }}
+                                </span>
+                            </div>
+                            @if($authUser->avatar_url)
+                                <img src="{{ $authUser->avatar_url }}" alt="{{ $authUser->full_name }}"
+                                     onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+                                     class="w-9 h-9 rounded-full object-cover shadow-xs border-2 border-slate-200 dark:border-[#1e2536]">
+                                <div class="hidden w-9 h-9 rounded-full {{ $roleBadgeBg }} text-white font-bold text-xs flex items-center justify-center shadow-xs border-2 border-slate-200 dark:border-[#1e2536]">
+                                    {{ $roleAcronym }}
+                                </div>
+                            @else
+                                <div class="w-9 h-9 rounded-full {{ $roleBadgeBg }} text-white font-bold text-xs flex items-center justify-center shadow-xs border-2 border-slate-200 dark:border-[#1e2536]">
+                                    {{ $roleAcronym }}
+                                </div>
+                            @endif
+                        </button>
+
+                        <div id="profileMenuDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-[#10141D] border-2 border-slate-200 dark:border-[#1e2536] rounded-2xl shadow-xl overflow-hidden z-50">
+                            <div class="px-4 py-3 border-b border-slate-100 dark:border-[#1e2536] bg-slate-50/70 dark:bg-[#161B26]/60">
+                                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $authUser->full_name }}</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ $authUser->email }}</p>
+                                <span class="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-200/80 text-slate-700 dark:bg-[#1e2536] dark:text-slate-300">
+                                    {{ $friendlySubtitles[$resolvedRole] ?? $resolvedRole }}
+                                </span>
+                            </div>
+                            <div class="py-1.5">
+                                <a href="{{ route('account.settings', ['tab' => 'profile']) }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#161B26]">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    Account Settings
+                                </a>
+                                <a href="{{ route('account.settings', ['tab' => 'security']) }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#161B26]">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    Password &amp; Sessions
+                                </a>
+                                <a href="{{ route('notifications.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#161B26]">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                    Notifications Center
+                                </a>
+                                <a href="{{ route('account.settings', ['tab' => 'activity']) }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#161B26]">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    My Activity
+                                </a>
+                            </div>
+                            <div class="border-t border-slate-100 dark:border-[#1e2536] py-1.5">
+                                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer text-left">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                        Sign Out
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -327,20 +401,40 @@
                 if (e.key === 'Escape') closeMobileDrawer();
             });
 
-            // Notification dropdown
+            // Notification & Profile dropdowns
             const notifBtn = document.getElementById('notificationBtn');
             const notifDropdown = document.getElementById('notificationDropdown');
+            const profileBtn = document.getElementById('profileMenuBtn');
+            const profileDropdown = document.getElementById('profileMenuDropdown');
+
             if (notifBtn && notifDropdown) {
                 notifBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
+                    if (profileDropdown) profileDropdown.classList.add('hidden');
                     notifDropdown.classList.toggle('hidden');
                 });
-                document.addEventListener('click', function (e) {
-                    if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
-                        notifDropdown.classList.add('hidden');
-                    }
+            }
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.add('hidden');
+                    profileDropdown.classList.toggle('hidden');
                 });
             }
+            document.addEventListener('click', function (e) {
+                if (notifDropdown && notifBtn && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                    notifDropdown.classList.add('hidden');
+                }
+                if (profileDropdown && profileBtn && !profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                    profileDropdown.classList.add('hidden');
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (notifDropdown) notifDropdown.classList.add('hidden');
+                    if (profileDropdown) profileDropdown.classList.add('hidden');
+                }
+            });
 
             requestAnimationFrame(function () {
                 root.classList.add('sidebar-ready');
@@ -377,6 +471,8 @@
             });
         });
     </script>
+
+    <div id="notifToastContainer" class="fixed bottom-5 right-5 z-[95] flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
 
     @include('partials.item-skus-modal')
     @include('partials.global-input-guards')

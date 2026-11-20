@@ -121,6 +121,15 @@ class SupplierReturnController extends Controller
             }
 
             $supplierReturn->update(['total_amount' => round($total, 2)]);
+
+            app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                'type'       => 'supplier_return_created',
+                'category'   => 'returns',
+                'severity'   => 'warning',
+                'title'      => "New Supplier Return {$supplierReturn->return_number}",
+                'message'    => Auth::user()->full_name . " filed return {$supplierReturn->return_number} (₱" . number_format($total, 2) . ") awaiting approval.",
+                'action_url' => route('supplier-returns.index', ['status' => 'pending']),
+            ], Auth::id());
         });
 
         return redirect()
@@ -228,6 +237,33 @@ class SupplierReturnController extends Controller
                 }
 
                 $lockedReturn->update(['status' => 'completed']);
+
+                \App\Models\AuditLog::create([
+                    'user_id'        => $user->id,
+                    'actor_name'     => $user->full_name,
+                    'actor_role'     => $user->role,
+                    'event'          => 'supplier_return_approved',
+                    'auditable_type' => SupplierReturn::class,
+                    'auditable_id'   => $lockedReturn->id,
+                    'old_values'     => ['status' => 'pending'],
+                    'new_values'     => [
+                        'return_number'   => $lockedReturn->return_number,
+                        'source_location' => $source,
+                        'total_amount'    => (float) $lockedReturn->total_amount,
+                        'ledger_credited' => true,
+                    ],
+                    'ip_address'     => \App\Support\ClientContext::ip(),
+                    'user_agent'     => request()->userAgent(),
+                ]);
+
+                app(\App\Services\NotificationService::class)->notifyRoles(['admin', 'manager'], [
+                    'type'       => 'supplier_return_approved',
+                    'category'   => 'returns',
+                    'severity'   => 'success',
+                    'title'      => "Supplier Return Approved: {$lockedReturn->return_number}",
+                    'message'    => "{$user->full_name} approved {$lockedReturn->return_number}. ₱" . number_format((float) $lockedReturn->total_amount, 2) . " credit applied to supplier ledger.",
+                    'action_url' => route('suppliers.ledger', $lockedReturn->supplier_id),
+                ], $user->id);
             });
 
             return back()->with('success', 'Supplier return approved: stock deducted, unit SKUs updated, and supplier ledger credited.');
