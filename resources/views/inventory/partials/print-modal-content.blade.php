@@ -22,7 +22,9 @@
                 <th class="px-4 py-3.5">SKU</th>
                 <th class="px-4 py-3.5">Main Category</th>
                 <th class="px-4 py-3.5">Subcategory</th>
-                <th class="px-4 py-3.5 text-right">Cost</th>
+                @unless(auth()->user()->role === 'warehouse_staff')
+                    <th class="px-4 py-3.5 text-right">Cost</th>
+                @endunless
                 <th class="px-4 py-3.5 text-right">Price</th>
                 <th class="px-4 py-3.5 text-right">Store Qty</th>
                 <th class="px-4 py-3.5 text-right">Warehouse Qty</th>
@@ -55,7 +57,9 @@
                     <td class="px-4 py-3 font-mono text-gray-600 dark:text-slate-300">{{ $product->product_sku ?? '—' }}</td>
                     <td class="px-4 py-3 text-gray-600 dark:text-slate-300">{{ $mainCategory }}</td>
                     <td class="px-4 py-3 text-gray-600 dark:text-slate-300">{{ $subCategory }}</td>
-                    <td class="px-4 py-3 text-right text-gray-600 dark:text-slate-300 font-mono">₱{{ number_format($product->purchase_cost ?? 0, 2) }}</td>
+                    @unless(auth()->user()->role === 'warehouse_staff')
+                        <td class="px-4 py-3 text-right text-gray-600 dark:text-slate-300 font-mono">₱{{ number_format($product->purchase_cost ?? 0, 2) }}</td>
+                    @endunless
                     <td class="px-4 py-3 text-right text-gray-600 dark:text-slate-300 font-mono">₱{{ number_format($product->selling_price ?? 0, 2) }}</td>
                     <td class="px-4 py-3 text-right text-gray-600 dark:text-slate-300">{{ $storeQty }}</td>
                     <td class="px-4 py-3 text-right text-gray-600 dark:text-slate-300">{{ $whQty }}</td>

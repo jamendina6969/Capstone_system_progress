@@ -57,7 +57,11 @@ class Product extends Model
             return route('products.image', ['product' => $this->id, 'v' => $v]);
         }
 
-        if (!empty($this->product_image)) {
+        if (
+            !empty($this->product_image)
+            && !str_starts_with($this->product_image, 'db:')
+            && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->product_image)
+        ) {
             return asset('storage/' . $this->product_image);
         }
 

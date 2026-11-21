@@ -397,7 +397,8 @@
                     <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Saved to your user account so your setup follows you across devices.</p>
                 </div>
 
-                <form method="POST" action="{{ route('account.preferences.update') }}" class="p-6 sm:p-8 space-y-6">
+                <form method="POST" action="{{ route('account.preferences.update') }}" class="p-6 sm:p-8 space-y-6"
+                      onsubmit="try { var v = this.querySelector('select[name=default_view]'); if (v) localStorage.setItem('productView', v.value); } catch (e) {}">
                     @csrf
                     @method('PUT')
 

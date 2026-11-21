@@ -48,25 +48,29 @@
         </td>
 
         <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
-            <div class="flex justify-end gap-2 items-center">
-                <a href="{{ route('suppliers.ledger', $supplier) }}" class="bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-blue-600/80 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-300 shadow-xs">
-                    Ledger
-                </a>
-
-                <button
-                    type="button"
-                    onclick="togglePaymentModal({{ $supplier->id }}, {{ Js::from($supplier->name) }}, {{ $outstandingBalance }})"
-                    {{ $outstandingBalance <= 0 ? 'disabled' : '' }}
-                    class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-300 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-emerald-700 dark:disabled:hover:bg-[#10141D] dark:disabled:hover:text-emerald-400"
-                >
-                    Payment
-                </button>
-
-                <button type="button" onclick="openActionMenu(event, {{ $supplier->id }}, {{ Js::from($supplier->name) }}, {{ $supplier->average_rating }}, {{ Js::from($supplier) }})" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold w-[38px] h-[38px] flex items-center justify-center rounded-full transition-all duration-300 shadow-xs cursor-pointer">
+            <div class="inline-flex justify-end items-center" data-row-actions>
+                <button type="button" onclick="openRowActionMenu(event, this)"
+                        class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 transition-all shadow-xs cursor-pointer"
+                        aria-label="Supplier Actions" title="Actions">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </button>
+                <div class="row-action-items hidden">
+                    <button type="button" data-tone="default" data-label="View Details"
+                            onclick="openSupplierDetailModal({{ json_encode($supplier) }})">View Details</button>
+                    <a href="{{ route('suppliers.ledger', $supplier) }}" data-tone="blue" data-label="Supplier Ledger">Supplier Ledger</a>
+                    <button type="button" data-tone="emerald" data-label="Record Payment"
+                            onclick="togglePaymentModal({{ $supplier->id }}, {{ Js::from($supplier->name) }}, {{ $outstandingBalance }})"
+                            {{ $outstandingBalance <= 0 ? 'disabled' : '' }}>Record Payment</button>
+                    <button type="button" data-tone="amber" data-label="Rate Supplier"
+                            onclick="toggleRateModal({{ $supplier->id }}, {{ Js::from($supplier->name) }})">Rate Supplier</button>
+                    <button type="button" data-tone="default" data-label="Edit Supplier"
+                            data-supplier="{{ json_encode($supplier) }}"
+                            onclick="openEditModal(this)">Edit Supplier</button>
+                    <button type="button" data-tone="rose" data-label="Delete Supplier"
+                            onclick="confirmDelete({{ $supplier->id }}, {{ Js::from($supplier->name) }})">Delete Supplier</button>
+                </div>
             </div>
         </td>
     </tr>

@@ -156,7 +156,9 @@
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product</th>
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Product SKU</th>
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Category</th>
-                                <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Cost</th>
+                                @unless(auth()->user()->role === 'warehouse_staff')
+                                    <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Cost</th>
+                                @endunless
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Price</th>
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Store Qty</th>
                                 <th class="px-6 py-3 bg-gray-50 dark:bg-[#161B26] whitespace-nowrap">Warehouse Qty</th>

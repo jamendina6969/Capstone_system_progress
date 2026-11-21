@@ -47,9 +47,11 @@
             {{ $product->category->name ?? '—' }}
         </td>
 
-        <td class="px-6 py-4 align-middle whitespace-nowrap text-sm text-gray-600 dark:text-slate-400 font-medium">
-            ₱{{ $product->purchase_cost !== null ? number_format($product->purchase_cost, 2) : '—' }}
-        </td>
+        @unless(auth()->user()->role === 'warehouse_staff')
+            <td class="px-6 py-4 align-middle whitespace-nowrap text-sm text-gray-600 dark:text-slate-400 font-medium">
+                ₱{{ $product->purchase_cost !== null ? number_format($product->purchase_cost, 2) : '—' }}
+            </td>
+        @endunless
 
         <td class="px-6 py-4 align-middle whitespace-nowrap text-sm text-gray-600 dark:text-slate-400 font-medium">
             ₱{{ $product->selling_price !== null ? number_format($product->selling_price, 2) : '—' }}

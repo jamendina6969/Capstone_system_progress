@@ -24,6 +24,7 @@
         {{-- Scrollable Body --}}
         <div class="p-5 sm:p-6 space-y-4 overflow-y-auto custom-scrollbar">
             <img id="pdm-image" src="" alt=""
+                 onerror="this.src=''; this.classList.add('hidden');"
                  class="w-full h-44 sm:h-52 object-cover rounded-2xl border-2 border-gray-200 dark:border-[#1e2536] hidden">
 
             <div class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3.5 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
@@ -40,11 +41,11 @@
                     <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold">Approx. Volume</p>
                     <p id="pdm-volume" class="text-gray-900 dark:text-white mt-1 font-semibold"></p>
                 </div>
-                <div class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
+                <div id="pdm-cost-card" class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
                     <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold">Purchase Cost</p>
                     <p id="pdm-cost" class="text-gray-900 dark:text-white mt-1 font-semibold"></p>
                 </div>
-                <div class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
+                <div id="pdm-price-card" class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
                     <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold">Selling Price</p>
                     <p id="pdm-price" class="text-emerald-600 dark:text-emerald-400 mt-1 font-bold"></p>
                 </div>
@@ -99,7 +100,16 @@
                 document.getElementById('pdm-description').textContent = data.description || 'No description provided.';
                 document.getElementById('pdm-category').textContent = data.category || 'Uncategorized';
                 document.getElementById('pdm-volume').textContent = data.approx_volume || '—';
-                document.getElementById('pdm-cost').textContent = '₱' + data.purchase_cost;
+                const costCard = document.getElementById('pdm-cost-card');
+                const priceCard = document.getElementById('pdm-price-card');
+                if (data.purchase_cost === null || data.purchase_cost === undefined) {
+                    if (costCard) costCard.classList.add('hidden');
+                    if (priceCard) priceCard.classList.add('col-span-2');
+                } else {
+                    if (costCard) costCard.classList.remove('hidden');
+                    if (priceCard) priceCard.classList.remove('col-span-2');
+                    document.getElementById('pdm-cost').textContent = '₱' + data.purchase_cost;
+                }
                 document.getElementById('pdm-price').textContent = '₱' + data.selling_price;
                 document.getElementById('pdm-store-qty').textContent = data.store_quantity;
                 document.getElementById('pdm-warehouse-qty').textContent = data.warehouse_quantity;

@@ -18,8 +18,30 @@ use Illuminate\Validation\Rule;
 
 class AccountSettingsController extends Controller
 {
+    private function ensureAccountSchema(): void
+    {
+        if (!Schema::hasTable('users')) {
+            return;
+        }
+
+        if (!Schema::hasColumn('users', 'preferences') || !Schema::hasColumn('users', 'avatar_data')) {
+            Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                if (!Schema::hasColumn('users', 'avatar_data')) {
+                    $table->longText('avatar_data')->nullable()->after('profile_photo');
+                }
+                if (!Schema::hasColumn('users', 'avatar_mime')) {
+                    $table->string('avatar_mime', 64)->nullable()->after('avatar_data');
+                }
+                if (!Schema::hasColumn('users', 'preferences')) {
+                    $table->json('preferences')->nullable()->after('theme');
+                }
+            });
+        }
+    }
+
     public function index(Request $request)
     {
+        $this->ensureAccountSchema();
         $user = Auth::user();
         $activeTab = in_array($request->input('tab'), ['profile', 'security', 'preferences', 'activity'], true)
             ? $request->input('tab')
@@ -90,6 +112,7 @@ class AccountSettingsController extends Controller
 
     public function updateProfile(Request $request)
     {
+        $this->ensureAccountSchema();
         $user = Auth::user();
         $isAdmin = $user->role === 'admin';
 
@@ -245,6 +268,7 @@ class AccountSettingsController extends Controller
 
     public function updatePreferences(Request $request)
     {
+        $this->ensureAccountSchema();
         $user = Auth::user();
 
         $validated = $request->validate([

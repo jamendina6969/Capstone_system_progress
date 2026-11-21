@@ -199,7 +199,9 @@ class InventoryController extends Controller
             "Expires"             => "0"
         ];
 
-        $callback = function() use ($products) {
+        $hideCost = Auth::check() && Auth::user()->role === 'warehouse_staff';
+
+        $callback = function() use ($products, $hideCost) {
             $file = fopen('php://output', 'w');
             
             // Metadata rows at the top
@@ -208,7 +210,12 @@ class InventoryController extends Controller
             fputcsv($file, []); // Blank separator row
 
             // Table Header with Main Category and Subcategory
-            fputcsv($file, ['Product Name', 'SKU', 'Main Category', 'Subcategory', 'Cost', 'Price', 'Store Qty', 'Warehouse Qty', 'Total Qty']);
+            $headerRow = ['Product Name', 'SKU', 'Main Category', 'Subcategory'];
+            if (!$hideCost) {
+                $headerRow[] = 'Cost';
+            }
+            array_push($headerRow, 'Price', 'Store Qty', 'Warehouse Qty', 'Total Qty');
+            fputcsv($file, $headerRow);
 
             foreach ($products as $product) {
                 $storeQty = $product->store_quantity ?? 0;
@@ -228,17 +235,23 @@ class InventoryController extends Controller
                     }
                 }
 
-                fputcsv($file, [
+                $row = [
                     $product->product_name,
                     $product->product_sku ?? '—',
                     $mainCategory,
                     $subCategory,
-                    $product->purchase_cost ?? 0,
+                ];
+                if (!$hideCost) {
+                    $row[] = $product->purchase_cost ?? 0;
+                }
+                array_push(
+                    $row,
                     $product->selling_price ?? 0,
                     $storeQty,
                     $whQty,
                     $storeQty + $whQty
-                ]);
+                );
+                fputcsv($file, $row);
             }
 
             fclose($file);
@@ -919,6 +932,8 @@ class InventoryController extends Controller
 
         $status = $totalQty <= 0 ? 'Out of Stock' : ($totalQty <= $reorder ? 'Low Stock' : 'In Stock');
 
+        $hideCost = Auth::check() && Auth::user()->role === 'warehouse_staff';
+
         return response()->json([
             'id' => $product->id,
             'name' => $product->product_name,
@@ -926,14 +941,14 @@ class InventoryController extends Controller
             'description' => $product->product_description ?: 'No product description available.',
             'category' => $product->category?->name ?? 'Uncategorized',
             'approx_volume' => $product->approx_volume ?: '—',
-            'purchase_cost' => number_format((float) ($product->purchase_cost ?? 0), 2),
+            'purchase_cost' => $hideCost ? null : number_format((float) ($product->purchase_cost ?? 0), 2),
             'selling_price' => number_format((float) ($product->selling_price ?? 0), 2),
             'store_quantity' => $storeQty,
             'warehouse_quantity' => $whQty,
             'total_quantity' => $totalQty,
             'reorder_point' => $reorder,
             'status' => $status,
-            'image' => $product->product_image ? asset('storage/' . $product->product_image) : null,
+            'image' => $product->image_url,
         ]);
     }
 }

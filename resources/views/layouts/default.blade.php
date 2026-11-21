@@ -16,9 +16,11 @@
     @stack('styles')
     
     <script>
-        // Check and apply product view mode immediately to prevent layout shifts
+        // Check and apply product view mode immediately (respects user DB preference when localStorage is unset)
         try {
-            if (localStorage.getItem('productView') === 'grid') {
+            var defaultUserView = @json(auth()->check() ? auth()->user()->getPreference('default_view', 'list') : 'list');
+            var activeProductView = localStorage.getItem('productView') || defaultUserView;
+            if (activeProductView === 'grid') {
                 document.documentElement.dataset.productView = 'grid';
             }
         } catch (e) {}
