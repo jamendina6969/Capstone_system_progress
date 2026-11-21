@@ -148,6 +148,19 @@
         .hydro-signin-btn {
             position: relative;
             overflow: hidden;
+            will-change: transform;
+        }
+        .hydro-signin-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(130px circle at var(--btn-x, -200px) var(--btn-y, -200px), rgba(168, 85, 247, 0.28), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+        .hydro-signin-btn:hover::before {
+            opacity: 1;
         }
         .hydro-signin-btn::after {
             content: '';
@@ -160,9 +173,61 @@
             animation: hydroBtnSheen 5.5s ease-in-out 1.5s infinite;
             pointer-events: none;
         }
+        @keyframes hydroBtnRipple {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0.65; }
+            100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+        }
+        .hydro-btn-ripple {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 9999px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.55) 0%, rgba(168, 85, 247, 0.2) 60%, transparent 100%);
+            pointer-events: none;
+            animation: hydroBtnRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Password Eye Toggle Spring Morph */
+        @keyframes hydroEyePop {
+            0% { transform: scale(0.6) rotate(-25deg); opacity: 0.3; }
+            65% { transform: scale(1.18) rotate(6deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .hydro-eye-pop {
+            animation: hydroEyePop 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Elastic Error Shake & Crimson Pulse */
+        @keyframes hydroErrorShake {
+            0%, 100% { transform: translateX(0); }
+            16% { transform: translateX(-8px); }
+            32% { transform: translateX(7px); }
+            48% { transform: translateX(-5px); }
+            64% { transform: translateX(4px); }
+            80% { transform: translateX(-2px); }
+        }
+        .hydro-error-shake {
+            animation: hydroErrorShake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            box-shadow: 0 0 24px -4px rgba(244, 63, 94, 0.32);
+        }
+
+        /* Seamless Cross-Portal Warp Transition */
+        .hydro-portal-warp-out {
+            transform: scale(0.94) translateY(-10px) !important;
+            filter: blur(8px) !important;
+            opacity: 0 !important;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.22s ease, opacity 0.2s ease !important;
+        }
+
+        /* Progressive 5-Tap Orbital Charge Ring */
+        .hydro-tap-arc {
+            stroke-dasharray: 289;
+            stroke-dashoffset: 289;
+            transition: stroke-dashoffset 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+        }
 
         #adminBrandCluster {
-            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), filter 0.22s ease, opacity 0.2s ease;
             will-change: transform;
         }
     </style>
@@ -192,10 +257,14 @@
                         </div>
                     </div>
 
-                    <!-- Standalone Logo with Anti-Gravity Levitation & Orbital Energy Rings -->
-                    <div class="relative w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 flex items-center justify-center my-1.5 sm:my-3 lg:my-4">
+                    <!-- Standalone Logo with Anti-Gravity Levitation & Orbital Energy Rings (5-taps-in-3s on Mobile/Tablet returns to Standard Login) -->
+                    <div data-admin-portal-logo class="relative w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 flex items-center justify-center my-1.5 sm:my-3 lg:my-4 touch-manipulation transition-transform duration-200">
                         <div class="hydro-orbit-cw absolute inset-0 rounded-full border border-dashed border-purple-400/30 pointer-events-none"></div>
                         <div class="hydro-orbit-ccw absolute inset-2 sm:inset-3 rounded-full border border-sky-400/25 pointer-events-none"></div>
+                        <!-- Progressive 5-Tap Orbital Charge Ring (Mobile & Tablet Visual Feedback) -->
+                        <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(168, 85, 247, 0.9)" stroke-width="2.75" stroke-linecap="round" class="hydro-tap-arc opacity-0 drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]"></circle>
+                        </svg>
                         <div class="absolute inset-3 sm:inset-4 rounded-full bg-purple-500/15 blur-xl pointer-events-none"></div>
 
                         <div class="hydro-logo-float w-12 h-12 sm:w-18 sm:h-18 lg:w-24 lg:h-24 xl:w-28 xl:h-28 flex items-center justify-center">
@@ -249,7 +318,7 @@
         </div>
 
         <!-- RIGHT / FLOATING ADMIN LOGIN CARD -->
-        <div class="liftoff-login-card w-full max-w-md lg:max-w-none lg:flex-1 flex flex-col justify-between items-center p-5 sm:p-8 lg:p-10 xl:p-16 bg-[#10141D]/92 lg:bg-[#10141D] backdrop-blur-xl rounded-[26px] sm:rounded-[30px] lg:rounded-[32px] border border-[#1e2536] shadow-[0_24px_60px_rgba(0,0,0,0.75)] lg:shadow-2xl relative z-10 overflow-hidden">
+        <div id="adminLoginCard" class="liftoff-login-card w-full max-w-md lg:max-w-none lg:flex-1 flex flex-col justify-between items-center p-5 sm:p-8 lg:p-10 xl:p-16 bg-[#10141D]/92 lg:bg-[#10141D] backdrop-blur-xl rounded-[26px] sm:rounded-[30px] lg:rounded-[32px] border border-[#1e2536] shadow-[0_24px_60px_rgba(0,0,0,0.75)] lg:shadow-2xl relative z-10 overflow-hidden">
             <div class="absolute -top-24 -right-24 w-64 h-64 bg-purple-500/[0.08] rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="hidden lg:block"></div>
@@ -274,13 +343,13 @@
                 @endif
 
                 @if (session('error'))
-                    <div class="rounded-xl bg-rose-950/60 text-rose-300 border border-rose-900 px-4 py-3 text-sm">
+                    <div data-hydro-error-alert class="hydro-error-shake rounded-xl bg-rose-950/60 text-rose-300 border border-rose-900 px-4 py-3 text-sm">
                         {{ session('error') }}
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="rounded-xl bg-rose-950/80 text-rose-300 border border-rose-900 px-4 py-3 text-sm">
+                    <div data-hydro-error-alert class="hydro-error-shake rounded-xl bg-rose-950/80 text-rose-300 border border-rose-900 px-4 py-3 text-sm">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -296,10 +365,15 @@
                         <label for="admin_loginname" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 transition-colors">
                             Administrator Username or Email
                         </label>
-                        <input type="text" name="loginname" id="admin_loginname" value="{{ old('loginname') }}" required autofocus autocomplete="username"
-                               placeholder="admin@stevenhydrotech.com"
-                               class="hydro-input w-full rounded-xl bg-[#161B26] border-2 border-[#1e2536] px-3.5 py-2.5 sm:py-3 text-sm text-slate-100 placeholder-slate-500
-                                      focus:outline-none focus:border-sky-500 transition-all">
+                        <div class="relative">
+                            <input type="text" name="loginname" id="admin_loginname" value="{{ old('loginname') }}" required autofocus autocomplete="username"
+                                   placeholder="admin@stevenhydrotech.com"
+                                   class="hydro-input w-full rounded-xl bg-[#161B26] border-2 border-[#1e2536] px-3.5 py-2.5 sm:py-3 pr-9 text-sm text-slate-100 placeholder-slate-500
+                                          focus:outline-none focus:border-sky-500 transition-all">
+                            <span id="adminLoginnameReadyDot" aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-3.5 flex items-center opacity-0 scale-50 transition-all duration-300">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="liftoff-item-4 hydro-field-group">
@@ -313,7 +387,7 @@
                                           focus:outline-none focus:border-sky-500 transition-all">
 
                             <button type="button" id="toggleAdminPassword" aria-label="Toggle password visibility"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-200 cursor-pointer">
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-sky-400 transition-colors cursor-pointer">
                                 <svg id="adminEyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -326,11 +400,17 @@
                     </div>
 
                     <div class="liftoff-item-5 flex flex-wrap items-center justify-between gap-2 text-sm pt-0.5">
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" name="remember" id="admin_remember"
-                                   class="rounded border-slate-700 bg-[#161B26] text-sky-600 focus:ring-sky-500">
-                            <label for="admin_remember" class="text-slate-300 font-medium text-xs sm:text-sm">Remember Me</label>
-                        </div>
+                        <label for="admin_remember" class="inline-flex items-center gap-2.5 cursor-pointer select-none group">
+                            <span class="relative flex items-center justify-center w-4 h-4">
+                                <input type="checkbox" name="remember" id="admin_remember"
+                                       class="peer sr-only">
+                                <span class="w-4 h-4 rounded-md border-2 border-[#2a344a] bg-[#161B26] peer-checked:bg-sky-500 peer-checked:border-sky-500 peer-focus-visible:ring-2 peer-focus-visible:ring-sky-400 transition-all duration-200 group-hover:border-sky-400"></span>
+                                <svg class="w-3 h-3 text-white absolute pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-all duration-200" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </span>
+                            <span class="text-slate-300 group-hover:text-white font-medium text-xs sm:text-sm transition-colors">Remember Me</span>
+                        </label>
                         <span class="text-[11px] text-slate-500">Max 5 attempts / 15 min</span>
                     </div>
 
@@ -373,8 +453,60 @@
             passwordInput.type = isHidden ? 'text' : 'password';
             eyeOpen?.classList.toggle('hidden', isHidden);
             eyeOff?.classList.toggle('hidden', !isHidden);
+            const activeIcon = isHidden ? eyeOff : eyeOpen;
+            if (activeIcon) {
+                activeIcon.classList.remove('hydro-eye-pop');
+                void activeIcon.offsetWidth;
+                activeIcon.classList.add('hydro-eye-pop');
+            }
         });
     }
+
+    // Live Field Readiness Indicator on Administrator Username / Email Input
+    (function () {
+        const loginInput = document.getElementById('admin_loginname');
+        const readyDot = document.getElementById('adminLoginnameReadyDot');
+        if (!loginInput || !readyDot) return;
+        function syncReadyState() {
+            const valid = (loginInput.value || '').trim().length >= 3;
+            readyDot.classList.toggle('opacity-100', valid);
+            readyDot.classList.toggle('scale-100', valid);
+            readyDot.classList.toggle('opacity-0', !valid);
+            readyDot.classList.toggle('scale-50', !valid);
+        }
+        loginInput.addEventListener('input', syncReadyState);
+        syncReadyState();
+    })();
+
+    // Magnetic Sign-In Button with Cursor-Following Glow & Tactile Water-Droplet Click Ripple
+    (function () {
+        const btn = document.getElementById('adminSignInBtn');
+        if (!btn) return;
+        btn.addEventListener('pointermove', function (e) {
+            const r = btn.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const y = e.clientY - r.top;
+            btn.style.setProperty('--btn-x', x + 'px');
+            btn.style.setProperty('--btn-y', y + 'px');
+            if (window.innerWidth >= 1024) {
+                const dx = (x - r.width * 0.5) * 0.06;
+                const dy = (y - r.height * 0.5) * 0.14;
+                btn.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+            }
+        });
+        btn.addEventListener('pointerleave', function () {
+            btn.style.transform = '';
+        });
+        btn.addEventListener('pointerdown', function (e) {
+            const r = btn.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'hydro-btn-ripple';
+            ripple.style.left = (e.clientX - r.left) + 'px';
+            ripple.style.top = (e.clientY - r.top) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(function () { ripple.remove(); }, 620);
+        });
+    })();
 
     // Cursor-Tracking Glass Spotlight on the 4 Bottom Cards
     document.querySelectorAll('.hydro-glass-card').forEach(function (card) {
@@ -403,7 +535,131 @@
         }, 420);
     })();
 
-    // Interactive 60fps 3D Hollow-Eye Particle Vortex + Typing Resonance + Hyperdrive Liftoff (Admin Portal Edition)
+    // Strict Device-Separated Secret Toggle Back to Standard Login + Progressive 5-Tap Orbital Charge Ring & Cross-Portal Warp:
+    // 1. Desktop / Laptop / PC: Ctrl + Shift + S + A keyboard shortcut returns to Standard Login
+    // 2. Mobile & Tablet: Tap 5 times within 3 seconds on the Hydrotech logo returns to Standard Login
+    (function () {
+        const standardLoginUrl = @json(route('login'));
+        const heldKeys = new Set();
+        let sArmedUntil = 0;
+        let drainTimer = null;
+
+        function isMobileOrTabletDevice() {
+            if (window.innerWidth <= 1024) return true;
+            if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return true;
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(navigator.userAgent || '');
+        }
+
+        function updateTapChargeRing(tapCount) {
+            const circumference = 289;
+            const progress = Math.max(0, Math.min(1, tapCount / 5));
+            const offset = circumference * (1 - progress);
+            document.querySelectorAll('.hydro-tap-arc').forEach(function (arc) {
+                arc.style.strokeDashoffset = offset.toFixed(1);
+                arc.style.opacity = tapCount > 0 ? '1' : '0';
+            });
+        }
+
+        function returnToStandardLoginWithWarp() {
+            if (window.hydrotechTriggerHyperdrive) window.hydrotechTriggerHyperdrive();
+            const card = document.getElementById('adminLoginCard');
+            const cluster = document.getElementById('adminBrandCluster');
+            if (card) card.classList.add('hydro-portal-warp-out');
+            if (cluster) cluster.classList.add('hydro-portal-warp-out');
+            setTimeout(function () {
+                window.location.href = standardLoginUrl;
+            }, 210);
+        }
+
+        window.addEventListener('keydown', function (e) {
+            const code = e.code || '';
+            const key = (e.key || '').toLowerCase();
+            const isS = code === 'KeyS' || key === 's';
+            const isA = code === 'KeyA' || key === 'a';
+
+            if (!e.ctrlKey || !e.shiftKey) {
+                heldKeys.clear();
+                sArmedUntil = 0;
+                return;
+            }
+
+            if (isS) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.add('s');
+                sArmedUntil = Date.now() + 1500;
+            }
+
+            if (isA && (heldKeys.has('s') || Date.now() <= sArmedUntil)) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.clear();
+                sArmedUntil = 0;
+                returnToStandardLoginWithWarp();
+            } else if (isA) {
+                heldKeys.add('a');
+            }
+
+            if (isS && heldKeys.has('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                heldKeys.clear();
+                sArmedUntil = 0;
+                returnToStandardLoginWithWarp();
+            }
+        }, true);
+
+        window.addEventListener('keyup', function (e) {
+            const code = e.code || '';
+            const key = (e.key || '').toLowerCase();
+            if (code === 'KeyS' || key === 's') heldKeys.delete('s');
+            if (code === 'KeyA' || key === 'a') heldKeys.delete('a');
+            if (!e.ctrlKey || !e.shiftKey) {
+                heldKeys.clear();
+                sArmedUntil = 0;
+            }
+        }, true);
+
+        window.addEventListener('blur', function () {
+            heldKeys.clear();
+            sArmedUntil = 0;
+        });
+
+        // Mobile & Tablet ONLY: 5 taps on the Hydrotech logo within 3 seconds returns to Standard Login
+        const tapTimestamps = [];
+        document.querySelectorAll('[data-admin-portal-logo]').forEach(function (logoEl) {
+            logoEl.addEventListener('click', function (e) {
+                if (!isMobileOrTabletDevice()) return;
+                e.stopPropagation();
+                const now = Date.now();
+                tapTimestamps.push(now);
+                while (tapTimestamps.length > 0 && now - tapTimestamps[0] > 3000) {
+                    tapTimestamps.shift();
+                }
+
+                updateTapChargeRing(tapTimestamps.length);
+                logoEl.style.transform = 'scale(1.1)';
+                setTimeout(function () { logoEl.style.transform = ''; }, 160);
+
+                if (drainTimer) clearTimeout(drainTimer);
+                drainTimer = setTimeout(function () {
+                    tapTimestamps.length = 0;
+                    updateTapChargeRing(0);
+                }, 3000);
+
+                if (window.hydrotechPulseCenter) {
+                    window.hydrotechPulseCenter(0.45 + tapTimestamps.length * 0.12);
+                }
+                if (tapTimestamps.length >= 5) {
+                    if (drainTimer) clearTimeout(drainTimer);
+                    tapTimestamps.length = 0;
+                    returnToStandardLoginWithWarp();
+                }
+            });
+        });
+    })();
+
+    // Interactive 60fps 3D Hollow-Eye Particle Vortex + Typing Resonance + Security Lock Shift + Error Pulse + Hyperdrive Liftoff (Admin Portal Edition)
     (function () {
         const panel = document.getElementById('adminVortexPanel');
         const outerStage = document.getElementById('adminOuterStage');
@@ -426,6 +682,9 @@
         const startTime = performance.now();
         let initialShockwaveFired = false;
         let typingEnergy = 0;
+        let securityModeTarget = 0;
+        let securityBlend = 0;
+        let errorPulseEnergy = document.querySelector('[data-hydro-error-alert]') ? 1.0 : 0;
         let hyperdriveActive = false;
         let hyperdriveProgress = 0;
         let lastCenterX = 0;
@@ -566,6 +825,17 @@
             });
         }
 
+        // Expose Typing Resonance & Hyperdrive hooks for 5-tap logo feedback & portal toggle
+        window.hydrotechPulseCenter = function (strength) {
+            typingEnergy = Math.min(1.1, typingEnergy + (strength || 0.35));
+            spawnShockwave(lastCenterX || width * 0.5, lastCenterY || height * 0.43, Math.min(width, height) * 0.46, strength || 0.45);
+        };
+
+        window.hydrotechTriggerHyperdrive = function () {
+            hyperdriveActive = true;
+            spawnShockwave(lastCenterX || width * 0.5, lastCenterY || height * 0.43, Math.max(width, height) * 0.85, 1.6);
+        };
+
         let lastKeyPulseAt = 0;
         ['admin_loginname', 'admin_loginpassword'].forEach(function (id) {
             const inputEl = document.getElementById(id);
@@ -578,6 +848,15 @@
                     spawnShockwave(lastCenterX || width * 0.5, lastCenterY || height * 0.43, Math.min(width, height) * 0.42, 0.38);
                 }
             });
+            if (id === 'admin_loginpassword') {
+                inputEl.addEventListener('focus', function () {
+                    securityModeTarget = 1;
+                    spawnShockwave(lastCenterX || width * 0.5, lastCenterY || height * 0.43, Math.min(width, height) * 0.48, 0.55);
+                });
+                inputEl.addEventListener('blur', function () {
+                    securityModeTarget = 0;
+                });
+            }
         });
 
         const adminForm = document.getElementById('adminLoginForm');
@@ -631,6 +910,8 @@
             if (width <= 1 || height <= 1) resize();
 
             typingEnergy *= 0.94;
+            securityBlend += (securityModeTarget - securityBlend) * 0.08;
+            errorPulseEnergy *= 0.965;
             if (hyperdriveActive) {
                 hyperdriveProgress = Math.min(1, hyperdriveProgress + 0.045);
             }
@@ -659,7 +940,7 @@
 
             if (!initialShockwaveFired && elapsed > 180) {
                 initialShockwaveFired = true;
-                spawnShockwave(cx, cy, Math.min(width, height) * 0.58, 1);
+                spawnShockwave(cx, cy, Math.min(width, height) * 0.58, errorPulseEnergy > 0.2 ? 1.45 : 1);
             }
 
             if (pointer.active) {
@@ -695,7 +976,7 @@
 
             const warpExpand = 1 + hyperdriveProgress * 0.65;
             const baseRadius = Math.min(width, height) * (isDesktop ? 0.43 : 0.44) * introSpring * warpExpand;
-            const innerEyeRadius = baseRadius * (isDesktop ? 0.42 : 0.36);
+            const innerEyeRadius = baseRadius * ((isDesktop ? 0.42 : 0.36) - securityBlend * 0.055);
             const fov = 560;
 
             const introSpinBonus = (1 - introRaw) * 1.65;
@@ -813,9 +1094,9 @@
                 const baseAlpha = (0.2 + (depthNorm + 1) * 0.35) * eyeFade * Math.min(1, introRaw * 1.4);
                 const alpha = Math.min(0.98, baseAlpha + item.cursorGlow * 0.38);
 
-                const r = Math.min(255, Math.round(p.color.r + item.cursorGlow * 75));
-                const g = Math.min(255, Math.round(p.color.g + item.cursorGlow * 65));
-                const b = Math.min(255, Math.round(p.color.b + item.cursorGlow * 35));
+                const r = Math.min(255, Math.max(0, Math.round(p.color.r + item.cursorGlow * 75 + securityBlend * 48 + errorPulseEnergy * 145)));
+                const g = Math.min(255, Math.max(0, Math.round(p.color.g + item.cursorGlow * 65 - securityBlend * 18 - errorPulseEnergy * 55)));
+                const b = Math.min(255, Math.max(0, Math.round(p.color.b + item.cursorGlow * 35 + securityBlend * 42 - errorPulseEnergy * 45)));
 
                 const halfLen = dashLen * 0.5;
                 const cosA = Math.cos(angle) * halfLen;

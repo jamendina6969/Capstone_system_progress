@@ -100,7 +100,17 @@
         .hydro-field-group:focus-within { transform: translateY(-1.5px); }
         .hydro-input:focus { box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.16); }
 
-        .hydro-signin-btn { position: relative; overflow: hidden; }
+        .hydro-signin-btn { position: relative; overflow: hidden; will-change: transform; }
+        .hydro-signin-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(130px circle at var(--btn-x, -200px) var(--btn-y, -200px), rgba(56, 189, 248, 0.28), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+        .hydro-signin-btn:hover::before { opacity: 1; }
         .hydro-signin-btn::after {
             content: '';
             position: absolute;
@@ -111,6 +121,31 @@
             background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.18), transparent);
             animation: hydroBtnSheen 5.5s ease-in-out 1.5s infinite;
             pointer-events: none;
+        }
+        @keyframes hydroBtnRipple {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0.65; }
+            100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+        }
+        .hydro-btn-ripple {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 9999px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.55) 0%, rgba(14, 165, 233, 0.15) 60%, transparent 100%);
+            pointer-events: none;
+            animation: hydroBtnRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes hydroErrorShake {
+            0%, 100% { transform: translateX(0); }
+            16% { transform: translateX(-8px); }
+            32% { transform: translateX(7px); }
+            48% { transform: translateX(-5px); }
+            64% { transform: translateX(4px); }
+            80% { transform: translateX(-2px); }
+        }
+        .hydro-error-shake {
+            animation: hydroErrorShake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            box-shadow: 0 0 24px -4px rgba(244, 63, 94, 0.32);
         }
         #forceBrandCluster {
             transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
@@ -193,7 +228,7 @@
                 @endif
 
                 @if ($errors->any())
-                    <div class="rounded-xl bg-red-100 dark:bg-rose-950/85 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-900 px-4 py-3 text-sm">
+                    <div data-hydro-error-alert class="hydro-error-shake rounded-xl bg-red-100 dark:bg-rose-950/85 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-900 px-4 py-3 text-sm">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -335,6 +370,36 @@
                 'forcePasswordChecklist'
             );
         });
+
+        // Magnetic Submit Button with Cursor-Following Glow & Tactile Water-Droplet Click Ripple
+        (function () {
+            const btn = document.getElementById('forceSignInBtn');
+            if (!btn) return;
+            btn.addEventListener('pointermove', function (e) {
+                const r = btn.getBoundingClientRect();
+                const x = e.clientX - r.left;
+                const y = e.clientY - r.top;
+                btn.style.setProperty('--btn-x', x + 'px');
+                btn.style.setProperty('--btn-y', y + 'px');
+                if (window.innerWidth >= 1024) {
+                    const dx = (x - r.width * 0.5) * 0.06;
+                    const dy = (y - r.height * 0.5) * 0.14;
+                    btn.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+                }
+            });
+            btn.addEventListener('pointerleave', function () {
+                btn.style.transform = '';
+            });
+            btn.addEventListener('pointerdown', function (e) {
+                const r = btn.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                ripple.className = 'hydro-btn-ripple';
+                ripple.style.left = (e.clientX - r.left) + 'px';
+                ripple.style.top = (e.clientY - r.top) + 'px';
+                btn.appendChild(ripple);
+                setTimeout(function () { ripple.remove(); }, 620);
+            });
+        })();
 
         // Typewriter Reveal for "Create Your Password|"
         (function () {
