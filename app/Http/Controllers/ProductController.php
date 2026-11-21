@@ -209,8 +209,19 @@ class ProductController extends Controller
         return back()->with('success', 'Products transferred successfully.');
     }
 
+    private function ensureProductImageSchema(): void
+    {
+        if (\Illuminate\Support\Facades\Schema::hasTable('products') && !\Illuminate\Support\Facades\Schema::hasColumn('products', 'product_image_data')) {
+            \Illuminate\Support\Facades\Schema::table('products', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->longText('product_image_data')->nullable()->after('product_image');
+                $table->string('product_image_mime', 64)->nullable()->after('product_image_data');
+            });
+        }
+    }
+
     public function store(Request $request)
     {
+        $this->ensureProductImageSchema();
         $request->validate([
             'product_sku' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9\-]+$/', 'unique:products,product_sku'],
             'product_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9\s\-\/#]+$/'],
@@ -320,6 +331,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->ensureProductImageSchema();
         $request->validate([
             'product_sku' => [
                 'required',

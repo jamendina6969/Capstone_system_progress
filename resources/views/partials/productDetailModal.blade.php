@@ -32,7 +32,7 @@
                 <p id="pdm-description" class="text-sm text-gray-700 dark:text-slate-300 mt-1 leading-relaxed"></p>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div class="bg-gray-50/70 dark:bg-[#161B26]/60 p-3 rounded-2xl border border-gray-100 dark:border-[#1e2536]">
                     <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold">Category</p>
                     <p id="pdm-category" class="text-gray-900 dark:text-white mt-1 font-semibold"></p>

@@ -1,9 +1,10 @@
 @extends('layouts.guest')
 
-@section('title', 'System Administrator Portal')
+@section('title', 'System Administrator Portal — Steven Hydrotech Exponent')
+@section('robots', 'noindex, nofollow, noarchive')
 
 @section('content')
-    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] text-slate-100">
+    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] text-slate-100 overflow-x-hidden">
 
         <!-- LEFT SIDE: Restricted Admin Brand Panel (desktop only) -->
         <div class="hidden lg:flex lg:w-1/2 min-h-screen bg-[#0b0e14] text-white flex-col justify-between p-8 lg:p-12 relative overflow-hidden border-r border-slate-800/80">

@@ -221,6 +221,7 @@ class AccountSettingsController extends Controller
             'title'      => 'Password Changed',
             'message'    => 'Your account password was updated.' . ($revokedCount > 0 ? " {$revokedCount} other session(s) were signed out." : ''),
             'action_url' => route('account.settings', ['tab' => 'security']),
+            'read_at'    => now(),
         ]);
 
         return redirect()->route('account.settings', ['tab' => 'security'])
@@ -359,6 +360,7 @@ class AccountSettingsController extends Controller
                 'title'      => 'Other Sessions Signed Out',
                 'message'    => "{$deleted} other active session(s) on your account were terminated.",
                 'action_url' => route('account.settings', ['tab' => 'security']),
+                'read_at'    => now(),
             ]);
         }
 

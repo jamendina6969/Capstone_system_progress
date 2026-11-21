@@ -1,5 +1,8 @@
 {{-- resources/views/inventory/partials/rows.blade.php --}}
 
+@php
+    $invColSpan = auth()->user()->role === 'warehouse_staff' ? 10 : 11;
+@endphp
 @forelse ($products as $product)
     @php
         $canTransfer = in_array(auth()->user()->role, ['admin', 'manager']);
@@ -106,7 +109,7 @@
 
     {{-- Hidden Restock form row (toggled by toggleInventoryAction) --}}
     <tr id="restock-{{ $product->id }}" class="hidden">
-        <td colspan="11" class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]/60 border-t border-gray-100 dark:border-[#1e2536]">
+        <td colspan="{{ $invColSpan }}" class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]/60 border-t border-gray-100 dark:border-[#1e2536]">
             @include('partials.restockForm', ['product' => $product])
         </td>
     </tr>
@@ -114,14 +117,14 @@
     {{-- Hidden Transfer form row (toggled by toggleInventoryAction) --}}
     @if ($canTransfer)
         <tr id="transfer-{{ $product->id }}" class="hidden">
-            <td colspan="11" class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]/60 border-t border-gray-100 dark:border-[#1e2536]">
+            <td colspan="{{ $invColSpan }}" class="px-6 py-4 bg-gray-50 dark:bg-[#161B26]/60 border-t border-gray-100 dark:border-[#1e2536]">
                 @include('partials.transferForm', ['product' => $product])
             </td>
         </tr>
     @endif
 @empty
     <tr data-empty-row="true">
-        <td colspan="11" class="px-8 py-12 text-center text-gray-400 dark:text-slate-500">
+        <td colspan="{{ $invColSpan }}" class="px-8 py-12 text-center text-gray-400 dark:text-slate-500">
             No products found.
         </td>
     </tr>

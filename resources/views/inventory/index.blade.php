@@ -44,7 +44,7 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Inventory Management</h1>
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[550px] mb-4">
 
         <!-- Filters & Header (shrink-0) -->
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <form id="filterForm" method="GET" class="flex flex-col xl:flex-row xl:items-center gap-4">
+            <form id="filterForm" method="GET" class="flex flex-col lg:flex-row lg:items-center flex-wrap gap-3 sm:gap-4">
                 
                 {{-- LEFT SIDE FILTERS (Search + Category) --}}
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">

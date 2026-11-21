@@ -78,10 +78,10 @@
         </div>
     </div>
 
-    <div class="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6 pb-24 xl:pb-0">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-6 pb-24 lg:pb-0">
 
         <!-- PRODUCTS SECTION -->
-        <div class="flex-[2] flex flex-col gap-4 sm:gap-5 h-auto xl:h-[calc(100vh-180px)] min-h-[500px]">
+        <div class="flex-[2] min-w-0 flex flex-col gap-4 sm:gap-5 h-auto lg:h-[calc(100vh-180px)] lg:min-h-[500px]">
             
             <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-5 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
                 <form id="filterForm" method="GET" action="{{ route('pos') }}" class="relative flex-1 min-w-[180px] w-full md:w-auto md:max-w-xs">
@@ -142,7 +142,7 @@
             </div>
 
             <div id="productScrollContainer" class="flex-1 overflow-y-auto custom-scrollbar pr-1 relative">
-                <div id="productGridView" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4 pb-4">
+                <div id="productGridView" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4 pb-4">
                     @include('pos.partials.product-cards', ['items' => $items, 'cart' => $cart, 'viewType' => 'grid', 'hasProjectInCart' => $hasProjectInCart])
                 </div>
                 <div id="productListView" class="hidden flex flex-col gap-2.5 pb-4">
@@ -164,7 +164,7 @@
         </div>
 
         <!-- ORDER SUMMARY SIDEBAR -->
-        <div id="orderSummarySection" class="w-full xl:w-[420px] 2xl:w-[460px] shrink-0 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-5 flex flex-col justify-between h-fit min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-4">
+        <div id="orderSummarySection" class="w-full lg:w-[360px] xl:w-[410px] 2xl:w-[450px] shrink-0 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-5 flex flex-col justify-between h-fit min-h-[380px] lg:min-h-[560px] lg:sticky lg:top-4">
             <div>
                 <div class="flex items-center justify-between mb-5 pb-4 border-b-2 border-gray-100 dark:border-[#1e2536]">
                     <h2 class="text-lg font-black text-gray-900 dark:text-white">Order Summary</h2>
@@ -406,6 +406,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Mobile & Portrait Tablet Sticky Bottom Cart Bar (< 1024px) -->
+    @php
+        $initialMobileCartCount = collect($cart)->sum(fn($c) => (int) ($c['quantity'] ?? 1));
+    @endphp
+    <div id="mobilePosCartBar" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#10141D]/95 backdrop-blur-md border-t-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 shadow-2xl flex items-center justify-between gap-3">
+        <button type="button" onclick="document.getElementById('orderSummarySection')?.scrollIntoView({behavior:'smooth', block:'start'})"
+                class="flex items-center gap-3 min-w-0 text-left cursor-pointer">
+            <div class="relative w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span id="mobilePosCartCountBadge" class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {{ $initialMobileCartCount }}
+                </span>
+            </div>
+            <div class="min-w-0">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Order Total</span>
+                <span id="mobilePosGrandTotal" class="block text-base font-black text-gray-900 dark:text-white truncate">₱{{ number_format($grandTotal, 2) }}</span>
+            </div>
+        </button>
+        <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="document.getElementById('orderSummarySection')?.scrollIntoView({behavior:'smooth', block:'start'})"
+                    class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#161B26] dark:border-[#1e2536] dark:text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-full transition-all cursor-pointer">
+                View Cart
+            </button>
+            <a href="{{ route('checkout') }}" onclick="return handlePosCheckout(event)"
+               class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-bold px-4 py-2.5 rounded-full transition-all shadow-xs cursor-pointer">
+                Checkout
+            </a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const totalSource = document.getElementById('posGrandTotalValue');
+            const totalTarget = document.getElementById('mobilePosGrandTotal');
+            const countBadge  = document.getElementById('mobilePosCartCountBadge');
+            const syncMobilePosBar = function () {
+                if (totalSource && totalTarget) {
+                    totalTarget.textContent = totalSource.textContent;
+                }
+                if (countBadge && window.currentPosCart && typeof window.currentPosCart === 'object') {
+                    let count = 0;
+                    Object.values(window.currentPosCart).forEach(function (item) {
+                        if (item) count += parseInt(item.quantity || 1, 10) || 0;
+                    });
+                    countBadge.textContent = String(count);
+                }
+            };
+            if (totalSource && typeof MutationObserver !== 'undefined') {
+                new MutationObserver(syncMobilePosBar).observe(totalSource, { childList: true, characterData: true, subtree: true });
+            }
+        });
+    </script>
 
     <!-- MODALS -->
     

@@ -33,30 +33,11 @@
         $selectedTimeframeLabel = $timeframeOptions[$timeframe] ?? 'Annual Demand';
     @endphp
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-140px)] min-h-[500px] mb-4">
-
-        @if(session('success'))
-            <div class="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-600 dark:text-emerald-400 hover:opacity-75 font-bold cursor-pointer">&times;</button>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 text-sm flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-600 dark:text-red-400 hover:opacity-75 font-bold cursor-pointer">&times;</button>
-            </div>
-        @endif
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-140px)] lg:min-h-[500px] mb-4">
 
         <!-- Header & Unified Toolbar -->
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536]">
-            <div class="flex items-center justify-between mb-5 gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
                 <div>
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white">EOQ Calibration</h1>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Select products and apply ordering/holding cost overrides in batch.</p>

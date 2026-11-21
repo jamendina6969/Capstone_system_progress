@@ -79,7 +79,16 @@
 
     let toastEl = null;
     let toastTimer = null;
+    let lastToastMsg = '';
+    let lastToastAt = 0;
     function showInputGuardToast(message) {
+        const now = Date.now();
+        if (message === lastToastMsg && (now - lastToastAt) < 350) {
+            return;
+        }
+        lastToastMsg = message;
+        lastToastAt = now;
+
         if (!toastEl) {
             toastEl = document.createElement('div');
             toastEl.setAttribute('role', 'status');
@@ -186,6 +195,9 @@
     document.addEventListener('beforeinput', function (e) {
         const el = e.target;
         if (!isEditableTextControl(el) || typeof e.data !== 'string' || !e.data) return;
+        if (el.hasAttribute('data-no-clipboard') && (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop')) {
+            return;
+        }
 
         EMOJI_RE.lastIndex = 0;
         if (EMOJI_RE.test(e.data)) {

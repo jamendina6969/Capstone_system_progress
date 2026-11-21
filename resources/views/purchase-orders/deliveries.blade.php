@@ -5,13 +5,6 @@
 @section('content')
     <div class="space-y-6" data-live-refresh-region="deliveries">
 
-        @if(session('success'))
-            <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-900 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-200 dark:border-rose-900 px-4 py-3 text-sm text-rose-800 dark:text-rose-300">{{ session('error') }}</div>
-        @endif
-
         <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden">
             <div class="px-6 lg:px-8 py-5 border-b-2 border-gray-200 dark:border-[#1e2536]">
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">Incoming Deliveries</h1>

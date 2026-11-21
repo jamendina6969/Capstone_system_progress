@@ -25,7 +25,7 @@
             <form id="filterForm" method="GET" action="{{ route('audit-logs.index') }}"
                 class="flex flex-col gap-3">
 
-                <div class="flex flex-col xl:flex-row xl:items-center gap-3">
+                <div class="flex flex-col lg:flex-row lg:items-center flex-wrap gap-3">
                     <div class="relative flex-1 min-w-[220px]">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

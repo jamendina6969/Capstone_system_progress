@@ -58,7 +58,7 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Product Management</h1>
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[550px] mb-4">
 
         <!-- Filters & Header (shrink-0) -->
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
@@ -67,7 +67,7 @@
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Product Inventory Catalog</h2>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Manage products and services offered</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     @include('partials.viewToggle')
                     <button type="button" onclick="toggleAddProductModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-xs cursor-pointer inline-flex items-center whitespace-nowrap">
                         + Add Product
@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            <form id="filterForm" method="GET" action="{{ route('admin.products.index') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
+            <form id="filterForm" method="GET" action="{{ route('admin.products.index') }}" class="flex flex-col lg:flex-row lg:items-center flex-wrap gap-3 sm:gap-4">
                 
                 {{-- LEFT SIDE FILTERS (Search + Category) --}}
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">

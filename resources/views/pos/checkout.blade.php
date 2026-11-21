@@ -6,13 +6,7 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Checkout</h1>
 
-    @if (session('error'))
-        <div class="mb-6 rounded-2xl bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-rose-300 border-2 border-red-200 dark:border-rose-900 px-6 py-4 text-sm font-medium">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <div class="flex flex-col xl:flex-row gap-4 sm:gap-6 xl:gap-8">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
 
         <!-- ORDER SUMMARY SECTION -->
         <div class="flex-[2] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm p-4 sm:p-6 lg:p-8 flex flex-col justify-between">

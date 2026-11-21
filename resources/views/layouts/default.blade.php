@@ -16,10 +16,11 @@
     @stack('styles')
     
     <script>
-        // Check and apply product view mode immediately (respects user DB preference when localStorage is unset)
+        // Check and apply product view mode immediately (respects user DB preference; defaults to grid on mobile phones if unset)
         try {
             var defaultUserView = @json(auth()->check() ? auth()->user()->getPreference('default_view', 'list') : 'list');
-            var activeProductView = localStorage.getItem('productView') || defaultUserView;
+            var savedProductView = localStorage.getItem('productView');
+            var activeProductView = savedProductView || (window.innerWidth < 640 ? 'grid' : defaultUserView);
             if (activeProductView === 'grid') {
                 document.documentElement.dataset.productView = 'grid';
             }
@@ -30,10 +31,11 @@
             try {
                 var savedState = localStorage.getItem('sidebarState');
                 var isDesktop = window.innerWidth >= 1024;
-                if (isDesktop && (savedState === 'open' || !savedState)) {
+                var isWideDesktop = window.innerWidth >= 1280;
+                if (isDesktop && (savedState === 'open' || (!savedState && isWideDesktop))) {
                     document.documentElement.classList.add('sidebar-open');
                 } else {
-                    // Mobile: never auto-open the drawer
+                    // Mobile/Tablet (<1024) or Compact Laptop (1024-1279 without explicit open): keep collapsed
                     document.documentElement.classList.remove('sidebar-open');
                 }
             } catch (e) {}
@@ -151,7 +153,7 @@
                             </span>
                         </button>
 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#10141D] border-2 border-slate-200 dark:border-[#1e2536] rounded-2xl shadow-xl overflow-hidden z-50">
+                        <div id="notificationDropdown" class="hidden fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 sm:top-auto sm:mt-2 w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#10141D] border-2 border-slate-200 dark:border-[#1e2536] rounded-2xl shadow-xl overflow-hidden z-50">
                             <div class="px-4 py-3 border-b border-slate-100 dark:border-[#1e2536] flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-[#161B26]/60">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Notifications</span>
@@ -336,16 +338,32 @@
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-[#161B26] p-3 sm:p-6 lg:p-8">
                 
                 @if (session('error'))
-                    <div class="mb-6 rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-3 text-sm flex items-center shadow-2xs">
-                        <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {{ session('error') }}
+                    <div data-flash-banner="error" class="mb-5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-2 border-rose-200 dark:border-rose-900 px-4 sm:px-5 py-3.5 text-sm font-medium flex items-center justify-between gap-3 shadow-2xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <svg class="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="break-words">{{ session('error') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-white font-bold text-base leading-none px-1 cursor-pointer shrink-0" aria-label="Dismiss">&times;</button>
+                    </div>
+                @endif
+
+                @if (session('warning'))
+                    <div data-flash-banner="warning" class="mb-5 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-2 border-amber-200 dark:border-amber-900 px-4 sm:px-5 py-3.5 text-sm font-medium flex items-center justify-between gap-3 shadow-2xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <svg class="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"></path></svg>
+                            <span class="break-words">{{ session('warning') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-white font-bold text-base leading-none px-1 cursor-pointer shrink-0" aria-label="Dismiss">&times;</button>
                     </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-6 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 text-sm flex items-center shadow-2xs">
-                        <svg class="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        {{ session('success') }}
+                    <div data-flash-banner="success" class="mb-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-2 border-emerald-200 dark:border-emerald-900 px-4 sm:px-5 py-3.5 text-sm font-medium flex items-center justify-between gap-3 shadow-2xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <svg class="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="break-words">{{ session('success') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-white font-bold text-base leading-none px-1 cursor-pointer shrink-0" aria-label="Dismiss">&times;</button>
                     </div>
                 @endif
 

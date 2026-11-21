@@ -16,11 +16,7 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Restock Approvals</h1>
 
-    @if (session('error'))
-        <div class="mb-6 rounded-2xl bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-rose-300 border-2 border-red-200 dark:border-rose-900 px-6 py-4 text-sm font-medium">{{ session('error') }}</div>
-    @endif
-
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[500px] mb-4">
 
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -31,8 +27,8 @@
 
         <!-- FILTERS -->
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/30">
-            <form method="GET" action="{{ route('inventory.approvals') }}" id="filterForm" class="flex flex-col xl:flex-row flex-wrap items-center gap-3">
-                <div class="relative flex-1 min-w-[200px] w-full xl:w-auto">
+            <form method="GET" action="{{ route('inventory.approvals') }}" id="filterForm" class="flex flex-col lg:flex-row flex-wrap items-center gap-3">
+                <div class="relative flex-1 min-w-[200px] w-full lg:w-auto">
                     <input type="text" id="searchInput" name="search" value="{{ request('search') }}" placeholder="Search product, requester, note..." class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-300 dark:border-[#1e2536] pl-10 pr-4 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-400">
                     <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>

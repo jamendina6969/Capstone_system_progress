@@ -17,7 +17,7 @@
         $selectedStatusLabel = $statusOptions[$currentStatus] ?? 'All Delivery Statuses';
     @endphp
 
-    @if ($errors->any())
+    @if ($errors->any() && !$errors->has('action_password'))
         <div class="mb-4 rounded-xl bg-red-100 dark:bg-rose-950/85 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-900 px-4 py-3 text-sm">
             <ul class="list-disc pl-5">
                 @foreach ($errors->all() as $error)
@@ -27,7 +27,7 @@
         </div>
     @endif
 
-    <div class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border border-gray-200 dark:border-[#1e2536] rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[500px] mb-4">
 
         <!-- HEADER -->
         <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

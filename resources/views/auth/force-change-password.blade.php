@@ -1,9 +1,10 @@
 @extends('layouts.guest')
 
-@section('title', 'Set New Password')
+@section('title', 'Set New Password — Steven Hydrotech Exponent')
+@section('robots', 'noindex, nofollow, noarchive')
 
 @section('content')
-    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D]">
+    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D] overflow-x-hidden">
 
         <!-- LEFT SIDE: Brand Panel (desktop only) -->
         <div class="hidden lg:flex lg:w-1/2 min-h-screen bg-[#0b0e14] text-white flex-col justify-between p-8 lg:p-12 relative overflow-hidden border-r border-slate-800/80">
@@ -107,7 +108,7 @@
 
                     <!-- Suggested Strong Password Helper -->
                     <div class="rounded-xl bg-slate-50 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] p-3 space-y-2">
-                        <div class="flex items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
                             <span class="text-xs font-medium text-gray-600 dark:text-slate-300">Need a strong password idea?</span>
                             <button type="button"
                                     data-suggest-password="forcePasswordSuggestionBox"
@@ -119,7 +120,7 @@
                             </button>
                         </div>
                         <div id="forcePasswordSuggestionBox" class="hidden pt-1.5 border-t border-gray-200 dark:border-[#1e2536]">
-                            <div class="flex items-center justify-between gap-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
                                 <span class="text-[11px] text-gray-500 dark:text-slate-400">Applied to New Password:</span>
                                 <code data-suggested-value class="select-none px-2.5 py-1 rounded-lg bg-white dark:bg-[#10141D] border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 font-mono text-xs font-bold tracking-wider"></code>
                             </div>
@@ -166,7 +167,7 @@
                     </div>
 
                     <!-- Live Password Requirements Checklist -->
-                    <div id="forcePasswordChecklist" class="grid grid-cols-2 gap-1.5 text-[11px] font-medium px-1">
+                    <div id="forcePasswordChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] font-medium px-1">
                         <span data-rule="len" class="text-gray-400 dark:text-slate-500"><span class="rule-icon mr-1">•</span>8–72 characters</span>
                         <span data-rule="upper" class="text-gray-400 dark:text-slate-500"><span class="rule-icon mr-1">•</span>1 Uppercase (A–Z)</span>
                         <span data-rule="lower" class="text-gray-400 dark:text-slate-500"><span class="rule-icon mr-1">•</span>1 Lowercase (a–z)</span>

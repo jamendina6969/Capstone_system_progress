@@ -4,9 +4,6 @@
 
 @section('content')
 
-    @if (session('success'))
-        <div class="mb-4 rounded-lg bg-green-100 text-green-800 px-4 py-3 text-sm">{{ session('success') }}</div>
-    @endif
     @if ($errors->any())
         <div class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3 text-sm">
             <ul class="list-disc list-inside space-y-1">

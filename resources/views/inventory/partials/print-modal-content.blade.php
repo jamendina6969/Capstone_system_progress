@@ -14,8 +14,8 @@
     </div>
 </div>
 
-<div class="print-table-wrapper max-h-[60vh] overflow-y-auto custom-scrollbar border border-gray-200 dark:border-[#1e2536] rounded-2xl bg-white dark:bg-[#161B26]">
-    <table class="w-full text-xs text-left border-collapse">
+<div class="print-table-wrapper max-h-[60vh] overflow-y-auto overflow-x-auto custom-scrollbar border border-gray-200 dark:border-[#1e2536] rounded-2xl bg-white dark:bg-[#161B26]">
+    <table class="w-full min-w-[680px] text-xs text-left border-collapse">
         <thead class="bg-gray-50 dark:bg-[#10141D] text-gray-700 dark:text-slate-300 uppercase tracking-wider font-semibold sticky top-0 z-10 border-b border-gray-200 dark:border-[#1e2536]">
             <tr>
                 <th class="px-4 py-3.5">Product Name</th>
@@ -67,7 +67,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-12 text-center text-gray-400">No products found matching your current filter criteria.</td>
+                    <td colspan="{{ auth()->user()->role === 'warehouse_staff' ? 8 : 9 }}" class="px-4 py-12 text-center text-gray-400">No products found matching your current filter criteria.</td>
                 </tr>
             @endforelse
         </tbody>

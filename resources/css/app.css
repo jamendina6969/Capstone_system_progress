@@ -307,3 +307,45 @@ html.dark[data-product-view="grid"] [data-set-view="grid"] {
     margin: 0.5rem auto !important;
   }
 }
+
+/* ===== 4-Device Responsive Engine (Mobile 360px, Tablet 768px, Laptop 1024px-1366px, PC 1440px+) ===== */
+
+/* 1. Universal Modal Viewport Guard (prevents clipped Save/Submit buttons on 1366x768 laptops & phones) */
+.fixed.inset-0:not(#sidebarOverlay):not(#globalRowActionPortal) > div {
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+/* 2. Mobile & Tablet (< 1024px): prevent stacked filter headers from crushing inner scroll containers */
+@media (max-width: 1023px) {
+  #tableScrollContainer,
+  #productScrollContainer {
+    max-height: 72dvh;
+    min-height: 320px;
+  }
+}
+
+/* 3. Compact Laptops (1024px - 1366px, height <= 820px): optimize vertical breathing room */
+@media (min-width: 1024px) and (max-height: 800px) {
+  main.p-3.sm\:p-6.lg\:p-8 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* 4. Sticky Right Actions (⋯) Column on Horizontally Scrollable Tables for Mobile, Tablet & Compact Laptop */
+@media (max-width: 1279px) {
+  #tableScrollContainer table td:last-child:has([data-row-actions]),
+  .overflow-x-auto table td:last-child:has([data-row-actions]) {
+    position: sticky;
+    right: 0;
+    z-index: 5;
+    background-color: #ffffff;
+    box-shadow: -6px 0 12px -8px rgba(15, 23, 42, 0.18);
+  }
+  html.dark #tableScrollContainer table td:last-child:has([data-row-actions]),
+  html.dark .overflow-x-auto table td:last-child:has([data-row-actions]) {
+    background-color: #10141D;
+    box-shadow: -6px 0 12px -8px rgba(0, 0, 0, 0.55);
+  }
+}

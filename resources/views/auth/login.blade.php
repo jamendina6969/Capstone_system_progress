@@ -1,9 +1,11 @@
 @extends('layouts.guest')
 
-@section('title', 'Login')
+@section('title', 'Steven Hydrotech Exponent | Hydrotech Predictive Inventory & POS System')
+@section('robots', 'index, follow')
+@section('canonical', url('/login'))
 
 @section('content')
-    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D]">
+    <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D] overflow-x-hidden">
 
         <!-- LEFT SIDE: Professional Enterprise Brand Banner (desktop only) -->
         <div class="hidden lg:flex lg:w-1/2 min-h-screen bg-[#0b0e14] text-white flex-col justify-between p-8 lg:p-12 relative overflow-hidden border-r border-slate-800/80">

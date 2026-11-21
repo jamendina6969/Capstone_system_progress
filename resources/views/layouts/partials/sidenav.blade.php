@@ -112,7 +112,7 @@
                 $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*');
             @endphp
             <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('catalogDropdown', 'catalogArrow')"
+                <button type="button" title="Catalog Management" onclick="toggleDropdown('catalogDropdown', 'catalogArrow')"
                         class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
@@ -139,7 +139,7 @@
             @endphp
 
             <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('inventoryDropdown', 'inventoryArrow')"
+                <button type="button" title="Inventory" onclick="toggleDropdown('inventoryDropdown', 'inventoryArrow')"
                         class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2h0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -181,7 +181,7 @@
                 $isForecastActive = request()->routeIs('eoq.*', 'forecast.settings*');
             @endphp
             <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('forecastDropdown', 'forecastArrow')"
+                <button type="button" title="Forecasting & EOQ" onclick="toggleDropdown('forecastDropdown', 'forecastArrow')"
                         class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
@@ -214,7 +214,7 @@
                 );
             @endphp
             <div class="space-y-1">
-                <button type="button" onclick="toggleDropdown('supplierDropdown', 'supplierArrow')"
+                <button type="button" title="Suppliers & POs" onclick="toggleDropdown('supplierDropdown', 'supplierArrow')"
                         class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white cursor-pointer">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -373,8 +373,18 @@
 
 <script>
     window.toggleDropdown = function(dropdownId, arrowId) {
+        const root = document.documentElement;
         const dropdown = document.getElementById(dropdownId);
         const arrow = document.getElementById(arrowId);
+
+        // If sidebar is collapsed on desktop/laptop, expand it first and force open the clicked group
+        if (window.innerWidth >= 1024 && !root.classList.contains('sidebar-open')) {
+            root.classList.add('sidebar-open');
+            try { localStorage.setItem('sidebarState', 'open'); } catch (e) {}
+            if (dropdown) dropdown.classList.remove('hidden');
+            if (arrow) arrow.classList.add('rotate-180');
+            return;
+        }
         
         if (dropdown) {
             dropdown.classList.toggle('hidden');
@@ -429,8 +439,10 @@
             display: none !important;
         }
 
-        html:not(.sidebar-open) #sidebar nav a { position: relative; }
-        html:not(.sidebar-open) #sidebar nav a:hover::after {
+        html:not(.sidebar-open) #sidebar nav a,
+        html:not(.sidebar-open) #sidebar nav button[title] { position: relative; }
+        html:not(.sidebar-open) #sidebar nav a:hover::after,
+        html:not(.sidebar-open) #sidebar nav button[title]:hover::after {
             content: attr(title);
             position: absolute;
             left: calc(100% + 12px);

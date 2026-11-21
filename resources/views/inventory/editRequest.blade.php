@@ -19,9 +19,8 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('inventory.updateRequest', $movement) }}" class="space-y-4">
+        <form method="POST" action="{{ route('inventory.storeRequest') }}" class="space-y-4">
             @csrf
-            @method('PUT')
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>

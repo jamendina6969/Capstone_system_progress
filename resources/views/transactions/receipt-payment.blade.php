@@ -30,7 +30,7 @@
         </div>
 
         <!-- Printable Voucher Area -->
-        <div id="printable-voucher" class="bg-white border border-gray-300 shadow-sm p-12 relative overflow-hidden">
+        <div id="printable-voucher" class="bg-white border border-gray-300 shadow-sm p-5 sm:p-12 relative overflow-x-auto">
             
             <!-- SUBTLE BACKGROUND WATERMARK -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
@@ -62,7 +62,7 @@
                 </div>
 
                 <!-- PAYEE AND DETAILS SECTION -->
-                <div class="grid grid-cols-2 gap-8 mb-8 border-b border-gray-300 pb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8 border-b border-gray-300 pb-6">
                     <div>
                         <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Paid To (Vendor)</h3>
                         <p class="text-sm font-bold text-black">{{ $ledger->supplier->name ?? 'N/A' }}</p>

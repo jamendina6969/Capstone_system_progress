@@ -6,10 +6,10 @@
 
     <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Stock Logs</h1>
 
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-140px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-140px)] lg:min-h-[480px] mb-4">
 
         <!-- Header / Category Filter Bar -->
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">Movement Batches</h2>
                 <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Review historical stock adjustments and transfer logs</p>

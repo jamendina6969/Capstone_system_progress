@@ -26,8 +26,8 @@
         </div>
 
         <!-- SKU Table -->
-        <div class="flex-1 overflow-y-auto custom-scrollbar">
-            <table class="w-full text-xs text-left">
+        <div class="flex-1 overflow-y-auto overflow-x-auto custom-scrollbar">
+            <table class="w-full min-w-[540px] text-xs text-left">
                 <thead class="bg-gray-50 dark:bg-[#161B26] text-gray-500 dark:text-slate-400 uppercase text-[10px] sticky top-0 border-b border-gray-200 dark:border-[#1e2536]">
                     <tr>
                         <th class="px-5 py-3">Item SKU</th>

@@ -35,7 +35,7 @@
     @endphp
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-5 sm:mb-6 lg:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-5 sm:mb-6 lg:mb-8">
 
         <!-- Today -->
         <a href="{{ route('sales.records', ['date_from' => now()->toDateString(), 'date_to' => now()->toDateString(), 'source' => $summarySource]) }}"
@@ -126,7 +126,7 @@
     </div>
 
     <!-- Main Container -->
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[550px]">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[550px]">
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] gap-4 shrink-0">
@@ -135,7 +135,7 @@
                 <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">All recorded sales — from POS and imported data</p>
             </div>
 
-            <div class="flex gap-3 items-center">
+            <div class="flex flex-wrap gap-2.5 sm:gap-3 items-center">
                 @if(in_array(auth()->user()->role, ['admin', 'manager']))
                     @if(\App\Models\TransactionItem::whereNull('main_category_name')->orWhereNull('product_sku')->orWhereNull('item_sku')->exists())
                         <button type="button" onclick="toggleSyncModal(true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
@@ -152,7 +152,7 @@
 
         <!-- Filters -->
         <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50 shrink-0">
-            <form id="filterForm" method="GET" class="flex flex-col xl:flex-row xl:items-center gap-4">
+            <form id="filterForm" method="GET" class="flex flex-col lg:flex-row lg:items-center flex-wrap gap-3 sm:gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
                     
                     <div class="relative w-full sm:w-72">

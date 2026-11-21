@@ -14,20 +14,6 @@
         </button>
     </div>
 
-    {{-- SUCCESS MESSAGE (Single Instance) --}}
-    @if (session('success'))
-        <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    {{-- ERROR MESSAGE --}}
-    @if (session('error'))
-        <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- VALIDATION ERRORS --}}
     @if ($errors->any())
         <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
@@ -41,11 +27,11 @@
     @endif
 
     <!-- Main Table Card -->
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] min-h-[500px] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-180px)] lg:min-h-[500px] mb-4">
         
         <!-- Filter Section -->
         <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
-            <form id="filterForm" method="GET" action="{{ route('suppliers.index') }}" class="flex flex-col xl:flex-row xl:items-center gap-4">
+            <form id="filterForm" method="GET" action="{{ route('suppliers.index') }}" class="flex flex-col lg:flex-row lg:items-center flex-wrap gap-3 sm:gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-3 flex-1">
                     <div class="relative w-full sm:w-72">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
@@ -229,7 +215,7 @@
                             <input type="number" name="phone" required placeholder="9123456789" class="flex-1 w-full bg-transparent px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         </div>
 
-                        <div id="addCountryDropdownMenu" class="hidden absolute z-[110] top-full left-0 mt-1 w-72 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                        <div id="addCountryDropdownMenu" class="hidden absolute z-[110] top-full left-0 mt-1 w-72 max-w-[calc(100vw-3rem)] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
                             <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
                                 <input type="text" id="addCountrySearch" onkeyup="filterCountries('add')" placeholder="Search country..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                             </div>
@@ -350,7 +336,7 @@
                             <input type="number" name="phone" id="edit_phone" required class="flex-1 w-full bg-transparent px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         </div>
 
-                        <div id="editCountryDropdownMenu" class="hidden absolute z-[110] top-full left-0 mt-1 w-72 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
+                        <div id="editCountryDropdownMenu" class="hidden absolute z-[110] top-full left-0 mt-1 w-72 max-w-[calc(100vw-3rem)] bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-xl shadow-xl overflow-hidden">
                             <div class="p-2 border-b border-gray-200 dark:border-[#1e2536] bg-gray-50 dark:bg-[#161B26]">
                                 <input type="text" id="editCountrySearch" onkeyup="filterCountries('edit')" placeholder="Search country..." class="w-full bg-white dark:bg-[#10141D] border border-gray-300 dark:border-[#2a344a] rounded-lg px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                             </div>

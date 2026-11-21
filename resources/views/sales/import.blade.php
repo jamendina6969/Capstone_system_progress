@@ -21,12 +21,6 @@
             </div>
         @endif
 
-        @if (session('error'))
-            <div class="mb-4 rounded-lg bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
-                {{ session('error') }}
-            </div>
-        @endif
-
         <div class="bg-gray-50 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] rounded-lg p-4 mb-6 text-sm">
             <p class="font-medium text-gray-700 dark:text-slate-200 mb-2">Required CSV columns:</p>
 

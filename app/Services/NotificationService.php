@@ -32,6 +32,7 @@ class NotificationService
                 'message'    => (string) ($payload['message'] ?? ''),
                 'action_url' => $payload['action_url'] ?? null,
                 'meta'       => $payload['meta'] ?? null,
+                'read_at'    => $payload['read_at'] ?? null,
             ]);
         } catch (\Throwable $e) {
             return null;

@@ -23,12 +23,12 @@
         }
     @endphp
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Discrepancy Report</h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Short deliveries, missing items, and financial impact from suppliers</p>
         </div>
-        <a href="{{ route('purchase-orders.index') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs cursor-pointer">
+        <a href="{{ route('purchase-orders.index') }}" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-xs cursor-pointer whitespace-nowrap">
             &larr; Back to Purchase Orders
         </a>
     </div>
@@ -70,11 +70,11 @@
     </div>
 
     {{-- Main Table Container --}}
-    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-360px)] mb-4">
+    <div class="bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] rounded-3xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[calc(100vh-240px)] lg:min-h-[480px] mb-4">
         
         <!-- Filter Section -->
-        <div class="shrink-0 px-8 py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
-            <form id="filterForm" method="GET" action="{{ route('suppliers.discrepancy') }}" class="flex flex-col xl:flex-row gap-4 items-center justify-between">
+        <div class="shrink-0 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-gray-200 dark:border-[#1e2536] bg-gray-50/50 dark:bg-[#161B26]/50">
+            <form id="filterForm" method="GET" action="{{ route('suppliers.discrepancy') }}" class="flex flex-col lg:flex-row flex-wrap gap-3 sm:gap-4 items-center justify-between">
                 <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-center w-full flex-1">
                     <!-- Search -->
                     <div class="flex items-center gap-2 flex-1 min-w-[260px] w-full sm:w-auto">
