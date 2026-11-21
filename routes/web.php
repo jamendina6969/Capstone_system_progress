@@ -54,11 +54,11 @@ XML;
 })->name('sitemap');
 
 // Root homepage serves HTTP 200 Login view to guests/search crawlers (no 302 redirect blocker) and Dashboard to authenticated users
-Route::get('/', function (\Illuminate\Http\Request $request) {
+Route::get('/', function () {
     if (!\Illuminate\Support\Facades\Auth::check()) {
-        return app(UserController::class)->showLogin();
+        return app()->call([app(UserController::class), 'showLogin']);
     }
-    return app(DashboardController::class)->index($request);
+    return app()->call([app(DashboardController::class), 'index']);
 })->middleware(['user.active', 'password.changed'])->name('home');
 
 // ==================== GUEST ROUTES ====================
