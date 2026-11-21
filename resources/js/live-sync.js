@@ -19,7 +19,16 @@ class HydrotechLiveSync {
         this.init();
     }
 
+    isAuthenticatedAppShell() {
+        return !!(document.getElementById('notificationBtn') || document.getElementById('sidebar'));
+    }
+
     init() {
+        // Never start background API polling on unauthenticated guest pages (/login, admin portal)
+        if (!this.isAuthenticatedAppShell()) {
+            return;
+        }
+
         // 1. Cross-Tab Instant Sync via BroadcastChannel
         if (this.channel) {
             this.channel.onmessage = (event) => {
@@ -318,6 +327,7 @@ class HydrotechLiveSync {
     }
 
     startPolling() {
+        if (!this.isAuthenticatedAppShell()) return;
         if (this.timer) clearInterval(this.timer);
         this.timer = setInterval(() => this.pollServer(), this.pollInterval);
     }
@@ -337,7 +347,7 @@ class HydrotechLiveSync {
     }
 
     async pollServer() {
-        if (this.isPolling || !navigator.onLine) return;
+        if (this.isPolling || !navigator.onLine || !this.isAuthenticatedAppShell()) return;
         this.isPolling = true;
 
         try {
@@ -346,11 +356,15 @@ class HydrotechLiveSync {
             });
 
             if (res.status === 401) {
+                if (this.timer) clearInterval(this.timer);
+                if (this.notifTimer) clearInterval(this.notifTimer);
+                if (this.pageTimer) clearInterval(this.pageTimer);
                 const body = await res.json().catch(() => ({}));
                 if (body && body.force_logout) {
                     window.location.href = body.redirect || '/login';
                     return;
                 }
+                return;
             }
 
             if (res.ok) {
