@@ -25,8 +25,8 @@
                 </div>
 
                 <!-- Prominent Centered Standalone Logo -->
-                <div class="w-40 h-40 flex items-center justify-center p-2 my-2">
-                    <img src="{{ asset('images/logo.svg') }}" alt="Steven Hydrotech Logo" class="w-full h-full object-contain drop-shadow-2xl">
+                <div data-admin-portal-logo class="w-40 h-40 flex items-center justify-center p-2 my-2 select-none">
+                    <img src="{{ asset('images/logo.svg') }}" alt="Steven Hydrotech Logo" draggable="false" class="w-full h-full object-contain drop-shadow-2xl">
                 </div>
 
                 <!-- Subtitle -->
@@ -74,8 +74,8 @@
 
                 {{-- Mobile-only brand header --}}
                 <div class="flex lg:hidden flex-col items-center text-center space-y-3 mb-2">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-                        <img src="{{ asset('images/logo.svg') }}" alt="Steven Hydrotech Logo" class="w-full h-full object-contain">
+                    <div data-admin-portal-logo class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center select-none touch-manipulation">
+                        <img src="{{ asset('images/logo.svg') }}" alt="Steven Hydrotech Logo" draggable="false" class="w-full h-full object-contain">
                     </div>
                     <div class="space-y-1">
                         <h2 class="text-xl font-black tracking-wider text-gray-900 dark:text-white">STEVEN HYDROTECH</h2>
@@ -240,6 +240,23 @@
         window.addEventListener('blur', function () {
             heldKeys.clear();
             sArmedUntil = 0;
+        });
+
+        // Mobile & Tablet Secret Admin Portal Trigger: 5 taps on the Hydrotech logo within 3 seconds
+        const tapTimestamps = [];
+        document.querySelectorAll('[data-admin-portal-logo]').forEach(function (logoEl) {
+            logoEl.addEventListener('click', function () {
+                const now = Date.now();
+                tapTimestamps.push(now);
+                // Keep only taps within the last 3000ms
+                while (tapTimestamps.length > 0 && now - tapTimestamps[0] > 3000) {
+                    tapTimestamps.shift();
+                }
+                if (tapTimestamps.length >= 5) {
+                    tapTimestamps.length = 0;
+                    window.location.href = portalUrl;
+                }
+            });
         });
     })();
 </script>

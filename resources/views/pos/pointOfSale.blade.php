@@ -25,8 +25,8 @@
 
     <!-- Top Navigation Header -->
     <div class="flex flex-col items-start justify-between gap-3 mb-5 sm:mb-6">
-        <div class="flex items-center gap-6 flex-wrap">
-            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Point of Sale</h1>
+        <div class="flex items-center gap-3 sm:gap-5 flex-wrap w-full">
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Point of Sale</h1>
 
             <!-- DUAL-MODE TOGGLE (Bigger) -->
             <div class="flex items-center bg-gray-100 dark:bg-[#161B26] p-1.5 rounded-full border-2 border-gray-200 dark:border-[#1e2536]">
@@ -34,7 +34,7 @@
                 <button type="button" onclick="setPosMode('project')" id="btn-mode-project" class="px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">Project / Service</button>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <!-- Counter POS badge pill (Bigger) -->
                 <div id="posConnectionPill" class="inline-flex items-center gap-2.5 bg-white dark:bg-[#10141D] border-2 border-gray-200 dark:border-[#1e2536] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs">
                     <span data-conn-dot class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>

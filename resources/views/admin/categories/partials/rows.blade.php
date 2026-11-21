@@ -36,12 +36,21 @@
             @endphp
             ₱{{ number_format($totalValuation, 2) }}
         </td>
-        <td class="px-8 py-4 text-right">
-            {{-- Added onclick="event.stopPropagation()" below to fix click interception --}}
-            <div class="flex justify-end items-center gap-2" onclick="event.stopPropagation()">
-                <button type="button" onclick="toggleAddBrandModal({{ $category->id }}, true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer whitespace-nowrap">Brand</button>
-                <button type="button" onclick="toggleEditCategoryModal({{ $category->id }}, true)" class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Edit</button>
-                <button type="button" onclick="toggleDeleteCategoryModal({{ $category->id }}, true)" class="bg-white border-2 border-rose-600 text-rose-700 hover:bg-rose-600 hover:text-white dark:bg-[#10141D] dark:border-2 dark:border-rose-600/80 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all duration-300 ease-in-out shadow-xs cursor-pointer">Delete</button>
+        <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
+            <div class="inline-flex justify-end items-center" data-row-actions>
+                <button type="button" onclick="openRowActionMenu(event, this)"
+                        class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 transition-all shadow-xs cursor-pointer"
+                        aria-label="Actions" title="Actions">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </button>
+                <div class="row-action-items hidden">
+                    <button type="button" data-tone="blue" data-label="Add Brand / Subcategory"
+                            onclick="toggleAddBrandModal({{ $category->id }}, true)">Add Brand / Subcategory</button>
+                    <button type="button" data-tone="default" data-label="Edit Category"
+                            onclick="toggleEditCategoryModal({{ $category->id }}, true)">Edit Category</button>
+                    <button type="button" data-tone="rose" data-label="Delete Category"
+                            onclick="toggleDeleteCategoryModal({{ $category->id }}, true)">Delete Category</button>
+                </div>
             </div>
         </td>
     </tr>

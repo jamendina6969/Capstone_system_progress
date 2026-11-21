@@ -194,7 +194,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Name</label>
-                        <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Electric / Liquids" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
+                        <input type="text" name="name" value="{{ old('name') }}" required data-alpha-only placeholder="e.g. Water Filters" class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Code <span class="text-gray-400 font-normal">(Auto-generated)</span></label>
@@ -244,7 +244,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Description <span class="text-gray-400 font-normal">(optional)</span></label>
-                    <textarea name="description" rows="3" placeholder="Description of category or subcategory..." class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">{{ old('description') }}</textarea>
+                    <textarea name="description" rows="3" data-alnum-plain placeholder="Description of category or subcategory..." class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:outline-none focus:border-slate-400">{{ old('description') }}</textarea>
                 </div>
 
                 <div class="flex items-center justify-end space-x-3 pt-6 border-t-2 border-gray-200 dark:border-[#1e2536]">

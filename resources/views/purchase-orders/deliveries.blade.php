@@ -3,7 +3,7 @@
 @section('title', 'Incoming Deliveries')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="space-y-6" data-live-refresh-region="deliveries">
 
         @if(session('success'))
             <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-900 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">{{ session('success') }}</div>

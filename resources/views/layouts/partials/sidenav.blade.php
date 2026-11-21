@@ -20,7 +20,7 @@
     $readyToReceiveCount = $sidebarBadges['readyToReceiveCount'] ?? 0;
 @endphp
 
-<aside id="sidebar" class="relative bg-white text-gray-700 border-r border-gray-200 dark:bg-[#10141D] dark:text-slate-100 dark:border-[#1e2536] flex flex-col flex-shrink-0 z-25">
+<aside id="sidebar" class="relative bg-white text-gray-700 border-r border-gray-200 dark:bg-[#10141D] dark:text-slate-100 dark:border-[#1e2536] flex flex-col flex-shrink-0 z-[60] lg:z-20">
 
     <!-- Sidebar Header -->
     <div class="px-4 py-5 border-b border-gray-200 dark:border-[#1e2536] flex items-center justify-between h-18">

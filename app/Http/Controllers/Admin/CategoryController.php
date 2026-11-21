@@ -170,10 +170,13 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
             'parent_id' => ['nullable', 'exists:categories,id'],
             'type' => ['required', 'in:product,service'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\r\n]+$/'],
+        ], [
+            'name.regex' => 'Category name must contain letters and spaces only (no numbers, emojis, or special characters).',
+            'description.regex' => 'Category description may not contain emojis or special characters.',
         ]);
 
         $parentId = $data['parent_id'] ?? null;
@@ -211,8 +214,11 @@ class CategoryController extends Controller
     public function storeSubcategory(Request $request, Category $category)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+            'description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\r\n]+$/'],
+        ], [
+            'name.regex' => 'Brand/Subcategory name must contain letters and spaces only (no numbers, emojis, or special characters).',
+            'description.regex' => 'Description may not contain emojis or special characters.',
         ]);
 
         $exists = Category::where('parent_id', $category->id)
@@ -236,9 +242,12 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
             'type' => ['required', 'in:product,service'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\r\n]+$/'],
+        ], [
+            'name.regex' => 'Category name must contain letters and spaces only (no numbers, emojis, or special characters).',
+            'description.regex' => 'Category description may not contain emojis or special characters.',
         ]);
 
         $category->update($data);
@@ -249,8 +258,11 @@ class CategoryController extends Controller
     public function updateSubcategory(Request $request, Category $subcategory)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+            'description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\r\n]+$/'],
+        ], [
+            'name.regex' => 'Brand/Subcategory name must contain letters and spaces only (no numbers, emojis, or special characters).',
+            'description.regex' => 'Description may not contain emojis or special characters.',
         ]);
 
         $exists = Category::where('parent_id', $subcategory->parent_id)

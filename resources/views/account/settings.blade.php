@@ -200,22 +200,69 @@
                         @csrf
                         @method('PUT')
 
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">Current Password</label>
-                            <input type="password" name="current_password" required autocomplete="current-password" data-no-clipboard
-                                   class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                        <div class="clipboard-block-notice hidden rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-3.5 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                            Copy and paste are disabled on password fields for security. Please type your password manually or use the suggestion tool below.
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">New Password</label>
-                            <input type="password" name="password" required autocomplete="new-password" data-no-clipboard
-                                   class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                            <label for="acct_current_password" class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">Current Password</label>
+                            <div class="relative">
+                                <input type="password" id="acct_current_password" name="current_password" required autocomplete="current-password" data-no-clipboard
+                                       class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                                <button type="button" data-toggle-password="acct_current_password" aria-label="Toggle visibility"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer">
+                                    <svg class="eye-open h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="eye-off h-4 w-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Suggest Strong Password Helper (Same as First-Login Screen) --}}
+                        <div class="rounded-xl bg-slate-50 dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] p-3 space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs font-medium text-gray-600 dark:text-slate-300">Need a strong password idea?</span>
+                                <button type="button"
+                                        data-suggest-password="acctPasswordSuggestionBox"
+                                        data-target-input="acct_new_password"
+                                        data-confirm-input="acct_new_password_confirmation"
+                                        class="inline-flex items-center gap-1.5 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all duration-300 shadow-xs cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    Suggest Strong Password
+                                </button>
+                            </div>
+                            <div id="acctPasswordSuggestionBox" class="hidden rounded-lg bg-white dark:bg-[#10141D] border border-emerald-300 dark:border-emerald-800 px-3 py-2 space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Auto-filled (Editable)</span>
+                                    <span class="text-[10px] text-gray-400">Save or write this down securely</span>
+                                </div>
+                                <div class="suggested-value font-mono text-xs font-bold text-gray-900 dark:text-white break-all select-none"></div>
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">Confirm New Password</label>
-                            <input type="password" name="password_confirmation" required autocomplete="new-password" data-no-clipboard
-                                   class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                            <label for="acct_new_password" class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">New Password</label>
+                            <div class="relative">
+                                <input type="password" id="acct_new_password" name="password" required autocomplete="new-password" data-no-clipboard data-ascii-password
+                                       class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                                <button type="button" data-toggle-password="acct_new_password" aria-label="Toggle visibility"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer">
+                                    <svg class="eye-open h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="eye-off h-4 w-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="acct_new_password_confirmation" class="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1.5">Confirm New Password</label>
+                            <div class="relative">
+                                <input type="password" id="acct_new_password_confirmation" name="password_confirmation" required autocomplete="new-password" data-no-clipboard data-ascii-password
+                                       class="w-full rounded-xl bg-white dark:bg-[#161B26] border-2 border-gray-200 dark:border-[#1e2536] px-4 py-2.5 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-slate-400">
+                                <button type="button" data-toggle-password="acct_new_password_confirmation" aria-label="Toggle visibility"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer">
+                                    <svg class="eye-open h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="eye-off h-4 w-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="pt-2 flex justify-end">

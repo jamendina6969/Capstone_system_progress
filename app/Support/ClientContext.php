@@ -26,7 +26,7 @@ class ClientContext
         ];
 
         foreach ($directHeaders as $header) {
-            $value = trim((string) $request->header($header, ''));
+            $value = self::normalizeIp((string) $request->header($header, ''));
             if ($value !== '' && self::isValidPublicIp($value)) {
                 return $value;
             }
@@ -35,7 +35,7 @@ class ClientContext
         // Priority 2: Standard X-Forwarded-For chain (leftmost public IP is the original client)
         $forwardedFor = (string) $request->header('X-Forwarded-For', '');
         if ($forwardedFor !== '') {
-            $parts = array_map('trim', explode(',', $forwardedFor));
+            $parts = array_map(fn ($p) => self::normalizeIp($p), explode(',', $forwardedFor));
             foreach ($parts as $candidate) {
                 if (self::isValidPublicIp($candidate)) {
                     return $candidate;
@@ -52,13 +52,28 @@ class ClientContext
         // Priority 3: RFC 7239 Forwarded header (e.g. Forwarded: for=203.0.113.43;proto=https)
         $forwarded = (string) $request->header('Forwarded', '');
         if ($forwarded !== '' && preg_match('/for="?\[?([a-fA-F0-9:.]+)\]?"?/i', $forwarded, $matches)) {
-            $candidate = $matches[1];
+            $candidate = self::normalizeIp($matches[1]);
             if (self::isValidIp($candidate) && !self::isLoopback($candidate)) {
                 return $candidate;
             }
         }
 
-        return (string) ($request->ip() ?: '127.0.0.1');
+        return self::normalizeIp((string) ($request->ip() ?: '127.0.0.1')) ?: '127.0.0.1';
+    }
+
+    /**
+     * Strip IPv4-mapped IPv6 prefix (::ffff:103.31.73.4 -> 103.31.73.4) and trim whitespace.
+     */
+    public static function normalizeIp(string $ip): string
+    {
+        $clean = trim($ip);
+        if (str_starts_with(strtolower($clean), '::ffff:')) {
+            $mapped = substr($clean, 7);
+            if (filter_var($mapped, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+                return $mapped;
+            }
+        }
+        return $clean;
     }
 
     /**

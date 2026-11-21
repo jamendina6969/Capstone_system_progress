@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- GRID VIEW -->
-                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-5">
+                <div id="productGrid" class="view-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-6">
                     @include('admin.products.partials.items', [
                         'products' => $products,
                         'categories' => $categories,
@@ -312,7 +312,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Product Name <span class="text-rose-500">*</span></label>
-                        <input type="text" name="product_name" value="{{ old('product_name') }}" required placeholder="e.g. Purified Drinking Water" class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">
+                        <input type="text" name="product_name" value="{{ old('product_name') }}" required data-product-name placeholder="e.g. Purified Drinking Water" class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">
                     </div>
 
                     <div>
@@ -349,7 +349,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Approx. Volume</label>
-                        <input type="text" name="approx_volume" value="{{ old('approx_volume') }}" placeholder="e.g. 20L, 5 gallons" class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">
+                        <input type="text" name="approx_volume" value="{{ old('approx_volume') }}" data-alnum-plain placeholder="e.g. 20L, 5 gallons" class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Reorder Point</label>
@@ -381,7 +381,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">Description</label>
-                    <textarea name="product_description" rows="2" placeholder="Enter product details or description..." class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">{{ old('product_description') }}</textarea>
+                    <textarea name="product_description" rows="2" data-alnum-plain placeholder="Enter product details or description..." class="w-full rounded-lg bg-white dark:bg-[#161B26] border border-gray-200 dark:border-[#1e2536] px-3 py-2 text-sm text-gray-900 dark:text-slate-100">{{ old('product_description') }}</textarea>
                 </div>
 
                 <div>

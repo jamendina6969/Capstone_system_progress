@@ -212,10 +212,10 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_sku' => ['nullable', 'string', 'max:255', 'unique:products,product_sku'],
-            'product_name' => ['required', 'string', 'max:255'],
-            'product_description' => ['nullable', 'string'],
-            'approx_volume' => ['nullable', 'string', 'max:255'],
+            'product_sku' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9\-]+$/', 'unique:products,product_sku'],
+            'product_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9\s\-\/#]+$/'],
+            'product_description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\/#\r\n]+$/'],
+            'approx_volume' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'],
             'purchase_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'store_quantity' => ['required', 'integer', 'min:0'],
@@ -228,6 +228,11 @@ class ProductController extends Controller
                 'mimes:jpeg,png,jpg,webp',
                 'max:2048',
             ],
+        ], [
+            'product_name.regex' => 'Product name may only contain letters, numbers, spaces, hyphens (-), slashes (/), and # (no emojis or other special characters).',
+            'product_sku.regex' => 'Product SKU may only contain letters, numbers, and hyphens (-).',
+            'approx_volume.regex' => 'Approx. volume may not contain emojis or special characters.',
+            'product_description.regex' => 'Description may not contain emojis or special characters.',
         ]);
 
         // Fallback category logic: if empty, pick "Uncategorized" or the first available category
@@ -320,11 +325,12 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
+                'regex:/^[A-Za-z0-9\-]+$/',
                 'unique:products,product_sku,' . $product->id,
             ],
-            'product_name' => ['required', 'string', 'max:255'],
-            'product_description' => ['nullable', 'string'],
-            'approx_volume' => ['nullable', 'string', 'max:255'],
+            'product_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9\s\-\/#]+$/'],
+            'product_description' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\s\.,\-\/#\r\n]+$/'],
+            'approx_volume' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'],
             'purchase_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'store_quantity' => ['required', 'integer', 'min:0'],
@@ -337,6 +343,11 @@ class ProductController extends Controller
                 'mimes:jpeg,png,jpg,webp',
                 'max:2048',
             ],
+        ], [
+            'product_name.regex' => 'Product name may only contain letters, numbers, spaces, hyphens (-), slashes (/), and # (no emojis or other special characters).',
+            'product_sku.regex' => 'Product SKU may only contain letters, numbers, and hyphens (-).',
+            'approx_volume.regex' => 'Approx. volume may not contain emojis or special characters.',
+            'product_description.regex' => 'Description may not contain emojis or special characters.',
         ]);
 
         $categoryId = $request->input('category_id');

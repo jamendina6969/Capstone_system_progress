@@ -172,7 +172,7 @@
                     </table>
                 </div>
 
-                <div id="productGrid" class="view-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-5">
+                <div id="productGrid" class="view-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-6">
                     @include('inventory.partials.cards', ['products' => $products])
                 </div>
             </div>

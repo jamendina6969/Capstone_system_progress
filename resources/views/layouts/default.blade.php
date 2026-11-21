@@ -99,7 +99,7 @@
 
     <div id="sidebarOverlay"></div>
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-dvh overflow-hidden">
 
         @include('layouts.partials.sidenav')
 
@@ -107,7 +107,7 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50 dark:bg-[#161B26]">
 
             <!-- Enterprise Topbar -->
-            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-3 sm:px-4 lg:px-6 flex items-center justify-between relative z-50 shadow-2xs">
+            <header class="h-16 bg-white dark:bg-[#10141D] border-b border-slate-200/80 dark:border-[#1e2536] px-3 sm:px-4 lg:px-6 flex items-center justify-between relative z-40 shadow-2xs shrink-0">
                 
                 <div class="flex items-center gap-3">
                     {{-- Mobile hamburger (hidden on desktop) --}}
@@ -125,9 +125,9 @@
 
                 <!-- Right Utility Actions -->
                 <div class="flex items-center space-x-3">
-                    <!-- Quick Refresh -->
-                    <button onclick="window.location.reload();" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer" title="Refresh Data">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <!-- Smart Live Refresh (works for all roles, offline-safe) -->
+                    <button id="globalRefreshBtn" type="button" onclick="window.HydrotechLiveSync ? window.HydrotechLiveSync.manualRefresh(this) : window.location.reload();" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e2536]/60 rounded-lg transition-colors cursor-pointer" title="Refresh & Sync Data">
+                        <svg class="refresh-icon w-5 h-5 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     </button>
 
                     <!-- Role-Based Hybrid Notification Bell & Dropdown -->
@@ -474,6 +474,7 @@
 
     <div id="notifToastContainer" class="fixed bottom-5 right-5 z-[95] flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
 
+    @include('partials.row-action-menu')
     @include('partials.item-skus-modal')
     @include('partials.global-input-guards')
     <script>

@@ -18,7 +18,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 30;
+  z-index: 60;
   width: 17rem;
   max-width: 85vw; /* mobile safety: drawer never covers the entire phone screen */
   transform: translateX(-100%);
@@ -38,7 +38,7 @@ html.sidebar-ready #sidebar {
 #sidebarOverlay {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 55;
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   pointer-events: none;
@@ -77,6 +77,57 @@ html.sidebar-ready #sidebarOverlay {
 
   #sidebarOverlay {
     display: none;
+  }
+}
+
+/* ===== Global Mobile & Tablet Responsiveness ===== */
+html, body {
+  max-width: 100%;
+  overscroll-behavior-x: none;
+}
+
+.overflow-x-auto,
+#tableScrollContainer {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1023px) {
+  /* Prevent rigid desktop table heights from causing awkward double-scroll on mobile/tablet */
+  #tableScrollContainer {
+    max-height: 68dvh !important;
+    height: auto !important;
+    min-height: 280px;
+  }
+
+  /* Compact table cell spacing on phones & tablets so more columns fit cleanly */
+  table th.px-8,
+  table td.px-8 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  table th.px-6,
+  table td.px-6 {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Modals stay comfortably inside narrow phone viewports */
+  [id$="Modal"] > div {
+    max-height: 92dvh !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+  }
+
+  [id$="Modal"] .px-8 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  [id$="Modal"] .p-8 {
+    padding: 1.25rem !important;
   }
 }
 

@@ -31,27 +31,24 @@
             @endif
         </td>
         <td class="px-8 py-4 text-right" onclick="event.stopPropagation()">
-            <div class="flex justify-end gap-2 items-center">
-                <button type="button"
-                    onclick="openViewPOModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier', 'user')) }})"
-                    class="inline-flex items-center gap-1.5 bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition-all duration-200 cursor-pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <span>View</span>
+            <div class="inline-flex justify-end items-center" data-row-actions>
+                <button type="button" onclick="openRowActionMenu(event, this)"
+                        class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white dark:bg-[#161B26] border-2 border-slate-300 dark:border-[#1e2536] text-slate-700 dark:text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-800 dark:hover:bg-white dark:hover:text-slate-900 transition-all shadow-xs cursor-pointer"
+                        aria-label="Actions" title="Actions">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </button>
+                <div class="row-action-items hidden">
+                    <button type="button" data-tone="default" data-label="View Details"
+                        onclick="openViewPOModal({{ json_encode($po->load('items.product.category.parent', 'items.product.category', 'supplier', 'user')) }})">View Details</button>
 
-                @if($po->status === 'pending')
-                    <button type="button"
-                        data-receive-url="{{ route('purchase-orders.receive', $po->id) }}"
-                        onclick="openReceiveModal({{ json_encode($po->load('items.product', 'supplier')) }}, this.dataset.receiveUrl)"
-                        class="bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:bg-[#10141D] dark:border-emerald-600/80 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all shadow-xs">
-                        Receive Order
-                    </button>
-                @endif
+                    @if($po->status === 'pending')
+                        <button type="button" data-tone="emerald" data-label="Receive Order (GRN)"
+                            data-receive-url="{{ route('purchase-orders.receive', $po->id) }}"
+                            onclick="openReceiveModal({{ json_encode($po->load('items.product', 'supplier')) }}, this.dataset.receiveUrl)">Receive Order (GRN)</button>
+                    @endif
 
-                <a href="{{ route('purchase-orders.pdf', $po) }}"
-                    class="bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white dark:bg-[#10141D] dark:border-[#1e2536] dark:text-slate-300 dark:hover:bg-[#161B26] dark:hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-all shadow-xs">
-                    PDF
-                </a>
+                    <a href="{{ route('purchase-orders.pdf', $po) }}" data-tone="blue" data-label="Download PDF">Download PDF</a>
+                </div>
             </div>
         </td>
     </tr>

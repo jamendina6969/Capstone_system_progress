@@ -37,7 +37,7 @@ class AccountSettingsController extends Controller
                     $device = ClientContext::parseDevice($s->user_agent ?? '');
                     return (object) [
                         'id'           => $s->id,
-                        'ip_address'   => $s->ip_address ?: 'Unknown',
+                        'ip_address'   => $s->ip_address ? ClientContext::normalizeIp($s->ip_address) : 'Unknown',
                         'browser'      => $device['browser'],
                         'os'           => $device['os'],
                         'device_type'  => $device['device'],

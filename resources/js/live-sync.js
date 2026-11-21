@@ -5,9 +5,12 @@ class HydrotechLiveSync {
         this.lastTimestamp = new Date().toISOString();
         this.pollInterval = 8000; // 8 seconds
         this.notifPollInterval = 20000; // 20 seconds
+        this.pageSyncInterval = 15000; // 15 seconds for live table pages
         this.timer = null;
         this.notifTimer = null;
+        this.pageTimer = null;
         this.isPolling = false;
+        this.isPageSyncing = false;
         this.syncUrl = '/inventory/live-sync';
         this.notifUrl = '/notifications/poll';
         this.seenNotifIds = new Set();
@@ -30,11 +33,137 @@ class HydrotechLiveSync {
         window.addEventListener('focus', () => {
             this.pollServer();
             this.pollNotifications();
+            this.pollCurrentPage();
         });
 
         // 3. Periodic Background Server Poll
         this.startPolling();
         this.startNotificationPolling();
+        this.startPageAutoSync();
+    }
+
+    isAutoSyncEligiblePath() {
+        const path = window.location.pathname.replace(/\/+$/, '') || '/';
+        const livePaths = [
+            '/',
+            '/purchase-requests',
+            '/purchase-orders',
+            '/purchase-orders/deliveries',
+            '/inventory/approvals',
+            '/inventory/my-requests',
+            '/supplier-returns',
+            '/customer-returns',
+            '/suppliers/discrepancy-report',
+            '/transactions',
+            '/audit-logs',
+            '/notifications',
+        ];
+        return livePaths.includes(path);
+    }
+
+    isUserBusyInteracting() {
+        // Never refresh while user is typing in a form/search field or has any modal/popover open
+        const active = document.activeElement;
+        if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) {
+            return true;
+        }
+        const openModal = document.querySelector('[id$="Modal"]:not(.hidden), #globalRowActionPortal:not(.hidden)');
+        if (openModal) return true;
+        const expandedInline = document.querySelector('.reject-form-row:not(.hidden)');
+        if (expandedInline) return true;
+        return false;
+    }
+
+    startPageAutoSync() {
+        if (!this.isAutoSyncEligiblePath()) return;
+        if (this.pageTimer) clearInterval(this.pageTimer);
+        this.pageTimer = setInterval(() => this.pollCurrentPage(), this.pageSyncInterval);
+    }
+
+    async pollCurrentPage(force = false) {
+        if (this.isPageSyncing || !navigator.onLine) return;
+        if (!force && (document.hidden || !this.isAutoSyncEligiblePath() || this.isUserBusyInteracting())) return;
+
+        // Only auto-swap first page tables (never overwrite infinite-scrolled multi-page rows)
+        const tableBody = document.getElementById('tableBody');
+        const currentUrl = new URL(window.location.href);
+        if (!force && tableBody) {
+            const loadedRows = tableBody.querySelectorAll('tr[data-record-row="true"]').length;
+            if (loadedRows > 25) return;
+        }
+
+        this.isPageSyncing = true;
+        try {
+            currentUrl.searchParams.set('_sync', String(Date.now()));
+            const res = await fetch(currentUrl.toString(), {
+                headers: { 'Accept': 'text/html', 'Cache-Control': 'no-cache' }
+            });
+            if (res.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            if (!res.ok) return;
+
+            const htmlText = await res.text();
+            const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+
+            // Smoothly swap #tableBody if present on both current page & fetched page
+            const freshBody = doc.getElementById('tableBody');
+            if (tableBody && freshBody && tableBody.innerHTML !== freshBody.innerHTML) {
+                tableBody.innerHTML = freshBody.innerHTML;
+            }
+
+            const resultsEl = document.getElementById('resultsText');
+            const freshResults = doc.getElementById('resultsText');
+            if (resultsEl && freshResults && resultsEl.innerHTML !== freshResults.innerHTML) {
+                resultsEl.innerHTML = freshResults.innerHTML;
+            }
+
+            // For Incoming Deliveries or pages without #tableBody, refresh marked live containers
+            document.querySelectorAll('[data-live-refresh-region]').forEach(region => {
+                const key = region.getAttribute('data-live-refresh-region');
+                const freshRegion = doc.querySelector(`[data-live-refresh-region="${key}"]`);
+                if (freshRegion && region.innerHTML !== freshRegion.innerHTML) {
+                    region.innerHTML = freshRegion.innerHTML;
+                }
+            });
+        } catch (err) {
+            // Silent ignore during transient drops
+        } finally {
+            this.isPageSyncing = false;
+        }
+    }
+
+    async manualRefresh(btn) {
+        const icon = btn ? btn.querySelector('.refresh-icon') : null;
+        if (icon) icon.classList.add('animate-spin');
+
+        if (!navigator.onLine) {
+            if (icon) setTimeout(() => icon.classList.remove('animate-spin'), 450);
+            this.showToast({
+                severity: 'warning',
+                title: 'Offline Mode Active',
+                message: 'You are currently offline. Live server refresh will resume when internet returns.',
+                read_url: '#',
+            });
+            return;
+        }
+
+        try {
+            await Promise.allSettled([
+                this.pollServer(),
+                this.pollNotifications(),
+            ]);
+
+            if (this.isAutoSyncEligiblePath() && document.getElementById('tableBody')) {
+                await this.pollCurrentPage(true);
+                if (icon) setTimeout(() => icon.classList.remove('animate-spin'), 400);
+            } else {
+                window.location.reload();
+            }
+        } catch (e) {
+            window.location.reload();
+        }
     }
 
     startNotificationPolling() {
