@@ -10,13 +10,11 @@
     <meta name="application-name" content="Steven Hydrotech Exponent">
     <meta name="author" content="Steven Hydrotech Exponent">
     <meta name="robots" content="@yield('robots', 'index, follow')">
-    <link rel="canonical" href="@yield('canonical', url('/login'))">
+    <meta name="google-site-verification" content="{{ env('GOOGLE_SITE_VERIFICATION', 'STCqArYDgGnJblLVqwLMQ8I92LsqyFtezAE9SQjUOiI') }}" />
+    <link rel="canonical" href="@yield('canonical', url('/'))">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
 
-    @if(env('GOOGLE_SITE_VERIFICATION'))
-        <meta name="google-site-verification" content="{{ env('GOOGLE_SITE_VERIFICATION') }}">
-    @endif
     @if(env('BING_SITE_VERIFICATION'))
         <meta name="msvalidate.01" content="{{ env('BING_SITE_VERIFICATION') }}">
     @endif
@@ -26,7 +24,7 @@
     <meta property="og:site_name" content="Steven Hydrotech Exponent">
     <meta property="og:title" content="@yield('title', 'Steven Hydrotech Exponent | Hydrotech Predictive Inventory & POS System')">
     <meta property="og:description" content="@yield('meta_description', 'Official Predictive Inventory Management, Demand Forecasting, EOQ & Point of Sale System for Steven Hydrotech Exponent — Water Treatment and Supply Services.')">
-    <meta property="og:url" content="@yield('canonical', url('/login'))">
+    <meta property="og:url" content="@yield('canonical', url('/'))">
     <meta property="og:image" content="{{ asset('images/logo.svg') }}">
 
     <!-- Structured Data (JSON-LD) for Search Engine Indexing -->
@@ -37,14 +35,14 @@
         '@type' => 'WebApplication',
         'name' => 'Steven Hydrotech Exponent — Predictive Inventory & POS System',
         'alternateName' => ['Hydrotech Inventory System', 'Hydrotech Predictive Inventory System', 'Steven Hydrotech Exponent'],
-        'url' => url('/login'),
+        'url' => url('/'),
         'applicationCategory' => 'BusinessApplication',
         'operatingSystem' => 'Web',
         'description' => 'Predictive Inventory Management, Demand Forecasting, Economic Order Quantity (EOQ), Supply Chain & Point of Sale System for Steven Hydrotech Exponent Water Treatment and Supply Services.',
         'provider' => [
             '@type' => 'Organization',
             'name' => 'Steven Hydrotech Exponent',
-            'url' => url('/login'),
+            'url' => url('/'),
             'logo' => asset('images/logo.svg'),
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}

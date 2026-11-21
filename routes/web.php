@@ -30,21 +30,36 @@ use App\Http\Controllers\AccountSettingsController;
 // ==================== PUBLIC SEO & SITEMAP ROUTES ====================
 
 Route::get('/sitemap.xml', function () {
+    $rootUrl  = htmlspecialchars(url('/'), ENT_XML1, 'UTF-8');
     $loginUrl = htmlspecialchars(url('/login'), ENT_XML1, 'UTF-8');
-    $lastmod = now()->toAtomString();
+    $lastmod  = now()->toAtomString();
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>{$loginUrl}</loc>
+        <loc>{$rootUrl}</loc>
         <lastmod>{$lastmod}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>{$loginUrl}</loc>
+        <lastmod>{$lastmod}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
     </url>
 </urlset>
 XML;
     return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
 })->name('sitemap');
+
+// Root homepage serves HTTP 200 Login view to guests/search crawlers (no 302 redirect blocker) and Dashboard to authenticated users
+Route::get('/', function (\Illuminate\Http\Request $request) {
+    if (!\Illuminate\Support\Facades\Auth::check()) {
+        return app(UserController::class)->showLogin();
+    }
+    return app(DashboardController::class)->index($request);
+})->middleware(['user.active', 'password.changed'])->name('home');
 
 // ==================== GUEST ROUTES ====================
 
@@ -329,6 +344,5 @@ Route::middleware(['auth', 'user.active', 'password.changed'])->group(function (
 
     // ==================== GENERAL ROUTES ====================
     Route::get('/user-guide', [UserGuideController::class, 'index'])->name('user-guide');
-    Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::post('/theme', [ThemeController::class, 'update'])->name('theme.update');
 });

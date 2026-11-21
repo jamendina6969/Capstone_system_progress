@@ -2,7 +2,7 @@
 
 @section('title', 'Steven Hydrotech Exponent | Hydrotech Predictive Inventory & POS System')
 @section('robots', 'index, follow')
-@section('canonical', url('/login'))
+@section('canonical', url('/'))
 
 @section('content')
     <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#0b0e14] dark:bg-[#10141D] overflow-x-hidden">
