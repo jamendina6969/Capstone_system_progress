@@ -434,8 +434,9 @@
             let height = 0;
             let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-            const STAR_COUNT = 120;
+            const STAR_COUNT = 105;
             const stars = [];
+            const bubbles = [];
             const particles = [];
             const shockwaves = [];
 
@@ -477,6 +478,21 @@
                         size: 0.55 + Math.random() * 0.95,
                         alpha: 0.08 + Math.random() * 0.25,
                         twinklePhase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            function initBubbles() {
+                bubbles.length = 0;
+                const bCount = window.innerWidth < 768 ? 24 : 42;
+                for (let i = 0; i < bCount; i++) {
+                    bubbles.push({
+                        x: Math.random(),
+                        y: Math.random(),
+                        r: 1.4 + Math.random() * 3.6,
+                        speed: 0.00055 + Math.random() * 0.00125,
+                        wobble: Math.random() * Math.PI * 2,
+                        alpha: 0.16 + Math.random() * 0.34
                     });
                 }
             }
@@ -636,6 +652,7 @@
             }
 
             initStars();
+            initBubbles();
             initParticles();
             resize();
 
@@ -687,10 +704,98 @@
                     ctx.fill();
                 }
 
+                // Hydro-Tech Hybrid Layer 1: Translucent Multi-Layer Water Surface Wave Floor
+                const waveBaseRatio = isDesktop ? 0.72 : 0.78;
+                for (let w = 0; w < 3; w++) {
+                    ctx.beginPath();
+                    const baseY = height * (waveBaseRatio + w * 0.075);
+                    ctx.moveTo(0, height);
+                    const stepX = Math.max(14, Math.floor(width / 44));
+                    for (let x = 0; x <= width + stepX; x += stepX) {
+                        const cursorLift = pointer.active
+                            ? Math.exp(-Math.pow((x - pointer.x) / 115, 2)) * -18
+                            : 0;
+                        const y = baseY
+                            + Math.sin(x * 0.0085 + time * (1.85 + w * 0.42) + w * 1.9) * (11 + w * 4.5 + typingEnergy * 6)
+                            + cursorLift;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.lineTo(width, height);
+                    ctx.closePath();
+                    const waveGrad = ctx.createLinearGradient(0, baseY - 24, 0, height);
+                    const waveAlpha = (w === 0 ? 0.16 : (w === 1 ? 0.12 : 0.09)) * introRaw;
+                    if (w === 0) {
+                        waveGrad.addColorStop(0, `rgba(56, 189, 248, ${waveAlpha.toFixed(3)})`);
+                    } else if (w === 1) {
+                        waveGrad.addColorStop(0, `rgba(14, 165, 233, ${waveAlpha.toFixed(3)})`);
+                    } else {
+                        waveGrad.addColorStop(0, `rgba(251, 191, 36, ${(waveAlpha * 0.7).toFixed(3)})`);
+                    }
+                    waveGrad.addColorStop(1, 'rgba(4, 6, 11, 0)');
+                    ctx.fillStyle = waveGrad;
+                    ctx.fill();
+                }
+
+                // Hydro-Tech Hybrid Layer 2: Concentric Water-Drop Sonar Ripples
+                const sonarSpan = Math.min(width, height) * (isDesktop ? 0.42 : 0.36);
+                const sonarStart = Math.min(width, height) * 0.08;
+                for (let k = 0; k < 2; k++) {
+                    const sonarPhase = ((time * 48 + k * (sonarSpan * 0.5)) % sonarSpan);
+                    const sonarR = sonarStart + sonarPhase;
+                    const sonarAlpha = 0.24 * (1 - sonarPhase / sonarSpan) * introRaw;
+                    if (sonarAlpha > 0.01) {
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${sonarAlpha.toFixed(3)})`;
+                        ctx.lineWidth = 1.35;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, sonarR, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+
+                // Hydro-Tech Hybrid Layer 3: Rising Purified H2O Micro-Bubbles
+                for (let i = 0; i < bubbles.length; i++) {
+                    const b = bubbles[i];
+                    b.y -= b.speed * (1 + typingEnergy * 0.8 + hyperdriveProgress * 2.5);
+                    if (b.y < -0.04) {
+                        b.y = 1.04;
+                        b.x = Math.random();
+                    }
+                    let bx = b.x * width + Math.sin(time * 2.1 + b.wobble) * 11;
+                    let by = b.y * height;
+                    if (pointer.active) {
+                        const bdx = bx - pointer.x;
+                        const bdy = by - pointer.y;
+                        const bDist = Math.sqrt(bdx * bdx + bdy * bdy) || 1;
+                        if (bDist < 95) {
+                            bx += (bdx / bDist) * (95 - bDist) * 0.24;
+                        }
+                    }
+                    const bRad = b.r * introSpring;
+                    const bAlpha = b.alpha * introRaw;
+                    ctx.fillStyle = `rgba(56, 189, 248, ${(bAlpha * 0.24).toFixed(3)})`;
+                    ctx.strokeStyle = `rgba(186, 230, 253, ${bAlpha.toFixed(3)})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, bRad, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    if (bRad >= 2.2) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${(bAlpha * 0.8).toFixed(3)})`;
+                        ctx.beginPath();
+                        ctx.arc(bx - bRad * 0.3, by - bRad * 0.3, bRad * 0.26, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
                 for (let s = shockwaves.length - 1; s >= 0; s--) {
                     const sw = shockwaves[s];
                     sw.r += (sw.maxR - sw.r) * 0.08 + 3.2;
                     sw.alpha = Math.max(0, 1 - (sw.r / sw.maxR));
+                    ctx.strokeStyle = `rgba(125, 211, 252, ${(sw.alpha * 0.32).toFixed(3)})`;
+                    ctx.lineWidth = 1.4;
+                    ctx.beginPath();
+                    ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+                    ctx.stroke();
                     if (sw.alpha <= 0.02 || sw.r >= sw.maxR) {
                         shockwaves.splice(s, 1);
                     }
